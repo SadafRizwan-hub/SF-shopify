@@ -3,30 +3,27 @@
  * stay consistent between listing and detail pages.
  */
 
-export const PRODUCT_CARD_FRAGMENT = `
-  fragment ProductCard on Product {
-    id
-    handle
-    title
-    featuredImage { url altText width height }
-    priceRange {
-      minVariantPrice { amount currencyCode }
-      maxVariantPrice { amount currencyCode }
-    }
-    availableForSale
-  }
-`
 
-export const PRODUCT_DETAIL_FRAGMENT = `
-  fragment ProductDetail on Product {
+
+export const FABRIC_FRAGMENT = `
+  fragment Fabric on Product {
     id
     handle
     title
     description
     descriptionHtml
+    productType
+    tags
     availableForSale
-    options { name optionValues { name } }
+    subtitle: metafield(namespace: "custom", key: "subtitle") { value }
+    width: metafield(namespace: "custom", key: "width") { value }
+    note: metafield(namespace: "custom", key: "note") { value }
+    priceSlabs: metafield(namespace: "custom", key: "price_slabs") { value }
+    featuredImage { url altText width height }
     images(first: 10) { nodes { url altText width height } }
+    collections(first: 20) { nodes { handle title } }
+    options { name optionValues { name } }
+    priceRange { minVariantPrice { amount currencyCode } }
     variants(first: 100) {
       nodes {
         id
@@ -37,9 +34,40 @@ export const PRODUCT_DETAIL_FRAGMENT = `
         price { amount currencyCode }
         compareAtPrice { amount currencyCode }
         selectedOptions { name value }
+        minCut: metafield(namespace: "custom", key: "min_cut") { value }
       }
     }
     seo { title description }
+  }
+`
+
+/* One round trip for the whole counter: every fabric plus the design books.
+   The catalogue is small enough (a few hundred bolts) that fetching it once
+   and filtering in the browser is faster and calmer than re-querying Shopify
+   on every chip tap. */
+export const CATALOG_QUERY = `
+  ${FABRIC_FRAGMENT}
+  query catalog($first: Int!, $collections: Int!) {
+    products(first: $first, sortKey: TITLE) {
+      nodes { ...Fabric }
+      pageInfo { hasNextPage }
+    }
+    collections(first: $collections) {
+      nodes {
+        handle
+        title
+        description
+        image { url altText }
+        products(first: 250) { nodes { handle } }
+      }
+    }
+  }
+`
+
+export const FABRIC_QUERY = `
+  ${FABRIC_FRAGMENT}
+  query fabric($handle: String!) {
+    product(handle: $handle) { ...Fabric }
   }
 `
 
@@ -64,7 +92,8 @@ export const CART_FRAGMENT = `
             availableForSale
             image { url altText }
             price { amount currencyCode }
-            product { handle title }
+            selectedOptions { name value }
+            product { handle title featuredImage { url altText } }
           }
         }
       }
@@ -72,53 +101,9 @@ export const CART_FRAGMENT = `
   }
 `
 
-export const PRODUCTS_QUERY = `
-  ${PRODUCT_CARD_FRAGMENT}
-  query products($first: Int!, $after: String) {
-    products(first: $first, after: $after, sortKey: BEST_SELLING) {
-      nodes { ...ProductCard }
-      pageInfo { hasNextPage endCursor }
-    }
-  }
-`
 
-export const PRODUCT_QUERY = `
-  ${PRODUCT_DETAIL_FRAGMENT}
-  query product($handle: String!) {
-    product(handle: $handle) { ...ProductDetail }
-  }
-`
 
-export const COLLECTIONS_QUERY = `
-  query collections($first: Int!) {
-    collections(first: $first) {
-      nodes {
-        id
-        handle
-        title
-        description
-        image { url altText }
-      }
-    }
-  }
-`
 
-export const COLLECTION_QUERY = `
-  ${PRODUCT_CARD_FRAGMENT}
-  query collection($handle: String!, $first: Int!, $after: String) {
-    collection(handle: $handle) {
-      id
-      handle
-      title
-      descriptionHtml
-      image { url altText }
-      products(first: $first, after: $after) {
-        nodes { ...ProductCard }
-        pageInfo { hasNextPage endCursor }
-      }
-    }
-  }
-`
 
 export const CART_CREATE = `
   ${CART_FRAGMENT}

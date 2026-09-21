@@ -1,132 +1,107 @@
-# SF Shopify — headless storefront
+# Singhania Fabrics — headless storefront
 
-Nuxt 3 storefront on top of the Shopify Storefront API. Products, collections,
-variant selection and cart all come from Shopify; checkout hands off to
-Shopify's own hosted checkout page.
-
-This repo is set up to **run locally**. No hosting provider config is included —
-see [Going live later](#going-live-later) when you want to deploy.
-
-## 1. Get Shopify credentials
-
-In your Shopify admin:
-
-1. **Settings → Apps and sales channels → Develop apps** (click
-   *Allow custom app development* the first time).
-2. **Create an app**, name it e.g. `headless-storefront`.
-3. **Configuration → Storefront API integration → Configure**, enable at least:
-   - `unauthenticated_read_product_listings`
-   - `unauthenticated_read_product_inventory`
-   - `unauthenticated_read_checkouts`
-   - `unauthenticated_write_checkouts`
-4. Save, then **API credentials → copy the Storefront API access token**.
-
-The Storefront token is read/cart-scoped and safe to ship in frontend code.
-An **Admin API token is not** — this project never needs one, keep it out of here.
-
-## 2. Run it locally
+The Singhania Fabrics counter as a Nuxt 3 storefront on the Shopify Storefront
+API. Runs locally; no hosting provider config is included.
 
 ```bash
 npm install
-cp .env.example .env    # then fill in your domain + token
+cp .env.example .env    # add your store domain + Storefront token
 npm run dev             # http://localhost:3000
+npm test                # the Shopify → fabric translation
 ```
 
-`.env`:
+## Read this first: cloth is sold in half metres
 
-```
-NUXT_PUBLIC_SHOPIFY_DOMAIN=yourstore.myshopify.com
-NUXT_PUBLIC_SHOPIFY_TOKEN=your-storefront-access-token
-```
+A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So
+**one unit of stock is half a metre**, and a variant's price is the rate for
+that half metre.
 
-`.env` is git-ignored. If a page shows *"Could not load data from Shopify"*,
-the message underneath tells you which of the two is wrong.
+> A cloth at **₹240/m** is entered in Shopify as **120**.
 
-### Storefront API version
+The UI multiplies back up: rates shown are `variantPrice / 0.5`, metres are
+`quantity * 0.5`. The constant is `UNIT_METRES` in `composables/catalogStore.js`
+and it is the only place that conversion happens. Get this wrong in the admin
+and every cut is billed at half price.
 
-Set in `nuxt.config.ts`, overridable with
-`NUXT_PUBLIC_SHOPIFY_API_VERSION`. Defaults to `2025-10`. Shopify releases a
-new version quarterly and supports each for 12 months; if you see an
-*invalid API version* error, bump this to a current one from
-<https://shopify.dev/docs/api/usage/versioning>.
+## How a fabric is entered in Shopify
 
-## 3. What's here
+| Shopify field | Becomes |
+|---|---|
+| product | one quality, e.g. `Mercerized Cambric 44"` |
+| product type | the fabric-type filter chip |
+| option **Design** | one value per design it is printed on (optional) |
+| option **Shade** | one value per dyed colour, matched to `data/shades.js` |
+| collection `design-*` | the design book entry — its image and tag line |
+| variant price | the rate for **one half metre** |
+| variant metafield `custom.min_cut` | per-shade MOQ in metres |
+| product metafield `custom.subtitle` | the line under the name |
+| product metafield `custom.width` | e.g. `44"` |
+| product metafield `custom.note` | counter note on the fabric page |
+| product metafield `custom.price_slabs` | `[{"from":10,"price":210}]` wholesale rungs |
+
+Metafields must have **Storefront API access** enabled on their definition or
+they read back as null.
+
+**Shade colours come from `data/shades.js`**, not Shopify — Shopify stores an
+option value as a name (`"Indigo"`), never a hex. Add a row there for each
+shade you dye. An unlisted shade still works; it just shows a neutral swatch
+until you list it.
+
+## Layout
 
 ```
 composables/
-  useShopify.js        Storefront client + shopifyRequest() error wrapper
-  queries.js           all GraphQL documents and fragments
-stores/cart.js         Pinia cart: create, add, update, remove, checkout
-pages/
-  index.vue            shop name, collections, featured products
-  collections/[handle].vue
-  products/[handle].vue
-  cart.vue
-components/
-  ProductGrid.vue      list of ProductCards
-  ProductCard.vue      grid tile
-  ProductGallery.vue   main image + thumbnails
-  ProductForm.vue      variant options + add to cart
-  CartLink.vue         header link with item count
-  StorefrontError.vue  visible API failure reason
-layouts/default.vue    header / main / footer shell
-assets/css/main.css    minimal base styles — the file to replace with your design
-utils/money.js         MoneyV2 formatting (auto-imported)
+  catalogStore.js   ← THE ONLY FILE THAT KNOWS ABOUT SHOPIFY
+  store.js          search, filters, shortlist, cut list, toasts
+  queries.js        GraphQL documents
+  useShopify.js     client + error wrapper
+stores/cart.js      Shopify Cart API — the cut list's backing store
+data/shades.js      shade name → hex
+data/photos.js      the shop's own photography (public/photos/)
+components/         your ten components, unchanged in look
+pages/              home, catalog, fabrics/[code], designs, designs/[id],
+                    cut-list, shortlist, about
+assets/css/base.css design tokens + the global primitives
+test/               guards the Shopify → fabric translation
 ```
 
-### Dropping in your own UI
+Every component and page speaks `fabric` / `designGroups` / `slabs` — the shape
+the Django API already returns. **Changing backend means rewriting
+`loadCatalog()` and `toFabric()` in `catalogStore.js` and nothing else.**
 
-Markup is plain semantic HTML with stable class names and **no CSS framework
-installed**, so nothing fights your styles. Two ways in:
+## What Shopify does not carry over
 
-- **Restyle:** overwrite `assets/css/main.css` (or point the `css` array in
-  `nuxt.config.ts` at your own files). The class names it targets —
-  `.grid--products`, `.card`, `.product`, `.product-form`, `.cart-line`,
-  `.button` — are all in the components listed above.
-- **Replace markup:** edit each component's `<template>`. The logic lives in
-  `<script setup>`, so you can rewrite the template freely as long as you keep
-  using the same variables (`product`, `selectedVariant`, `cart.lines`, …).
+Three things from the Django/Razorpay build have no clean Shopify equivalent.
+They are live in the UI but **not enforced at checkout**:
 
-If your design uses Tailwind, add it with
-`npx nuxi module add @nuxtjs/tailwindcss` and delete `main.css` from the `css`
-array.
+1. **Slab pricing is display-only.** `fabric.slabs` renders the rungs and the
+   fabric page totals against the selected tier, but Shopify's cart does not
+   apply tier pricing on standard plans. **The shopper can be shown ₹210/m and
+   charged ₹240/m.** To close it: a Shopify Function (product discount), or
+   automatic quantity discounts mirroring each rung, or B2B quantity rules
+   (Plus). Until then the tier is a quote, not a price.
+2. **Per-shade MOQ is client-side only.** `custom.min_cut` drives the stepper
+   floor; nothing stops a crafted cart from going under it.
+3. **Order confirmation is Shopify's page.** `OrderConfirmationView` is not
+   ported — Shopify's hosted checkout ends on its own thank-you page, and the
+   Storefront API cannot read an arbitrary order without customer accounts.
 
-### How the cart works
+Also replaced: the Razorpay modal, the name/email/phone form and the ₹120
+delivery rule. Shopify collects the customer, calculates shipping from its own
+rules and takes the payment. Set the free-over-₹2,000 threshold as a Shopify
+shipping rate; `FREE_OVER` in `pages/cut-list.vue` only prints the message.
 
-Shopify's Cart API is used, not the legacy Checkout API. The cart id is kept in
-`localStorage` under `shopify:cartId` and no cart is created until the first
-item is added. Cart state is browser-only — `cart.restore()` is called from
-`onMounted`, and cart UI sits inside `<ClientOnly>` so SSR and static output
-stay cacheable. If Shopify no longer recognises the stored cart (expired, or
-already checked out) the store clears it and starts fresh.
+The ₹20 swatch card expects an ordinary Shopify product with handle
+`swatch-card`; until it exists the button says so.
 
-`cart.goToCheckout()` redirects to Shopify's `checkoutUrl`. You never build a
-payment form.
+## Commands
 
-## 4. Commands
-
-| Command | What it does |
-| --- | --- |
-| `npm run dev` | dev server with HMR at http://localhost:3000 |
+| Command | Does |
+|---|---|
+| `npm run dev` | dev server, HMR |
+| `npm test` | adapter tests |
 | `npm run build` | server build into `.output/` |
-| `npm run preview` | run the built server locally |
 | `npm run generate` | static site into `.output/public/` |
 
-`npm run generate` prerenders `/` and crawls the product and collection links
-it renders, so every linked product gets a static HTML page. Prices and stock
-in that output are frozen at build time — rebuild when catalog data changes.
-
-## Going live later
-
-Nothing in the Shopify or Nuxt code changes when you deploy; only the target
-does.
-
-- **Static host** (Cloudflare Pages, Netlify, Hostinger `public_html`): build
-  command `npm run generate`, publish directory `.output/public`, and set the
-  two `NUXT_PUBLIC_*` variables in the host's build environment (or in `.env`
-  before building, if there is no build step).
-- **Auto-rebuild on catalog changes:** create a build hook on the host, then in
-  Shopify **Settings → Notifications → Webhooks** point *Product create /
-  update / delete* at that hook URL.
-- **Live prices and stock instead of build-time values:** deploy the server
-  build (`npm run build`) to a Node host rather than generating static output.
+`generate` prerenders `/` and crawls the fabric and design links from it.
+Rates and stock in static output are frozen at build time.

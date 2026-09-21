@@ -14,6 +14,9 @@ import { toast } from '~/composables/store'
     <MobileTabs />
     <WhatsAppButton />
 
+    <!-- dev only: names the missing credential when the catalog won't load -->
+    <SetupNotice />
+
     <!-- counter messages: a cancelled checkout, a swatch added -->
     <ClientOnly>
       <Transition name="toast">

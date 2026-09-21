@@ -10,6 +10,10 @@ npm run dev             # http://localhost:3000
 npm test                # the Shopify → fabric translation
 ```
 
+Running `dev` before the credentials are in place is fine: the pages render
+their own empty states, and a notice at the bottom of the screen names the
+variable that is missing. That notice only ever appears under `nuxt dev`.
+
 ## Read this first: cloth is sold in half metres
 
 A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So
@@ -65,14 +69,13 @@ assets/css/base.css design tokens + the global primitives
 test/               guards the Shopify → fabric translation
 ```
 
-Every component and page speaks `fabric` / `designGroups` / `slabs` — the shape
-the Django API already returns. **Changing backend means rewriting
-`loadCatalog()` and `toFabric()` in `catalogStore.js` and nothing else.**
+Every component and page speaks `fabric` / `designGroups` / `slabs`. Shopify's
+own shape stops at `catalogStore.js`, so changing how stock is entered — a new
+metafield, a renamed option — touches that one file and nothing else.
 
-## What Shopify does not carry over
+## Three limits to know about
 
-Three things from the Django/Razorpay build have no clean Shopify equivalent.
-They are live in the UI but **not enforced at checkout**:
+These are live in the UI but **not enforced at checkout**:
 
 1. **Slab pricing is display-only.** `fabric.slabs` renders the rungs and the
    fabric page totals against the selected tier, but Shopify's cart does not
@@ -82,14 +85,14 @@ They are live in the UI but **not enforced at checkout**:
    (Plus). Until then the tier is a quote, not a price.
 2. **Per-shade MOQ is client-side only.** `custom.min_cut` drives the stepper
    floor; nothing stops a crafted cart from going under it.
-3. **Order confirmation is Shopify's page.** `OrderConfirmationView` is not
-   ported — Shopify's hosted checkout ends on its own thank-you page, and the
-   Storefront API cannot read an arbitrary order without customer accounts.
+3. **Order confirmation is Shopify's own page.** Its hosted checkout ends on a
+   thank-you page you don't control, and the Storefront API cannot read an
+   arbitrary order without customer accounts. There is no `/order/…` route here.
 
-Also replaced: the Razorpay modal, the name/email/phone form and the ₹120
-delivery rule. Shopify collects the customer, calculates shipping from its own
-rules and takes the payment. Set the free-over-₹2,000 threshold as a Shopify
-shipping rate; `FREE_OVER` in `pages/cut-list.vue` only prints the message.
+Checkout itself is Shopify's: it collects the customer's name, address and
+payment, and calculates shipping from its own rules. Set the free-over-₹2,000
+threshold as a Shopify shipping rate — `FREE_OVER` in `pages/cut-list.vue`
+only prints the message, it does not price anything.
 
 The ₹20 swatch card expects an ordinary Shopify product with handle
 `swatch-card`; until it exists the button says so.

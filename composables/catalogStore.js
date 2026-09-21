@@ -2,9 +2,9 @@
  * The catalog, in the shape the UI was built against.
  *
  * ── THIS IS THE ONLY FILE THAT KNOWS ABOUT SHOPIFY ──
- * Every view and component below speaks `fabric` / `designGroups` / `slabs`,
- * which is the shape the Django API already returns. Swapping the backend
- * means rewriting `loadCatalog()` and `toFabric()` here and nothing else.
+ * Every view and component below speaks `fabric` / `designGroups` / `slabs`.
+ * Shopify's own shape stops here, so a change to how stock is entered — a new
+ * metafield, a renamed option — is a change to this file and nothing else.
  *
  * How a fabric is expected to be entered in Shopify:
  *
@@ -57,6 +57,8 @@ export const catalog = reactive({
   loaded: false,
   /** set when the fetch failed, so the catalog page can say so plainly */
   failed: false,
+  /** why it failed, in developer terms — shown by SetupNotice under dev only */
+  reason: '',
 })
 
 /** id → { id, name, hex }. Seeded from the table, extended by unlisted shades. */
@@ -247,11 +249,13 @@ export async function loadCatalog() {
       .filter(s => fabrics.some(f => f.shades.includes(s.id)))
     catalog.designs = Object.values(designById)
     catalog.failed = false
+    catalog.reason = ''
     catalog.loaded = true
   }
   catch (err) {
     catalog.failed = true
-    console.error('[catalog] could not load', err)
+    catalog.reason = err?.statusMessage || err?.message || String(err)
+    console.error('[catalog] could not load —', catalog.reason)
   }
 
   return catalog

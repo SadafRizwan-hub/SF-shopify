@@ -2,11 +2,13 @@
 /*
  * The cut list, and the hand-off to checkout.
  *
- * The Razorpay flow this page used to run — collect name/email/phone, create
- * an order through the Django API, open the Razorpay modal, verify the
- * signature — is gone, because Shopify owns checkout now. It collects the
- * customer's details, applies shipping, takes the payment and sends the
- * confirmation itself. This page's job ends at the redirect.
+ * Shopify owns checkout: it collects the customer's details, applies shipping,
+ * takes the payment and sends the confirmation. So this page shows the cuts,
+ * lets them be resized or removed, and ends at the redirect — there is no
+ * payment form here by design, and no order record on this side.
+ *
+ * Every total shown comes from Shopify's own cart, never recomputed locally,
+ * so what the shopper reads here is what the next screen charges.
  */
 import { computed } from 'vue'
 import FabricSurface from '~/components/FabricSurface.vue'

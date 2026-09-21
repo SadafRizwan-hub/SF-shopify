@@ -14,6 +14,27 @@ Running `dev` before the credentials are in place is fine: the pages render
 their own empty states, and a notice at the bottom of the screen names the
 variable that is missing. That notice only ever appears under `nuxt dev`.
 
+## Getting the two credentials
+
+Use the **Headless** sales channel (Shopify admin → left nav → Headless; add
+it from the Sales channels list if it isn't there):
+
+1. Create a storefront in that channel.
+2. Open **Storefront API** on it.
+3. Copy the **public access token** into `NUXT_PUBLIC_SHOPIFY_TOKEN`.
+4. `NUXT_PUBLIC_SHOPIFY_DOMAIN` is your `*.myshopify.com` domain — the
+   permanent one from Settings → Domains, not a custom domain.
+
+The public token is read/cart scoped and is meant to ship in frontend code.
+Never put the **private** token or an Admin API token in this project.
+
+A custom app with `unauthenticated_*` scopes works too, but the Headless
+channel already grants the right scopes, so prefer it.
+
+**Every product must be published to the Headless channel** or the Storefront
+API returns an empty catalogue with no error. This is the most common reason
+the catalog looks empty when the credentials are correct.
+
 ## Read this first: cloth is sold in half metres
 
 A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So

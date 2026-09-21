@@ -1,0 +1,23 @@
+# Nuxt
+.nuxt
+.output
+.data
+.nitro
+.cache
+dist
+
+# deps
+node_modules
+
+# env — never commit real tokens
+.env
+.env.*
+!.env.example
+
+# logs / editor / os
+*.log
+npm-debug.log*
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json

@@ -10,18 +10,14 @@
 {%- endcomment -%}
 {%- liquid
   assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
-  assign design_names = 'design,designs,pattern,patterns' | split: ','
 -%}
 <div class="panel">
   {%- for filter in collection.filters -%}
     {%- liquid
       assign key = filter.label | strip | downcase
       assign is_shade = false
-      assign is_design = false
       if shade_names contains key
         assign is_shade = true
-      elsif design_names contains key
-        assign is_design = true
       endif
     -%}
 

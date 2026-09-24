@@ -149,6 +149,30 @@ This theme is built to sit *beside* a headless front, not instead of it.
   a JSON body — parse them, don't content-sniff them. Turn the setting off to
   stop serving them.
 
+## Validating a change
+
+The theme passes `shopify theme check` with no errors. Run it before pushing:
+
+```bash
+cd theme
+shopify theme check
+```
+
+Three `RemoteAsset` warnings remain and are deliberate: the wordmark serif and
+the body sans are loaded from Google Fonts, exactly as the headless storefront
+loads them, so the two fronts render identically. Turn them off in **Theme
+settings → Type** to fall back to the local stacks and drop the third-party
+request.
+
+Two Liquid rules this theme keeps tripping over, noted so the next change
+doesn't reintroduce them:
+
+- **Filters are not allowed on `{% render %}` arguments.** Assign first, pass
+  the result.
+- **An index cannot carry a filter** — `options[shade_pos | minus: 1]` is a
+  syntax error. Worse, a negative index reads the *last* element rather than
+  nothing, so `shade_i` is only ever indexed inside an `if shade_pos > 0`.
+
 ## Layout
 
 ```

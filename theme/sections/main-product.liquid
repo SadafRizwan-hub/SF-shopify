@@ -28,12 +28,17 @@
     endif
   endfor
 
+  assign shade_i = shade_pos | minus: 1
+  assign design_i = design_pos | minus: 1
+
   assign current = product.selected_or_first_available_variant
+  assign active_design = ''
+  assign active_shade = ''
   if design_pos > 0
-    assign active_design = current.options[design_pos | minus: 1]
+    assign active_design = current.options[design_i]
   endif
   if shade_pos > 0
-    assign active_shade = current.options[shade_pos | minus: 1]
+    assign active_shade = current.options[shade_i]
   endif
 
   assign subtitle = product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 120
@@ -72,9 +77,10 @@
       {%- capture overlay -%}
         {%- if section.settings.show_scale -%}<span class="scale">&#8600; True scale 1:1</span>{%- endif -%}
       {%- endcapture -%}
+      {%- assign hero_image = current.featured_image | default: product.featured_image -%}
       <div data-gallery-main>
         {% render 'fabric-surface',
-          image: current.featured_image | default: product.featured_image,
+          image: hero_image,
           alt: product.title,
           ratio: '4 / 5',
           sizes: '(max-width: 900px) 100vw, 50vw',
@@ -127,10 +133,10 @@
                 assign in_group = false
                 assign sellable = false
                 for variant in product.variants
-                  if variant.options[shade_pos | minus: 1] != value
+                  if variant.options[shade_i] != value
                     continue
                   endif
-                  if design_pos > 0 and variant.options[design_pos | minus: 1] != active_design
+                  if design_pos > 0 and variant.options[design_i] != active_design
                     continue
                   endif
                   assign in_group = true
@@ -180,7 +186,7 @@
                 assign book = collections[book_handle]
                 assign shade_total = 0
                 for variant in product.variants
-                  if variant.options[design_pos | minus: 1] == value
+                  if variant.options[design_i] == value
                     assign shade_total = shade_total | plus: 1
                   endif
                 endfor

@@ -6,8 +6,9 @@
     {%- for collection in collections -%}
       {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
       <a class="card" href="{{ collection.url }}">
-        {% render 'fabric-surface',
-          image: collection.image | default: collection.products.first.featured_image,
+        {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
+      {% render 'fabric-surface',
+          image: book_image,
           alt: collection.title,
           ratio: '4 / 3',
           sizes: '(max-width: 700px) 50vw, 25vw' %}

@@ -52,8 +52,9 @@
 
     <div class="split">
       <div class="visual">
-        {% render 'fabric-surface',
-          image: collection.image | default: collection.products.first.featured_image,
+        {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
+      {% render 'fabric-surface',
+          image: book_image,
           alt: collection.title,
           ratio: '4 / 3',
           sizes: '(max-width: 900px) 100vw, 50vw' %}

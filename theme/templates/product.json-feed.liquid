@@ -29,6 +29,9 @@
     endif
   endfor
 
+  assign shade_i = shade_pos | minus: 1
+  assign design_i = design_pos | minus: 1
+
   assign metres = 0
   for variant in product.variants
     if variant.inventory_quantity > 0
@@ -77,9 +80,9 @@
           "shadeStock": {
             {%- assign first_row = true -%}
             {%- for variant in product.variants -%}
-              {%- if variant.options[design_pos | minus: 1] != value -%}{%- continue -%}{%- endif -%}
+              {%- if variant.options[design_i] != value -%}{%- continue -%}{%- endif -%}
               {%- if shade_pos > 0 -%}
-                {%- assign shade_key = variant.options[shade_pos | minus: 1] | handle -%}
+                {%- assign shade_key = variant.options[shade_i] | handle -%}
               {%- else -%}
                 {%- assign shade_key = 'plain' -%}
               {%- endif -%}
@@ -104,7 +107,7 @@
           {%- assign first_row = true -%}
           {%- for variant in product.variants -%}
             {%- if shade_pos > 0 -%}
-              {%- assign shade_key = variant.options[shade_pos | minus: 1] | handle -%}
+              {%- assign shade_key = variant.options[shade_i] | handle -%}
             {%- else -%}
               {%- assign shade_key = 'plain' -%}
             {%- endif -%}

@@ -12,7 +12,17 @@
   unless source.products.size > 0
     assign source = collections.all
   endunless
-  assign hero = source.products.first
+  # "New this week" means the newest thing on the shelf, not whatever sorts
+  # first alphabetically. Same 50-product caveat as the grid below it.
+  assign items = source.products
+  if section.settings.order != 'collection'
+    assign items = items | sort: 'created_at' | reverse
+  endif
+  # never let the re-sort be the reason a shelf looks empty
+  if items.size == 0
+    assign items = source.products
+  endif
+  assign hero = items.first
   assign qualities = collections.all.products_count
 
   assign hero_image = section.settings.image
@@ -60,18 +70,62 @@
 {
   "name": "Hero",
   "settings": [
-    { "type": "collection", "id": "collection", "label": "Lead from this collection" },
-    { "type": "image_picker", "id": "image", "label": "Fallback photograph" },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Lead from this collection"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Fallback photograph"
+    },
     {
       "type": "checkbox",
       "id": "prefer_product_photo",
       "label": "Use the lead product's own photo",
       "default": true
     },
-    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "New this week" },
-    { "type": "text", "id": "heading_tail", "label": "Second line", "default": "cut to your metre" },
-    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
-    { "type": "text", "id": "empty_heading", "label": "Heading with an empty shelf", "default": "Wholesale cloth," },
+    {
+      "type": "select",
+      "id": "order",
+      "label": "Order",
+      "info": "Newest first reads the newest of the products Liquid exposes (50). Past that, point this at a collection whose own sort order is 'Newest first'.",
+      "default": "newest",
+      "options": [
+        {
+          "value": "newest",
+          "label": "Newest first"
+        },
+        {
+          "value": "collection",
+          "label": "The collection's own order"
+        }
+      ]
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow",
+      "default": "New this week"
+    },
+    {
+      "type": "text",
+      "id": "heading_tail",
+      "label": "Second line",
+      "default": "cut to your metre"
+    },
+    {
+      "type": "url",
+      "id": "catalog_url",
+      "label": "Catalog link"
+    },
+    {
+      "type": "text",
+      "id": "empty_heading",
+      "label": "Heading with an empty shelf",
+      "default": "Wholesale cloth,"
+    },
     {
       "type": "textarea",
       "id": "empty_body",
@@ -79,6 +133,10 @@
       "default": "Cut fresh off the than at the wholesale rate, in half-metre steps. The counter is open — the catalog goes up here as stock lands."
     }
   ],
-  "presets": [{ "name": "Hero" }]
+  "presets": [
+    {
+      "name": "Hero"
+    }
+  ]
 }
 {% endschema %}

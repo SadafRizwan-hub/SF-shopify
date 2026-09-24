@@ -156,6 +156,17 @@ This theme is built to sit *beside* a headless front, not instead of it.
   a JSON body — parse them, don't content-sniff them. Turn the setting off to
   stop serving them.
 
+## What the home page shows
+
+The hero and *By the metre* read **newest first** by default, so a quality
+entered at the counter today is the first thing on the page. Both have an
+**Order** setting if you would rather keep a collection's own order.
+
+Liquid hands a theme at most 50 products outside a paginated loop, so
+"newest first" is the newest of those 50. Past that size, point the section at
+a collection whose own sort order is *Newest first* in the admin — Shopify
+then does the sorting and the cap stops mattering.
+
 ## Validating a change
 
 The theme passes `shopify theme check` with no errors. Run it before pushing:

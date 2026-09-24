@@ -46,6 +46,16 @@
         --ink: {{ settings.col_ink }};
         --ink-70: {{ settings.col_ink | color_modify: 'alpha', 0.70 }};
         --ink-45: {{ settings.col_ink | color_modify: 'alpha', 0.45 }};
+
+        /* Translucent surfaces. Generated here rather than with CSS
+           color-mix(): an unsupported color-mix() makes the whole background
+           declaration invalid, which leaves the sticky header transparent and
+           its links sitting unreadably on top of the page. */
+        --paper-90: {{ settings.col_paper | color_modify: 'alpha', 0.90 }};
+        --paper-94: {{ settings.col_paper | color_modify: 'alpha', 0.94 }};
+        --paper-95: {{ settings.col_paper | color_modify: 'alpha', 0.95 }};
+        --ivory-90: {{ settings.col_ivory | color_modify: 'alpha', 0.90 }};
+        --ivory-92: {{ settings.col_ivory | color_modify: 'alpha', 0.92 }};
         --terracotta: {{ settings.col_terracotta }};
         --brass: {{ settings.col_brass }};
 

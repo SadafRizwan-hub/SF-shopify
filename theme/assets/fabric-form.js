@@ -12,6 +12,34 @@
   var root = document.querySelector('[data-fabric-page]');
   if (!root) return;
 
+  /*
+   * The gallery is wired first and on its own, because everything below it
+   * depends on a JSON payload Liquid writes — and a single Liquid error in
+   * that payload used to take the thumbnails down with the rest of the page.
+   * Switching photographs is not worth that coupling.
+   */
+  var galleryMain = root.querySelector('[data-gallery-main]');
+
+  /* The surface serves a srcset, so the browser picks from that and ignores a
+     changed src. Clearing it is what actually swaps the photograph. */
+  function showPhoto(url) {
+    if (!galleryMain || !url) return;
+    var img = galleryMain.querySelector('img');
+    if (!img) return;
+    img.removeAttribute('srcset');
+    img.removeAttribute('sizes');
+    img.src = url;
+  }
+
+  root.addEventListener('click', function (event) {
+    var thumb = event.target.closest('[data-src]');
+    if (!thumb) return;
+    showPhoto(thumb.getAttribute('data-src'));
+    root.querySelectorAll('[data-src]').forEach(function (other) {
+      other.setAttribute('aria-current', other === thumb ? 'true' : 'false');
+    });
+  });
+
   var payload = root.querySelector('[data-fabric-json]');
   if (!payload) return;
 
@@ -49,7 +77,6 @@
     designChosen: root.querySelector('[data-design-chosen]'),
     tierLabel: root.querySelector('[data-tier-label]'),
     slabline: root.querySelector('[data-slabline]'),
-    galleryMain: root.querySelector('[data-gallery-main]'),
     minus: root.querySelector('[data-step="-1"]')
   };
 
@@ -229,9 +256,10 @@
       }
     }
 
-    if (variant && variant.image && el.galleryMain) {
-      var img = el.galleryMain.querySelector('img');
-      if (img && img.src !== variant.image) img.src = variant.image;
+    /* a shade with its own photograph moves the gallery to it */
+    if (variant && variant.image) {
+      var shown = galleryMain && galleryMain.querySelector('img');
+      if (shown && shown.src !== variant.image) showPhoto(variant.image);
     }
 
     /* keep the address bar on the variant being read, so a shared link opens
@@ -294,14 +322,6 @@
       return;
     }
 
-    var thumb = event.target.closest('[data-src]');
-    if (thumb && el.galleryMain) {
-      var main = el.galleryMain.querySelector('img');
-      if (main) main.src = thumb.getAttribute('data-src');
-      root.querySelectorAll('[data-src]').forEach(function (other) {
-        other.setAttribute('aria-current', other === thumb ? 'true' : 'false');
-      });
-    }
   });
 
   if (el.slabline) el.slabline.dataset.retail = el.slabline.textContent.trim();

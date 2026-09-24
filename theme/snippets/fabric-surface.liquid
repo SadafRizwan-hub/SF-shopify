@@ -5,24 +5,22 @@
   Renders the photograph of a real product. There is deliberately no woven
   texture stand-in: a CSS weave is a picture of cloth nobody photographed, and
   it reads as stock we hold. Until the photo is there the surface stays an
-  empty ground with the fabric's own line on it — plainly nothing, rather than
-  a fake pattern.
+  empty ground with the fabric's own line on it.
+
+  The srcset is built by hand rather than with image_tag, and never asks for a
+  width the source does not have. image_tag's `widths` on a small image is one
+  of the ways a Liquid error ends up printed into the page — and when that
+  happens inside the product page's JSON payload it takes the whole gallery
+  down with it.
 {%- endcomment -%}
 {%- liquid
   assign ratio = ratio | default: '1 / 1'
   assign sizes = sizes | default: '(max-width: 700px) 50vw, 25vw'
-  assign alt_text = alt | default: image.alt | escape
+  assign loading = loading | default: 'lazy'
 -%}
 <div class="surface" style="aspect-ratio: {{ ratio }};">
   {%- if image -%}
-    {{ image
-      | image_url: width: 1200
-      | image_tag:
-        loading: 'lazy',
-        sizes: sizes,
-        widths: '180,360,540,720,900,1200',
-        alt: alt_text
-    }}
+    {% render 'responsive-img', image: image, alt: alt, sizes: sizes, loading: loading %}
   {%- else -%}
     <div class="blank">
       {%- if caption != blank -%}<span class="hand">{{ caption }}</span>{%- endif -%}

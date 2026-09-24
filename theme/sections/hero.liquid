@@ -34,9 +34,12 @@
 -%}
 <section class="hero">
   {%- if hero_image -%}
-    {{ hero_image
-      | image_url: width: 2200
-      | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '100vw', widths: '600,900,1200,1600,2200', alt: shop.name }}
+    {% render 'responsive-img',
+      image: hero_image,
+      alt: shop.name,
+      sizes: '100vw',
+      loading: 'eager',
+      fetchpriority: 'high' %}
   {%- endif -%}
   <div class="veil"></div>
 

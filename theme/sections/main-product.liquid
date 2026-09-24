@@ -93,7 +93,7 @@
 
       {%- if product.images.size > 1 -%}
         <div class="thumbs" data-gallery-thumbs>
-          {%- for image in product.images limit: 8 -%}
+          {%- for image in product.images -%}
             <button type="button" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-src="{{ image | image_url: width: 1200 }}" aria-label="View image {{ forloop.index }}">
               <img src="{{ image | image_url: width: 160 }}" alt="{{ image.alt | escape }}" width="62" height="62" loading="lazy">
             </button>
@@ -194,7 +194,11 @@
               <div class="designcard{% if value == active_design %} on{% endif %}" data-design-card="{{ value | escape }}">
                 <button type="button" class="dpick" data-design="{{ value | escape }}" aria-pressed="{% if value == active_design %}true{% else %}false{% endif %}">
                   <span class="dthumb">
-                    {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1' %}
+                    {%- if book.image -%}
+                      {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1', sizes: '52px' %}
+                    {%- else -%}
+                      <span class="surface" style="aspect-ratio: 1 / 1;"><span class="blank"></span></span>
+                    {%- endif -%}
                   </span>
                   <span class="dtext">
                     <b>{{ book.title | default: value }}</b>
@@ -354,7 +358,7 @@
             "price": {{ variant.price }},
             "options": {{ variant.options | json }},
             "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
-            "image": {{ variant.featured_image | image_url: width: 1200 | json }}
+            "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1200 | json }}{% else %}null{% endif %}
           }{% unless forloop.last %},{% endunless %}
         {%- endfor -%}
       ]

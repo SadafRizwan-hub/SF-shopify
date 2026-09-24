@@ -1,0 +1,32 @@
+{%- comment -%}
+  Usage: {% render 'fabric-surface', image: product.featured_image, alt: '…',
+                                     ratio: '3 / 4', caption: fabric_sub %}
+
+  Renders the photograph of a real product. There is deliberately no woven
+  texture stand-in: a CSS weave is a picture of cloth nobody photographed, and
+  it reads as stock we hold. Until the photo is there the surface stays an
+  empty ground with the fabric's own line on it — plainly nothing, rather than
+  a fake pattern.
+{%- endcomment -%}
+{%- liquid
+  assign ratio = ratio | default: '1 / 1'
+  assign sizes = sizes | default: '(max-width: 700px) 50vw, 25vw'
+  assign alt_text = alt | default: image.alt | escape
+-%}
+<div class="surface" style="aspect-ratio: {{ ratio }};">
+  {%- if image -%}
+    {{ image
+      | image_url: width: 1200
+      | image_tag:
+        loading: 'lazy',
+        sizes: sizes,
+        widths: '180,360,540,720,900,1200',
+        alt: alt_text
+    }}
+  {%- else -%}
+    <div class="blank">
+      {%- if caption != blank -%}<span class="hand">{{ caption }}</span>{%- endif -%}
+    </div>
+  {%- endif -%}
+  {{ overlay }}
+</div>

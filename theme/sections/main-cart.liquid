@@ -1,0 +1,174 @@
+{%- comment -%}
+  The cut list, and the hand-off to checkout.
+
+  Shopify owns checkout: it collects the customer's details, applies shipping,
+  takes the payment and sends the confirmation. So this page shows the cuts,
+  lets them be resized or removed, and ends at the checkout button — there is
+  no payment form here by design.
+
+  Every total shown comes from the cart itself, never recomputed locally, so
+  what the shopper reads here is what the next screen charges.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+
+  assign total_metres = 0
+  for line in cart.items
+    assign total_metres = line.quantity | times: unit | plus: total_metres
+  endfor
+
+  assign free_over = settings.free_delivery_over | times: 100
+  assign to_free = free_over | minus: cart.total_price
+
+  assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+-%}
+
+<div class="shell page cutlist">
+  <header class="top">
+    <div>
+      <h1>{{ section.settings.heading | default: 'Cut list' }}</h1>
+      <p class="meta">
+        {{ cart.item_count }} {% if cart.item_count == 1 %}unit{% else %}units{% endif %} &middot;
+        {{ total_metres }} m to be cut
+      </p>
+    </div>
+  </header>
+
+  {%- if cart.item_count == 0 -%}
+    <div class="empty">
+      <h3>Nothing on the list yet</h3>
+      <p class="meta">Pick a quality, choose a shade, set your metres — it collects here.</p>
+      <a class="btn btn-primary" href="{{ section.settings.catalog_url | default: routes.all_products_collection_url }}">Open the catalog</a>
+    </div>
+  {%- else -%}
+    <form action="{{ routes.cart_url }}" method="post" novalidate>
+      <div class="split">
+        <section class="lines">
+          {%- for line in cart.items -%}
+            {%- liquid
+              assign metres = line.quantity | times: unit
+              assign per_metre = line.variant.price | times: factor | round
+
+              assign shade = ''
+              assign design = ''
+              for option in line.options_with_values
+                assign key = option.name | strip | downcase
+                if shade_names contains key
+                  assign shade = option.value
+                elsif design_names contains key
+                  assign design = option.value
+                endif
+              endfor
+
+              assign slabs = line.product.metafields.custom.price_slabs.value
+              assign on_slab = false
+              if slabs != blank and slabs.size > 0
+                assign first_rung = slabs.first
+                if metres >= first_rung.from
+                  assign on_slab = true
+                endif
+              endif
+
+              assign less = line.quantity | minus: 1
+              assign more = line.quantity | plus: 1
+            -%}
+            <article class="line">
+              <a class="lthumb" href="{{ line.url }}">
+                {% render 'fabric-surface', image: line.image, alt: line.product.title, ratio: '1 / 1', sizes: '92px' %}
+              </a>
+
+              <div class="ltext">
+                <h3><a href="{{ line.url }}">{{ line.product.title }}</a></h3>
+                <p class="meta">
+                  {%- if shade != blank -%}
+                    {%- capture hex %}{% render 'shade-hex', name: shade %}{% endcapture -%}
+                    <span class="sw" style="background: {{ hex | strip }};"></span>{{ shade }}
+                  {%- endif -%}
+                  {%- if design != blank %} &middot; {{ design }}{% endif -%}
+                  {%- if line.product.metafields.custom.width.value != blank %} &middot; {{ line.product.metafields.custom.width.value }}{% endif -%}
+                </p>
+                <p class="meta unit">
+                  {{ per_metre | money }}/m
+                  {%- if on_slab %}<span class="slab">slab rate</span>{% endif -%}
+                </p>
+              </div>
+
+              <div class="lqty">
+                {%- comment -%}
+                  A cart line quantity is whole cut units; the metres beside it
+                  are those units times the cut unit. Plain links, so the list
+                  is usable before a line of JavaScript runs.
+                {%- endcomment -%}
+                <div class="stepper">
+                  <a
+                    class="{% if line.quantity <= 1 %}off{% endif %}"
+                    href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ less }}"
+                    aria-label="Less"
+                  >&minus;</a>
+                  <span class="m">{{ metres }} m</span>
+                  <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ more }}" aria-label="More">+</a>
+                </div>
+                <p class="rate">{{ line.final_line_price | money }}</p>
+                <a class="remove" href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity=0">Remove</a>
+              </div>
+            </article>
+          {%- endfor -%}
+        </section>
+
+        <aside class="summary">
+          <h2>Order summary</h2>
+          <dl>
+            <div>
+              <dt>Cloth ({{ total_metres }} m)</dt>
+              <dd>{{ cart.items_subtotal_price | money }}</dd>
+            </div>
+            {%- if cart.cart_level_discount_applications.size > 0 -%}
+              {%- for discount in cart.cart_level_discount_applications -%}
+                <div><dt>{{ discount.title }}</dt><dd>&minus;{{ discount.total_allocated_amount | money }}</dd></div>
+              {%- endfor -%}
+            {%- endif -%}
+            <div><dt>Delivery</dt><dd>At checkout</dd></div>
+            {%- if settings.free_delivery_over > 0 and to_free > 0 -%}
+              <div class="hint">
+                <dt>Free over {{ free_over | money }}</dt>
+                <dd>{{ to_free | money }} to go</dd>
+              </div>
+            {%- endif -%}
+            <div class="grand"><dt>Subtotal</dt><dd>{{ cart.total_price | money }}</dd></div>
+          </dl>
+
+          {%- if section.settings.show_note -%}
+            <label class="visually-hidden" for="cart-note">Note for the counter</label>
+            <textarea id="cart-note" name="note" placeholder="Anything the counter should know">{{ cart.note }}</textarea>
+          {%- endif -%}
+
+          <button type="submit" name="checkout" class="btn btn-primary wide">
+            {{ section.settings.checkout_label | default: 'Place the cut order' }}
+          </button>
+
+          <p class="fine">{{ section.settings.fine_print }}</p>
+        </aside>
+      </div>
+    </form>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Cut list",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Cut list" },
+    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
+    { "type": "text", "id": "checkout_label", "label": "Checkout button", "default": "Place the cut order" },
+    { "type": "checkbox", "id": "show_note", "label": "Show the note box", "default": true },
+    {
+      "type": "textarea",
+      "id": "fine_print",
+      "label": "Fine print",
+      "default": "Your name, address and payment are taken on the next screen. Cut fresh off the than in half-metre steps, dispatched the same evening; cut cloth is not returnable, so order the swatch card first."
+    }
+  ]
+}
+{% endschema %}

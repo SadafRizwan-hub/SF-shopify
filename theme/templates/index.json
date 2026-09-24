@@ -1,0 +1,62 @@
+{
+  "sections": {
+    "hero": {
+      "type": "hero",
+      "settings": {
+        "eyebrow": "New this week",
+        "heading_tail": "cut to your metre",
+        "prefer_product_photo": true,
+        "empty_heading": "Wholesale cloth,",
+        "empty_body": "Cut fresh off the than at the wholesale rate, in half-metre steps. The counter is open — the catalog goes up here as stock lands."
+      }
+    },
+    "qualities": {
+      "type": "quality-chips",
+      "settings": { "heading": "Shop by quality", "link_label": "See the full catalog" }
+    },
+    "by-the-metre": {
+      "type": "featured-fabrics",
+      "settings": { "heading": "By the metre", "count": 8, "columns": 4, "link_label": "See all" }
+    },
+    "designs": {
+      "type": "design-book-row",
+      "settings": {
+        "heading": "One design, many grounds",
+        "body": "The design book sits across qualities — pick the drawing first, then choose which cloth it should be printed on.",
+        "count": 6,
+        "link_label": "All designs"
+      }
+    },
+    "promise": {
+      "type": "counter-promise",
+      "blocks": {
+        "slabs": {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Wholesale rates on",
+            "heading": "Slab pricing past 10 metres",
+            "body": "Cross the slab and the rate drops on the whole cut — no negotiation, the app shows it before you order."
+          }
+        },
+        "swatch": {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Swatch first",
+            "heading": "Swatch before you commit",
+            "body": "Screen colour cannot be trusted. Order the shade card, hold it to your light, then order the than."
+          }
+        },
+        "cut": {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Cut to order",
+            "heading": "Half-metre increments",
+            "body": "Cut fresh off the than, folded and dispatched the same evening from Kalbadevi."
+          }
+        }
+      },
+      "block_order": ["slabs", "swatch", "cut"]
+    }
+  },
+  "order": ["hero", "qualities", "by-the-metre", "designs", "promise"]
+}

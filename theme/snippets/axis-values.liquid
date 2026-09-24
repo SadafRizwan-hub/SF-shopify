@@ -1,0 +1,21 @@
+{%- comment -%}
+  Usage: {% render 'axis-values', product: product, axis: 'shade' %}
+  Echoes the option values on that axis, comma separated. Nothing when the
+  product has no such option — a plain dyed cloth with a single colour is a
+  product with no Shade option, and reads as one value below.
+{%- endcomment -%}
+{%- liquid
+  capture axis_name
+    render 'axis-name', product: product, axis: axis
+  endcapture
+  assign axis_name = axis_name | strip
+
+  if axis_name != blank
+    for option in product.options_with_values
+      if option.name == axis_name
+        echo option.values | join: ','
+        break
+      endif
+    endfor
+  endif
+-%}

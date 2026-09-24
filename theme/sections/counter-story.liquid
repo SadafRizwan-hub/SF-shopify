@@ -1,0 +1,79 @@
+{%- comment -%}
+  The shop's own copy, in the two-column rhythm the about page uses. Blocks,
+  so the counter can rewrite it without a developer.
+{%- endcomment -%}
+<div class="shell prose">
+  <header class="top">
+    {%- if section.settings.eyebrow != blank -%}<span class="label">{{ section.settings.eyebrow }}</span>{%- endif -%}
+    <h1>{{ section.settings.heading }}</h1>
+    {%- if section.settings.lede != blank -%}<p class="lede">{{ section.settings.lede }}</p>{%- endif -%}
+  </header>
+
+  {%- assign images = 0 -%}
+  {%- capture strip -%}
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'photo' and block.settings.image -%}
+        {%- assign images = images | plus: 1 -%}
+        {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: block.settings.alt, sizes: '33vw', widths: '300,600,900' }}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- if images > 0 -%}<div class="strip">{{ strip }}</div>{%- endif -%}
+
+  <div class="cols">
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'column' -%}
+        <section {{ block.shopify_attributes }}{% if block.settings.anchor != blank %} id="{{ block.settings.anchor }}"{% endif %}>
+          <h2>{{ block.settings.heading }}</h2>
+          <p>{{ block.settings.body }}</p>
+        </section>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+
+  {%- if section.settings.primary_url != blank or section.settings.secondary_url != blank -%}
+    <div class="cta">
+      {%- if section.settings.primary_url != blank -%}
+        <a class="btn btn-primary" href="{{ section.settings.primary_url }}">{{ section.settings.primary_label }}</a>
+      {%- endif -%}
+      {%- if section.settings.secondary_url != blank -%}
+        <a class="btn btn-ghost" href="{{ section.settings.secondary_url }}">{{ section.settings.secondary_label }}</a>
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "The counter",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "Kalbadevi, Mumbai · since 1974" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Three generations behind one counter" },
+    { "type": "textarea", "id": "lede", "label": "Lede" },
+    { "type": "url", "id": "primary_url", "label": "Primary link" },
+    { "type": "text", "id": "primary_label", "label": "Primary label", "default": "Browse the catalog" },
+    { "type": "url", "id": "secondary_url", "label": "Secondary link" },
+    { "type": "text", "id": "secondary_label", "label": "Secondary label", "default": "See the design book" }
+  ],
+  "blocks": [
+    {
+      "type": "photo",
+      "name": "Photograph",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Image" },
+        { "type": "text", "id": "alt", "label": "Alt text" }
+      ]
+    },
+    {
+      "type": "column",
+      "name": "Column",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "textarea", "id": "body", "label": "Body" },
+        { "type": "text", "id": "anchor", "label": "Anchor id", "info": "So a footer link can point straight at this column." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "The counter" }]
+}
+{% endschema %}

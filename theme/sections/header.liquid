@@ -1,0 +1,70 @@
+{%- liquid
+  assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
+  assign designs_url = section.settings.designs_url
+  assign about_url = section.settings.about_url
+  assign shortlist_url = section.settings.shortlist_url
+  assign path = request.path
+-%}
+<header class="bar">
+  <div class="shell inner">
+    <a class="brand" href="{{ routes.root_url }}">
+      <span class="mark">SF</span>
+      <span class="word">{{ section.settings.wordmark | default: shop.name }}</span>
+      <span class="wordmob">{{ section.settings.wordmark | default: shop.name }}</span>
+    </a>
+
+    <nav class="nav">
+      <a href="{{ routes.root_url }}"{% if path == routes.root_url %} class="on"{% endif %}>Home</a>
+      <a href="{{ catalog_url }}"{% if request.page_type == 'collection' or request.page_type == 'product' or request.page_type == 'list-collections' %} class="on"{% endif %}>Catalog</a>
+      {%- if designs_url != blank -%}
+        <a href="{{ designs_url }}"{% if path == designs_url %} class="on"{% endif %}>Designs</a>
+      {%- endif -%}
+      {%- if about_url != blank -%}
+        <a href="{{ about_url }}"{% if path == about_url %} class="on"{% endif %}>{{ section.settings.about_label | default: 'The shop' }}</a>
+      {%- endif -%}
+    </nav>
+
+    <div class="tools">
+      <form class="search" action="{{ routes.search_url }}" method="get" role="search">
+        <label class="visually-hidden" for="header-search">Search the catalog</label>
+        {% render 'icon', name: 'search', size: 15 %}
+        <input
+          id="header-search"
+          type="search"
+          name="q"
+          value="{{ search.terms | escape }}"
+          placeholder="{{ 'general.search.placeholder' | t }}"
+          autocomplete="off"
+        >
+        <input type="hidden" name="type" value="product">
+      </form>
+
+      {%- if shortlist_url != blank -%}
+        <a class="icon" href="{{ shortlist_url }}" title="Shortlist" aria-label="Shortlist">
+          {% render 'icon', name: 'heart' %}
+          <span class="pip" data-shortlist-count hidden>0</span>
+        </a>
+      {%- endif -%}
+
+      <a class="icon cut" href="{{ routes.cart_url }}" title="Cut list" aria-label="Cut list">
+        {% render 'icon', name: 'list' %}
+        <span class="pip" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
+      </a>
+    </div>
+  </div>
+</header>
+
+{% schema %}
+{
+  "name": "Header",
+  "settings": [
+    { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Singhania Fabrics" },
+    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
+    { "type": "url", "id": "designs_url", "label": "Design book link" },
+    { "type": "url", "id": "about_url", "label": "The shop link" },
+    { "type": "text", "id": "about_label", "label": "The shop label", "default": "The shop" },
+    { "type": "url", "id": "shortlist_url", "label": "Shortlist link" }
+  ],
+  "enabled_on": { "templates": ["*"] }
+}
+{% endschema %}

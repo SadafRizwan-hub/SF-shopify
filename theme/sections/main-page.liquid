@@ -1,0 +1,18 @@
+<div class="shell prose">
+  <header class="top">
+    {%- if section.settings.eyebrow != blank -%}
+      <span class="label">{{ section.settings.eyebrow }}</span>
+    {%- endif -%}
+    <h1>{{ page.title }}</h1>
+  </header>
+  <div class="rte">{{ page.content }}</div>
+</div>
+
+{% schema %}
+{
+  "name": "Page",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow" }
+  ]
+}
+{% endschema %}

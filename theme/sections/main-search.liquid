@@ -1,0 +1,56 @@
+{%- paginate search.results by section.settings.per_page -%}
+  <div class="shell page">
+    <header class="top">
+      <div>
+        <h1>{{ 'general.search.heading' | t }}</h1>
+        {%- if search.performed -%}
+          <p class="meta">{{ 'general.search.results_with_count' | t: count: search.results_count }} for &ldquo;{{ search.terms }}&rdquo;</p>
+        {%- endif -%}
+      </div>
+      <div class="topright">
+        <form class="msearch" action="{{ routes.search_url }}" method="get" role="search" style="display:block">
+          <label class="visually-hidden" for="search-terms">Search</label>
+          <input id="search-terms" type="search" name="q" value="{{ search.terms | escape }}" placeholder="{{ 'general.search.placeholder' | t }}">
+          <input type="hidden" name="type" value="product">
+        </form>
+      </div>
+    </header>
+
+    {%- if search.performed and search.results_count > 0 -%}
+      <div class="grid" style="--cols: {{ section.settings.columns }};">
+        {%- for item in search.results -%}
+          {%- if item.object_type == 'product' -%}
+            {% render 'fabric-card', product: item %}
+          {%- endif -%}
+        {%- endfor -%}
+      </div>
+
+      {%- if paginate.pages > 1 -%}
+        <nav class="pager" aria-label="{{ 'general.pagination.label' | t }}">
+          {%- for part in paginate.parts -%}
+            {%- if part.is_link -%}
+              <a href="{{ part.url }}">{{ part.title }}</a>
+            {%- else -%}
+              <span{% if part.title == paginate.current_page %} class="on"{% endif %}>{{ part.title }}</span>
+            {%- endif -%}
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
+    {%- elsif search.performed -%}
+      <div class="empty">
+        <h3>{{ 'general.search.no_results' | t }}</h3>
+        <p class="meta">Try a quality, a shade or a width — or ask the counter, we hold more in the godown than in the app.</p>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Search",
+  "settings": [
+    { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 5, "step": 1, "default": 4 },
+    { "type": "range", "id": "per_page", "label": "Results per page", "min": 8, "max": 48, "step": 4, "default": 24 }
+  ]
+}
+{% endschema %}

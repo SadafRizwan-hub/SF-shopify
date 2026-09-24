@@ -1,0 +1,21 @@
+{%- comment -%}
+  Usage: {% render 'axis-name', product: product, axis: 'shade' %}
+  Echoes the product option name that carries the given axis, or nothing.
+  The admin may have typed "Shade", "Colour" or "Color"; the views should not
+  have to care which.
+{%- endcomment -%}
+{%- liquid
+  if axis == 'shade'
+    assign wanted = 'shade,shades,colour,colours,color,colors' | split: ','
+  else
+    assign wanted = 'design,designs,pattern,patterns' | split: ','
+  endif
+
+  for option in product.options_with_values
+    assign key = option.name | strip | downcase
+    if wanted contains key
+      echo option.name
+      break
+    endif
+  endfor
+-%}

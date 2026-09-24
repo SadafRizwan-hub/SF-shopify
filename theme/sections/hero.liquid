@@ -1,0 +1,81 @@
+{%- comment -%}
+  The hero sells the first product the admin has arranged in the chosen
+  collection, using its own photo, name and rate. With an empty collection it
+  keeps the shop photograph and drops the product line and the shop-this
+  button entirely — never a call to action for stock that doesn't exist.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+
+  assign source = collections[section.settings.collection]
+  assign hero = source.products.first
+  assign qualities = collections.all.products_count
+
+  assign hero_image = section.settings.image
+  if hero and hero.featured_image and section.settings.prefer_product_photo
+    assign hero_image = hero.featured_image
+  endif
+
+  assign subtitle = hero.metafields.custom.subtitle.value | default: hero.description | strip_html | truncate: 90
+-%}
+<section class="hero">
+  {%- if hero_image -%}
+    {{ hero_image
+      | image_url: width: 2200
+      | image_tag: loading: 'eager', fetchpriority: 'high', sizes: '100vw', widths: '600,900,1200,1600,2200', alt: shop.name }}
+  {%- endif -%}
+  <div class="veil"></div>
+
+  <div class="shell copy">
+    {%- if hero -%}
+      <span class="eyebrow">{{ section.settings.eyebrow }}</span>
+      <h1>{{ hero.title }},<br>{{ section.settings.heading_tail | default: 'cut to your metre' }}</h1>
+      <p class="lede">
+        {%- if subtitle != blank %}{{ subtitle }}. {% endif -%}
+        {{ qualities }} {% if qualities == 1 %}quality{% else %}qualities{% endif %} on the floor,
+        dyed shades on most of them, and every rate is the wholesale rate.
+      </p>
+      <div class="cta">
+        <a class="btn btn-primary" href="{{ hero.url }}">
+          Shop {{ hero.title }} &middot; {{ hero.price | times: factor | round | money }}/m
+        </a>
+        {%- if section.settings.catalog_url != blank -%}
+          <a class="btn btn-ghost" href="{{ section.settings.catalog_url }}">
+            Browse all {{ qualities }} {% if qualities == 1 %}quality{% else %}qualities{% endif %}
+          </a>
+        {%- endif -%}
+      </div>
+    {%- else -%}
+      <h1>{{ section.settings.empty_heading | default: 'Wholesale cloth,' }}<br>{{ section.settings.heading_tail | default: 'cut to your metre' }}</h1>
+      <p class="lede">{{ section.settings.empty_body }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Hero",
+  "settings": [
+    { "type": "collection", "id": "collection", "label": "Lead from this collection" },
+    { "type": "image_picker", "id": "image", "label": "Fallback photograph" },
+    {
+      "type": "checkbox",
+      "id": "prefer_product_photo",
+      "label": "Use the lead product's own photo",
+      "default": true
+    },
+    { "type": "text", "id": "eyebrow", "label": "Eyebrow", "default": "New this week" },
+    { "type": "text", "id": "heading_tail", "label": "Second line", "default": "cut to your metre" },
+    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
+    { "type": "text", "id": "empty_heading", "label": "Heading with an empty shelf", "default": "Wholesale cloth," },
+    {
+      "type": "textarea",
+      "id": "empty_body",
+      "label": "Body with an empty shelf",
+      "default": "Cut fresh off the than at the wholesale rate, in half-metre steps. The counter is open — the catalog goes up here as stock lands."
+    }
+  ],
+  "presets": [{ "name": "Hero" }]
+}
+{% endschema %}

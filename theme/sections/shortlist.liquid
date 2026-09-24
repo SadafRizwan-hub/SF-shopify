@@ -1,0 +1,79 @@
+{%- comment -%}
+  The shortlist lives in this browser's localStorage — it is not an account
+  feature and never leaves the device. The page renders a card for every
+  product on the shelf, hidden, and shows the ones this browser saved. That
+  keeps it a static page: no fetch, no API token, and it still works when the
+  catalogue is large because a card costs nothing until it is shown.
+{%- endcomment -%}
+<div class="shell page">
+  <header class="top">
+    <div>
+      <h1>{{ section.settings.heading | default: 'Shortlist' }}</h1>
+      <p class="meta"><span data-shortlist-total>0</span> saved on this device</p>
+    </div>
+  </header>
+
+  <div class="grid" style="--cols: {{ section.settings.columns }};" data-shortlist-grid hidden>
+    {%- for product in collections.all.products limit: section.settings.pool -%}
+      <div data-shortlist-item="{{ product.handle }}" hidden>
+        {% render 'fabric-card', product: product %}
+      </div>
+    {%- endfor -%}
+  </div>
+
+  <div class="empty" data-shortlist-empty>
+    <h3>Nothing shortlisted yet</h3>
+    <p class="meta">Tap the heart on a fabric and it collects here. The shortlist stays on this device.</p>
+    <a class="btn btn-primary" href="{{ section.settings.catalog_url | default: routes.all_products_collection_url }}">Open the catalog</a>
+  </div>
+</div>
+
+<script>
+  (function () {
+    function paint() {
+      var SF = window.SF;
+      if (!SF || !SF.shortlist) return;
+      var saved = SF.shortlist.all();
+      var grid = document.querySelector('[data-shortlist-grid]');
+      var empty = document.querySelector('[data-shortlist-empty]');
+      var shown = 0;
+
+      document.querySelectorAll('[data-shortlist-item]').forEach(function (item) {
+        var on = saved.indexOf(item.getAttribute('data-shortlist-item')) !== -1;
+        item.hidden = !on;
+        if (on) shown += 1;
+      });
+
+      grid.hidden = shown === 0;
+      empty.hidden = shown !== 0;
+      document.querySelector('[data-shortlist-total]').textContent = shown;
+    }
+
+    document.addEventListener('DOMContentLoaded', paint);
+    document.addEventListener('click', function (event) {
+      if (event.target.closest('[data-save]')) setTimeout(paint, 0);
+    });
+  })();
+</script>
+
+{% schema %}
+{
+  "name": "Shortlist",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shortlist" },
+    { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 5, "step": 1, "default": 4 },
+    {
+      "type": "range",
+      "id": "pool",
+      "label": "Products to make shortlistable",
+      "info": "The most recent products the page can show. Raise it if the catalogue is larger than this.",
+      "min": 50,
+      "max": 250,
+      "step": 50,
+      "default": 100
+    },
+    { "type": "url", "id": "catalog_url", "label": "Catalog link" }
+  ],
+  "presets": [{ "name": "Shortlist" }]
+}
+{% endschema %}

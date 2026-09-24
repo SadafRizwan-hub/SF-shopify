@@ -1,0 +1,28 @@
+{%- comment -%}
+  The shade dictionary, kept in step with data/shades.js in the headless
+  storefront. Shopify stores an option value as a NAME ("Indigo"), never a
+  colour, so every swatch on the site is coloured from this table, matched on
+  the handle of the option value the admin typed.
+
+  Echoes a comma separated "handle:hex" list, extras from theme settings
+  first so an admin can override a built-in row without editing code.
+{%- endcomment -%}
+{%- liquid
+  assign built_in = 'white:#f7f4ee,off-white:#ece5d8,ecru:#ded3bd,beige:#cdbb9d,sand:#c2a883,camel:#ab8256,mustard:#c8952b,haldi:#e0a92b,gold:#bb9540,peach:#e8b49a,coral:#d97757,rust:#a9512a,terracotta:#b5542e,maroon:#6d2230,rani-pink:#c2185b,rose:#d38a9a,lilac:#b7a3c6,purple:#6b3f8f,navy:#26344f,indigo:#33477a,sky:#a8c4dc,teal:#1f6f6b,firozi:#3fa9a3,mint:#bcd6c0,pista:#c3cf9a,olive:#6f7442,bottle-green:#1f4d35,grey:#9a9791,charcoal:#44423f,black:#1c1a18'
+
+  assign extra = ''
+  if settings.extra_shades != blank
+    assign lines = settings.extra_shades | strip | newline_to_br | split: '<br />'
+    for line in lines
+      assign row = line | strip | split: ':'
+      if row.size < 2
+        continue
+      endif
+      assign key = row[0] | handle
+      assign val = row[1] | strip
+      assign extra = extra | append: key | append: ':' | append: val | append: ','
+    endfor
+  endif
+
+  echo extra | append: built_in
+-%}

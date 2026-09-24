@@ -1,0 +1,91 @@
+{%- comment -%}
+  The filter rail, built from the store's own Search & Discovery filters.
+
+  Only a filter that can return something is offered: a fabric type or a
+  design with no posted product behind it is a dead chip — it reads as stock
+  we carry and lands the shopper on an empty grid. Shopify already drops
+  zero-count values from a filter's list, so the same rule holds here.
+
+  Every control is a link, so the rail works before a line of JavaScript runs.
+{%- endcomment -%}
+{%- liquid
+  assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+-%}
+<div class="panel">
+  {%- for filter in collection.filters -%}
+    {%- liquid
+      assign key = filter.label | strip | downcase
+      assign is_shade = false
+      assign is_design = false
+      if shade_names contains key
+        assign is_shade = true
+      elsif design_names contains key
+        assign is_design = true
+      endif
+    -%}
+
+    {%- if filter.type == 'price_range' -%}
+      <section>
+        <header>
+          <span class="label">{{ filter.label }}</span>
+          <span class="meta">{{ filter.min_value.value | default: 0 | money }} – {{ filter.max_value.value | default: filter.range_max | money }}</span>
+        </header>
+        <form method="get" class="range">
+          {%- for other in collection.filters -%}
+            {%- if other.type == 'price_range' -%}{%- continue -%}{%- endif -%}
+            {%- for value in other.active_values -%}
+              <input type="hidden" name="{{ value.param_name }}" value="{{ value.value | escape }}">
+            {%- endfor -%}
+          {%- endfor -%}
+          <input type="number" name="{{ filter.min_value.param_name }}" value="{{ filter.min_value.value | divided_by: 100.0 }}" placeholder="Min" min="0">
+          <input type="number" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | divided_by: 100.0 }}" placeholder="Max" min="0">
+          <button class="chip" type="submit">Go</button>
+        </form>
+      </section>
+
+    {%- elsif filter.values.size > 0 -%}
+      <section>
+        <header>
+          <span class="label">{{ filter.label }}</span>
+          <span class="meta">
+            {%- if filter.active_values.size > 0 -%}
+              {{ filter.active_values.size }} selected
+            {%- else -%}
+              none
+            {%- endif -%}
+          </span>
+        </header>
+
+        {%- if is_shade -%}
+          <div class="shades">
+            {%- for value in filter.values -%}
+              {%- capture hex %}{% render 'shade-hex', name: value.label %}{% endcapture -%}
+              <a
+                class="shade{% if value.active %} on{% endif %}"
+                href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+                aria-pressed="{{ value.active }}"
+              >
+                <span class="ring" style="background: {{ hex | strip }};"></span>
+                <span class="nm">{{ value.label }}</span>
+              </a>
+            {%- endfor -%}
+          </div>
+
+        {%- else -%}
+          <div class="chips">
+            {%- for value in filter.values -%}
+              <a
+                class="chip{% if value.active %} on{% endif %}"
+                href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
+              >
+                {{ value.label }}
+                {%- if value.count > 0 %} <span class="n">{{ value.count }}</span>{% endif -%}
+              </a>
+            {%- endfor -%}
+          </div>
+        {%- endif -%}
+      </section>
+    {%- endif -%}
+  {%- endfor -%}
+</div>

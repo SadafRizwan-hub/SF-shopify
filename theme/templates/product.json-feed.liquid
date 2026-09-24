@@ -1,0 +1,142 @@
+{%- comment -%}
+  Headless bridge: /products/<handle>?view=json-feed
+
+  The same `fabric` shape the Nuxt storefront's catalogStore.js builds out of
+  the Storefront API — design groups, per-shade stock, slabs, metres — so a
+  headless front can read this theme directly when it has no Storefront token
+  to hand, or cross-check that both fronts agree about a product.
+
+  Liquid cannot set a response Content-Type, so this is served as text/html
+  with a JSON body. Parse it, don't content-sniff it.
+{%- endcomment -%}
+{% layout none %}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+
+  assign shade_pos = 0
+  assign design_pos = 0
+  assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+  for option in product.options_with_values
+    assign key = option.name | strip | downcase
+    if shade_names contains key
+      assign shade_pos = forloop.index
+    elsif design_names contains key
+      assign design_pos = forloop.index
+      assign design_option = option
+    endif
+  endfor
+
+  assign metres = 0
+  for variant in product.variants
+    if variant.inventory_quantity > 0
+      assign metres = variant.inventory_quantity | times: unit | plus: metres
+    endif
+  endfor
+
+  assign stock = 'in stock'
+  if product.available == false
+    assign stock = 'out of stock'
+  elsif metres > 0 and metres <= settings.low_stock_metres
+    assign stock = 'low stock'
+  endif
+-%}
+{%- if settings.expose_json_views -%}
+{
+  "code": {{ product.handle | json }},
+  "id": {{ product.id }},
+  "name": {{ product.title | json }},
+  "sub": {{ product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 120 | json }},
+  "type": {{ product.type | handle | json }},
+  "typeName": {{ product.type | json }},
+  "unitMetres": {{ unit }},
+  "price": {{ product.price | times: factor | divided_by: 100.0 }},
+  "mrp": {% if product.compare_at_price > product.price %}{{ product.compare_at_price | times: factor | divided_by: 100.0 }}{% else %}null{% endif %},
+  "currency": {{ cart.currency.iso_code | json }},
+  "width": {{ product.metafields.custom.width.value | default: '—' | json }},
+  "note": {{ product.metafields.custom.note.value | default: '' | json }},
+  "stock": {{ stock | json }},
+  "metres": {{ metres }},
+  "photo": {{ product.featured_image | image_url: width: 1200 | json }},
+  "images": [
+    {%- for image in product.images -%}
+      {{ image | image_url: width: 1600 | json }}{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ],
+  "slabs": {%- if product.metafields.custom.price_slabs.value != blank -%}
+    {{ product.metafields.custom.price_slabs.value | json }}
+  {%- else -%}[]{%- endif -%},
+  "designGroups": [
+    {%- if design_pos > 0 -%}
+      {%- for value in design_option.values -%}
+        {
+          "slug": {{ value | handle | json }},
+          "name": {{ value | json }},
+          "shadeStock": {
+            {%- assign first_row = true -%}
+            {%- for variant in product.variants -%}
+              {%- if variant.options[design_pos | minus: 1] != value -%}{%- continue -%}{%- endif -%}
+              {%- if shade_pos > 0 -%}
+                {%- assign shade_key = variant.options[shade_pos | minus: 1] | handle -%}
+              {%- else -%}
+                {%- assign shade_key = 'plain' -%}
+              {%- endif -%}
+              {%- unless first_row %},{% endunless -%}
+              {%- assign first_row = false -%}
+              {{ shade_key | json }}: {
+                "stockUnitId": {{ variant.id }},
+                "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+                "metres": {{ variant.inventory_quantity | times: unit | default: 0 }},
+                "available": {{ variant.available }},
+                "price": {{ variant.price | times: factor | divided_by: 100.0 }}
+              }
+            {%- endfor -%}
+          }
+        }{% unless forloop.last %},{% endunless %}
+      {%- endfor -%}
+    {%- else -%}
+      {
+        "slug": "plain",
+        "name": "Plain",
+        "shadeStock": {
+          {%- assign first_row = true -%}
+          {%- for variant in product.variants -%}
+            {%- if shade_pos > 0 -%}
+              {%- assign shade_key = variant.options[shade_pos | minus: 1] | handle -%}
+            {%- else -%}
+              {%- assign shade_key = 'plain' -%}
+            {%- endif -%}
+            {%- unless first_row %},{% endunless -%}
+            {%- assign first_row = false -%}
+            {{ shade_key | json }}: {
+              "stockUnitId": {{ variant.id }},
+              "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+              "metres": {{ variant.inventory_quantity | times: unit | default: 0 }},
+              "available": {{ variant.available }},
+              "price": {{ variant.price | times: factor | divided_by: 100.0 }}
+            }
+          {%- endfor -%}
+        }
+      }
+    {%- endif -%}
+  ],
+  "designBooks": [
+    {%- assign first_book = true -%}
+    {%- for collection in product.collections -%}
+      {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
+      {%- unless first_book %},{% endunless -%}
+      {%- assign first_book = false -%}
+      {
+        "slug": {{ collection.handle | remove_first: prefix | json }},
+        "name": {{ collection.title | json }},
+        "tag": {{ collection.description | strip_html | truncate: 90 | json }},
+        "photo": {{ collection.image | image_url: width: 900 | json }}
+      }
+    {%- endfor -%}
+  ]
+}
+{%- else -%}
+{"error":"json views are turned off in theme settings"}
+{%- endif -%}

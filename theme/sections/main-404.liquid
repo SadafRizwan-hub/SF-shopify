@@ -1,0 +1,14 @@
+<div class="shell gone">
+  <h1>{{ 'general.404.title' | t }}</h1>
+  <p class="meta">{{ 'general.404.subtext' | t }} The rest of the catalog is still open.</p>
+  <a class="btn btn-primary" href="{{ section.settings.catalog_url | default: routes.all_products_collection_url }}">
+    {{ 'general.404.link' | t }}
+  </a>
+</div>
+
+{% schema %}
+{
+  "name": "404",
+  "settings": [{ "type": "url", "id": "catalog_url", "label": "Catalog link" }]
+}
+{% endschema %}

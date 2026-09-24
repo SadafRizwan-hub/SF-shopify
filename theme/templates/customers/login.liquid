@@ -1,0 +1,32 @@
+<div class="shell acct">
+  <h1>{{ 'customer.login.title' | t }}</h1>
+
+  {%- form 'customer_login' -%}
+    {%- if form.errors -%}
+      <div class="errors">{{ form.errors | default_errors }}</div>
+    {%- endif -%}
+    <label class="field"><span>{{ 'customer.login.email' | t }}</span>
+      <input type="email" name="customer[email]" autocomplete="email" required></label>
+    <label class="field"><span>{{ 'customer.login.password' | t }}</span>
+      <input type="password" name="customer[password]" autocomplete="current-password"></label>
+    <button type="submit" class="btn btn-primary">{{ 'customer.login.submit' | t }}</button>
+    <p style="margin-top:14px"><a class="linkish" href="#recover" onclick="document.getElementById('recover').hidden=false;return false">{{ 'customer.login.forgot_password' | t }}</a></p>
+  {%- endform -%}
+
+  <div id="recover" hidden style="margin-top:26px">
+    {%- form 'recover_customer_password' -%}
+      <h2>{{ 'customer.recover_password.title' | t }}</h2>
+      {%- if form.posted_successfully? -%}
+        <p class="note">{{ 'customer.recover_password.success' | t }}</p>
+      {%- else -%}
+        <label class="field"><span>{{ 'customer.recover_password.email' | t }}</span>
+          <input type="email" name="email" autocomplete="email" required></label>
+        <button type="submit" class="btn btn-ghost">{{ 'customer.recover_password.submit' | t }}</button>
+      {%- endif -%}
+    {%- endform -%}
+  </div>
+
+  <p style="margin-top:26px" class="meta">
+    New here? <a class="linkish" href="{{ routes.account_register_url }}">{{ 'customer.register.title' | t }}</a>
+  </p>
+</div>

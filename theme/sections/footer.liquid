@@ -1,0 +1,57 @@
+<footer class="foot">
+  <div class="shell inner">
+    <div class="brandcol">
+      <span class="mark">SF</span>
+      <p>{{ section.settings.address | default: settings.shop_address }}</p>
+      {%- if section.settings.fine_print != blank -%}
+        <p class="fine">{{ section.settings.fine_print }}</p>
+      {%- endif -%}
+    </div>
+
+    {%- for block in section.blocks -%}
+      {%- if block.type == 'menu' -%}
+        <nav {{ block.shopify_attributes }}>
+          <span class="label">{{ block.settings.heading }}</span>
+          {%- if block.settings.menu != blank -%}
+            {%- for link in block.settings.menu.links -%}
+              <a href="{{ link.url }}">{{ link.title }}</a>
+            {%- endfor -%}
+          {%- endif -%}
+        </nav>
+      {%- endif -%}
+    {%- endfor -%}
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "settings": [
+    { "type": "text", "id": "address", "label": "Address line" },
+    {
+      "type": "textarea",
+      "id": "fine_print",
+      "label": "Fine print",
+      "default": "Cut fresh off the than in half-metre steps. Cut cloth is not returnable."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu column",
+      "limit": 3,
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "Shop" },
+        { "type": "link_list", "id": "menu", "label": "Menu" }
+      ]
+    }
+  ],
+  "default": {
+    "blocks": [
+      { "type": "menu", "settings": { "heading": "Shop" } },
+      { "type": "menu", "settings": { "heading": "The shop" } }
+    ]
+  },
+  "enabled_on": { "templates": ["*"] }
+}
+{% endschema %}

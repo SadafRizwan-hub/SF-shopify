@@ -1,0 +1,50 @@
+{
+  "sections": {
+    "story": {
+      "type": "counter-story",
+      "settings": {
+        "eyebrow": "Kalbadevi, Mumbai · since 1974",
+        "heading": "Three generations behind one counter",
+        "lede": "Singhania Fabrics sells cloth the way the market has always sold it — off the than, cut to your metre, at the rate the trade pays. The site is only the counter, moved somewhere you can reach it at eleven at night.",
+        "primary_label": "Browse the catalog",
+        "secondary_label": "See the design book"
+      },
+      "blocks": {
+        "rates": {
+          "type": "column",
+          "settings": {
+            "heading": "How the rate works",
+            "anchor": "rates",
+            "body": "One rate, printed. Cross the slab — usually ten or eleven metres — and the lower rate applies to the whole cut, not just the metres past it. Nothing is marked up to be discounted back down."
+          }
+        },
+        "shades": {
+          "type": "column",
+          "settings": {
+            "heading": "Why every shade has a name",
+            "anchor": "shades",
+            "body": "Screen colour cannot be trusted, and the dye lot moves. Each shade carries the name the godown uses, so a phone call about \"Indigo on 60x60\" reaches the same bolt every time. Order the swatch card before a large cut."
+          }
+        },
+        "cutting": {
+          "type": "column",
+          "settings": {
+            "heading": "Cutting and dispatch",
+            "anchor": "cutting",
+            "body": "Cut in half-metre steps, folded, and dispatched the same evening for orders placed before 5 pm. Cut cloth cannot be taken back, which is the one rule the counter has never bent."
+          }
+        },
+        "visit": {
+          "type": "column",
+          "settings": {
+            "heading": "Visit the shop",
+            "anchor": "visit",
+            "body": "2nd floor, Mangaldas Market, Kalbadevi Road. Monday to Saturday, 10.30 am to 7.30 pm. Ask for the design book at the counter — it holds more than the site."
+          }
+        }
+      },
+      "block_order": ["rates", "shades", "cutting", "visit"]
+    }
+  },
+  "order": ["story"]
+}

@@ -1,0 +1,7 @@
+{
+  "settings_schema": {
+    "counter": { "name": "The counter" },
+    "headless": { "name": "Headless" },
+    "colours": { "name": "Colours" }
+  }
+}

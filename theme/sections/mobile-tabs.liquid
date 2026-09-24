@@ -1,0 +1,31 @@
+{%- liquid
+  assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
+  assign designs_url = section.settings.designs_url | default: routes.collections_url
+  assign path = request.path
+-%}
+<nav class="tabs" aria-label="Primary">
+  <a href="{{ routes.root_url }}"{% if path == routes.root_url %} class="on"{% endif %}>
+    {% render 'icon', name: 'home', size: 18 %}<span>Home</span>
+  </a>
+  <a href="{{ catalog_url }}"{% if request.page_type == 'collection' or request.page_type == 'product' %} class="on"{% endif %}>
+    {% render 'icon', name: 'grid', size: 18 %}<span>Catalog</span>
+  </a>
+  <a href="{{ designs_url }}"{% if path == designs_url %} class="on"{% endif %}>
+    {% render 'icon', name: 'lines', size: 18 %}<span>Designs</span>
+  </a>
+  <a href="{{ routes.cart_url }}"{% if request.page_type == 'cart' %} class="on"{% endif %}>
+    {% render 'icon', name: 'cart', size: 18 %}<span>Cut list</span>
+    <i class="pip" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</i>
+  </a>
+</nav>
+
+{% schema %}
+{
+  "name": "Mobile tabs",
+  "settings": [
+    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
+    { "type": "url", "id": "designs_url", "label": "Design book link" }
+  ],
+  "enabled_on": { "templates": ["*"] }
+}
+{% endschema %}

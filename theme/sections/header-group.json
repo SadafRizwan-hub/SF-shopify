@@ -1,0 +1,14 @@
+{
+  "type": "header",
+  "name": "Header",
+  "sections": {
+    "header": {
+      "type": "header",
+      "settings": {
+        "wordmark": "Singhania Fabrics",
+        "about_label": "The shop"
+      }
+    }
+  },
+  "order": ["header"]
+}

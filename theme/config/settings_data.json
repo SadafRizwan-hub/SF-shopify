@@ -1,0 +1,43 @@
+{
+  "current": {
+    "cut_unit_metres": "0.5",
+    "low_stock_metres": 25,
+    "design_collection_prefix": "design-",
+    "swatch_handle": "swatch-card",
+    "free_delivery_over": 2000,
+    "headless_origin": "",
+    "headless_canonical": false,
+    "expose_json_views": true,
+    "whatsapp_number": "",
+    "whatsapp_message": "Hi, I'm enquiring about your fabrics on the website.",
+    "shop_address": "Mangaldas Market, Kalbadevi, Mumbai 400002",
+    "col_ivory": "#fffdf8",
+    "col_paper": "#f8f5ef",
+    "col_sand": "#efe8dc",
+    "col_ink": "#14110f",
+    "col_terracotta": "#b5542e",
+    "col_brass": "#96702e",
+    "load_google_fonts": true,
+    "serif_stack": "'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif",
+    "sans_stack": "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
+    "extra_shades": "",
+    "unknown_shade": "#b9b3a8"
+  },
+  "presets": {
+    "Kalbadevi": {
+      "cut_unit_metres": "0.5",
+      "low_stock_metres": 25,
+      "design_collection_prefix": "design-",
+      "swatch_handle": "swatch-card",
+      "free_delivery_over": 2000,
+      "col_ivory": "#fffdf8",
+      "col_paper": "#f8f5ef",
+      "col_sand": "#efe8dc",
+      "col_ink": "#14110f",
+      "col_terracotta": "#b5542e",
+      "col_brass": "#96702e",
+      "load_google_fonts": true,
+      "unknown_shade": "#b9b3a8"
+    }
+  }
+}

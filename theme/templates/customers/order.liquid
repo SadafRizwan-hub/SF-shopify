@@ -1,0 +1,35 @@
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+-%}
+<div class="shell acct" style="max-width:860px">
+  <h1>{{ order.name }}</h1>
+  <p class="meta">{{ order.created_at | date: '%d %b %Y' }} &middot; {{ order.financial_status_label }} &middot; {{ order.fulfillment_status_label }}</p>
+
+  <table style="margin-top:24px">
+    <thead><tr><th>Cloth</th><th>Cut</th><th>Rate</th><th>Total</th></tr></thead>
+    <tbody>
+      {%- for line in order.line_items -%}
+        <tr>
+          <td>{{ line.title }}</td>
+          <td>{{ line.quantity | times: unit }} m</td>
+          <td>{{ line.variant.price | times: factor | round | money }}/m</td>
+          <td>{{ line.final_line_price | money }}</td>
+        </tr>
+      {%- endfor -%}
+    </tbody>
+  </table>
+
+  <table style="margin-top:20px">
+    <tr><th>Subtotal</th><td>{{ order.line_items_subtotal_price | money }}</td></tr>
+    {%- for shipping in order.shipping_methods -%}
+      <tr><th>{{ shipping.title }}</th><td>{{ shipping.price | money }}</td></tr>
+    {%- endfor -%}
+    {%- for tax in order.tax_lines -%}
+      <tr><th>{{ tax.title }}</th><td>{{ tax.price | money }}</td></tr>
+    {%- endfor -%}
+    <tr><th>Total</th><td>{{ order.total_price | money }}</td></tr>
+  </table>
+
+  <p style="margin-top:24px"><a class="linkish" href="{{ routes.account_url }}">{{ 'customer.account.return' | t }}</a></p>
+</div>

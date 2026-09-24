@@ -1,0 +1,28 @@
+<div class="shell acct" style="max-width:860px">
+  <h1>{{ 'customer.addresses.title' | t }}</h1>
+
+  {%- paginate customer.addresses by 10 -%}
+    {%- form 'customer_address', customer.new_address -%}
+      {%- if form.errors -%}<div class="errors">{{ form.errors | default_errors }}</div>{%- endif -%}
+      <h2 style="margin-top:20px">{{ 'customer.addresses.add_new' | t }}</h2>
+      <label class="field"><span>First name</span><input type="text" name="address[first_name]"></label>
+      <label class="field"><span>Last name</span><input type="text" name="address[last_name]"></label>
+      <label class="field"><span>Address</span><input type="text" name="address[address1]"></label>
+      <label class="field"><span>City</span><input type="text" name="address[city]"></label>
+      <label class="field"><span>Postal code</span><input type="text" name="address[zip]"></label>
+      <label class="field"><span>Phone</span><input type="tel" name="address[phone]"></label>
+      <button type="submit" class="btn btn-primary">Save</button>
+    {%- endform -%}
+
+    {%- for address in customer.addresses -%}
+      <div style="margin-top:22px;padding-top:16px;border-top:1px solid var(--line-soft)">
+        {{ address | format_address }}
+        {%- form 'customer_address', address -%}
+          <button type="submit" class="linkish">Update</button>
+        {%- endform -%}
+      </div>
+    {%- endfor -%}
+  {%- endpaginate -%}
+
+  <p style="margin-top:24px"><a class="linkish" href="{{ routes.account_url }}">{{ 'customer.account.return' | t }}</a></p>
+</div>

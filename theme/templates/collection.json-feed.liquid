@@ -1,0 +1,55 @@
+{%- comment -%}
+  Headless bridge: /collections/<handle>?view=json-feed
+
+  A card-sized record per product, paginated the same way the catalog page is,
+  so a headless front can page through the shelf without a Storefront token.
+  Full per-shade stock lives on the product view — this one stays small enough
+  to render a grid from.
+{%- endcomment -%}
+{% layout none %}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+-%}
+{%- if settings.expose_json_views -%}
+{%- paginate collection.products by 50 -%}
+{
+  "handle": {{ collection.handle | json }},
+  "title": {{ collection.title | json }},
+  "unitMetres": {{ unit }},
+  "currency": {{ cart.currency.iso_code | json }},
+  "page": {{ paginate.current_page }},
+  "pages": {{ paginate.pages }},
+  "total": {{ collection.all_products_count }},
+  "products": [
+    {%- for product in collection.products -%}
+      {%- liquid
+        assign shade_values = ''
+        capture shade_values
+          render 'axis-values', product: product, axis: 'shade'
+        endcapture
+        assign shade_values = shade_values | strip
+      -%}
+      {
+        "code": {{ product.handle | json }},
+        "name": {{ product.title | json }},
+        "sub": {{ product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 90 | json }},
+        "typeName": {{ product.type | json }},
+        "price": {{ product.price | times: factor | divided_by: 100.0 }},
+        "available": {{ product.available }},
+        "photo": {{ product.featured_image | image_url: width: 900 | json }},
+        "shades": [
+          {%- assign shade_list = shade_values | split: ',' -%}
+          {%- for value in shade_list -%}
+            {{ value | strip | handle | json }}{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ],
+        "url": {{ product.url | json }}
+      }{% unless forloop.last %},{% endunless %}
+    {%- endfor -%}
+  ]
+}
+{%- endpaginate -%}
+{%- else -%}
+{"error":"json views are turned off in theme settings"}
+{%- endif -%}

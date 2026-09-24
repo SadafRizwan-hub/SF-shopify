@@ -1,0 +1,125 @@
+{%- comment -%}
+  One design from the book: the drawing, the shades it is dyed in across every
+  ground it sits on, and the grounds themselves. A design page is only a page
+  if there is cloth under it.
+
+  Applied to a collection by choosing the "design" template on that collection
+  in the admin.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+  assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+
+  assign shades = ''
+  for product in collection.products
+    for option in product.options_with_values
+      assign key = option.name | strip | downcase
+      unless shade_names contains key
+        continue
+      endunless
+      for value in option.values
+        assign probe = '|' | append: value | append: '|'
+        assign haystack = '|' | append: shades | append: '|'
+        unless haystack contains probe
+          assign shades = shades | append: value | append: '|'
+        endunless
+      endfor
+    endfor
+  endfor
+  assign shade_list = shades | split: '|'
+-%}
+
+<div class="shell book design">
+  <a class="back" href="{{ section.settings.book_url | default: routes.collections_url }}">
+    {% render 'icon', name: 'back', size: 13 %} All designs
+  </a>
+
+  {%- if collection.products_count == 0 -%}
+    <div class="gone">
+      <h1>{{ collection.title }}</h1>
+      <p class="meta">There's no cloth listed under this design at the moment. The rest of the book is still open.</p>
+      <a class="btn btn-primary" href="{{ section.settings.book_url | default: routes.collections_url }}">Back to the design book</a>
+    </div>
+  {%- else -%}
+    <header class="head">
+      <h1>{{ collection.title }}</h1>
+      <p class="meta">
+        Design &middot; available on {{ collection.products_count }}
+        {% if collection.products_count == 1 %}fabric{% else %}fabrics{% endif %}
+      </p>
+    </header>
+
+    <div class="split">
+      <div class="visual">
+        {% render 'fabric-surface',
+          image: collection.image | default: collection.products.first.featured_image,
+          alt: collection.title,
+          ratio: '4 / 3',
+          sizes: '(max-width: 900px) 100vw, 50vw' %}
+        {%- if collection.description != blank -%}
+          <div class="tagline rte">{{ collection.description }}</div>
+        {%- endif -%}
+      </div>
+
+      <div class="detail">
+        {%- if shade_list.size > 0 -%}
+          <section class="block">
+            <header><span class="label">This design comes in</span></header>
+            <div class="shadegrid" style="--cols: {{ section.settings.shade_columns }};">
+              {%- for value in shade_list -%}
+                {%- capture hex %}{% render 'shade-hex', name: value %}{% endcapture -%}
+                <span class="cell">
+                  <span class="swatch" style="background: {{ hex | strip }};"></span>
+                  <span class="name">{{ value }}</span>
+                </span>
+              {%- endfor -%}
+            </div>
+          </section>
+        {%- endif -%}
+
+        <section class="block">
+          <header><span class="label">On which fabric</span></header>
+          <div class="grounds">
+            {%- for product in collection.products -%}
+              {%- liquid
+                assign stock = 'in stock'
+                unless product.available
+                  assign stock = 'out of stock'
+                endunless
+                assign width = product.metafields.custom.width.value | default: '—'
+              -%}
+              <a class="ground" href="{{ product.url }}">
+                <span class="gthumb">
+                  {% render 'fabric-surface', image: product.featured_image, alt: product.title, ratio: '1 / 1', sizes: '52px' %}
+                </span>
+                <span class="gtext">
+                  <b>{{ product.title }}</b>
+                  <i class="meta">{{ width }} &middot; {{ stock }}</i>
+                </span>
+                <span class="rate">{{ product.price | times: factor | round | money }}<span class="per">/m</span></span>
+              </a>
+            {%- endfor -%}
+          </div>
+        </section>
+
+        {%- if section.settings.swatch_url != blank -%}
+          <div class="actions" style="margin-top: 20px;">
+            <a class="btn btn-ghost" href="{{ section.settings.swatch_url }}">Order a swatch card</a>
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  {%- endif -%}
+</div>
+
+{% schema %}
+{
+  "name": "Design page",
+  "settings": [
+    { "type": "url", "id": "book_url", "label": "Design book link" },
+    { "type": "url", "id": "swatch_url", "label": "Swatch card link" },
+    { "type": "range", "id": "shade_columns", "label": "Shade columns", "min": 4, "max": 8, "step": 1, "default": 6 }
+  ]
+}
+{% endschema %}

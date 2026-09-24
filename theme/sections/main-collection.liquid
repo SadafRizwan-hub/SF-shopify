@@ -1,0 +1,165 @@
+{%- comment -%}
+  The catalog.
+
+  Nothing here invents stock: with no products posted the page states the
+  empty shelf once and ends — no grid, no filters, no sort.
+{%- endcomment -%}
+{%- paginate collection.products by section.settings.per_page -%}
+  {%- liquid
+    assign active_count = 0
+    for filter in collection.filters
+      assign active_count = filter.active_values.size | plus: active_count
+    endfor
+  -%}
+
+  <div class="shell page">
+    <header class="top">
+      <div>
+        <h1>{{ collection.title | default: 'Catalog' }}</h1>
+        <p class="meta">
+          {%- if collection.products_count > 0 -%}
+            {{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %} &middot; wholesale rates on
+          {%- else -%}
+            Wholesale rates on
+          {%- endif -%}
+        </p>
+      </div>
+
+      {%- if collection.products_count > 0 -%}
+        <div class="topright">
+          <form class="msearch" action="{{ routes.search_url }}" method="get" role="search">
+            <label class="visually-hidden" for="catalog-search">Search the catalog</label>
+            <input id="catalog-search" type="search" name="q" placeholder="{{ 'general.search.placeholder' | t }}">
+            <input type="hidden" name="type" value="product">
+          </form>
+
+          {%- if collection.sort_options.size > 0 -%}
+            <div class="sortwrap">
+              <label class="visually-hidden" for="catalog-sort">Sort</label>
+              <select id="catalog-sort" data-sort>
+                {%- assign current_sort = collection.sort_by | default: collection.default_sort_by -%}
+                {%- for option in collection.sort_options -%}
+                  <option value="{{ option.value }}"{% if option.value == current_sort %} selected{% endif %}>{{ option.name }}</option>
+                {%- endfor -%}
+              </select>
+            </div>
+          {%- endif -%}
+
+          <button type="button" class="chip mfilter{% if active_count > 0 %} on{% endif %}" data-sheet-open>
+            Filter{% if active_count > 0 %} <span class="n">{{ active_count }}</span>{% endif %}
+          </button>
+        </div>
+      {%- endif -%}
+    </header>
+
+    {%- if collection.products_count == 0 and active_count == 0 -%}
+      <div class="empty">
+        <h3>{{ section.settings.empty_heading }}</h3>
+        <p class="meta">{{ section.settings.empty_body }}</p>
+      </div>
+    {%- else -%}
+      <div class="split">
+        <aside class="rail">
+          <div class="railhead">
+            <span class="label">Filter</span>
+            {%- if active_count > 0 -%}
+              <a class="linkish" href="{{ collection.url }}">Reset all</a>
+            {%- endif -%}
+          </div>
+          {% render 'filter-panel', collection: collection %}
+        </aside>
+
+        <section class="results">
+          {%- if active_count > 0 -%}
+            <div class="pills">
+              {%- assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ',' -%}
+              {%- for filter in collection.filters -%}
+                {%- assign key = filter.label | strip | downcase -%}
+                {%- for value in filter.active_values -%}
+                  <a class="chip pill" href="{{ value.url_to_remove }}">
+                    {%- if shade_names contains key -%}
+                      {%- capture hex %}{% render 'shade-hex', name: value.label %}{% endcapture -%}
+                      <i style="background: {{ hex | strip }};"></i>
+                    {%- endif -%}
+                    {{ value.label }}
+                    {% render 'icon', name: 'close', size: 9 %}
+                  </a>
+                {%- endfor -%}
+              {%- endfor -%}
+              <a class="linkish clear" href="{{ collection.url }}">Clear</a>
+            </div>
+          {%- endif -%}
+
+          <p class="count meta">
+            Showing {{ collection.products.size }} of {{ collection.all_products_count }}
+          </p>
+
+          {%- if collection.products.size > 0 -%}
+            <div class="grid" style="--cols: {{ section.settings.columns }};">
+              {%- for product in collection.products -%}
+                {% render 'fabric-card', product: product %}
+              {%- endfor -%}
+            </div>
+          {%- else -%}
+            <div class="empty">
+              <h3>Nothing on the shelf matches that</h3>
+              <p class="meta">Drop a filter, or ask the counter — we hold more in the godown than in the app.</p>
+              <a class="btn btn-ghost" href="{{ collection.url }}">Reset everything</a>
+            </div>
+          {%- endif -%}
+
+          {%- if paginate.pages > 1 -%}
+            <nav class="pager" aria-label="{{ 'general.pagination.label' | t }}">
+              {%- if paginate.previous -%}
+                <a href="{{ paginate.previous.url }}" aria-label="{{ 'general.pagination.previous' | t }}">&lsaquo;</a>
+              {%- endif -%}
+              {%- for part in paginate.parts -%}
+                {%- if part.is_link -%}
+                  <a href="{{ part.url }}">{{ part.title }}</a>
+                {%- else -%}
+                  <span{% if part.title == paginate.current_page %} class="on"{% endif %}>{{ part.title }}</span>
+                {%- endif -%}
+              {%- endfor -%}
+              {%- if paginate.next -%}
+                <a href="{{ paginate.next.url }}" aria-label="{{ 'general.pagination.next' | t }}">&rsaquo;</a>
+              {%- endif -%}
+            </nav>
+          {%- endif -%}
+        </section>
+      </div>
+
+      <div class="scrim" data-scrim></div>
+      <div class="sheet" data-sheet role="dialog" aria-label="Filter">
+        <div class="grab"></div>
+        <header class="sheethead">
+          <h2>Filter</h2>
+          <a class="linkish" href="{{ collection.url }}">Reset all</a>
+        </header>
+        <div class="sheetbody">
+          {% render 'filter-panel', collection: collection %}
+        </div>
+        <footer class="sheetfoot">
+          <button type="button" class="btn btn-ghost" data-sheet-close>Cancel</button>
+          <button type="button" class="btn btn-primary" data-sheet-close>Show {{ collection.products.size }} fabrics</button>
+        </footer>
+      </div>
+    {%- endif -%}
+  </div>
+{%- endpaginate -%}
+
+{% schema %}
+{
+  "name": "Catalog",
+  "settings": [
+    { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 5, "step": 1, "default": 3 },
+    { "type": "range", "id": "per_page", "label": "Products per page", "min": 8, "max": 48, "step": 4, "default": 24 },
+    { "type": "text", "id": "empty_heading", "label": "Empty heading", "default": "The shelf is being stocked" },
+    {
+      "type": "textarea",
+      "id": "empty_body",
+      "label": "Empty body",
+      "default": "Nothing is listed here yet. New qualities appear as soon as they're entered at the counter."
+    }
+  ]
+}
+{% endschema %}

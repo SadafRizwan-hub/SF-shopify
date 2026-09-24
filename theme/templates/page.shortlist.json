@@ -1,0 +1,4 @@
+{
+  "sections": { "main": { "type": "shortlist", "settings": { "heading": "Shortlist", "columns": 4 } } },
+  "order": ["main"]
+}

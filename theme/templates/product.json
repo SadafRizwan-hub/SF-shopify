@@ -1,0 +1,7 @@
+{
+  "sections": {
+    "main": { "type": "main-product", "settings": { "show_scale": true, "shade_columns": 6 } },
+    "related": { "type": "related-fabrics", "settings": { "heading": "Goes with this", "count": 4, "columns": 4 } }
+  },
+  "order": ["main", "related"]
+}

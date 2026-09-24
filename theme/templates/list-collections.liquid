@@ -1,0 +1,19 @@
+<div class="shell book">
+  <header class="top">
+    <h1>Collections</h1>
+  </header>
+  <div class="bookgrid">
+    {%- for collection in collections -%}
+      {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
+      <a class="card" href="{{ collection.url }}">
+        {% render 'fabric-surface',
+          image: collection.image | default: collection.products.first.featured_image,
+          alt: collection.title,
+          ratio: '4 / 3',
+          sizes: '(max-width: 700px) 50vw, 25vw' %}
+        <h3>{{ collection.title }}</h3>
+        <p class="on">{{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
+      </a>
+    {%- endfor -%}
+  </div>
+</div>

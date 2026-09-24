@@ -1,0 +1,6 @@
+{%- comment -%}
+  /products/<handle>?view=card — the card markup on its own, with no layout.
+  Used where a card has to be fetched rather than rendered in place.
+{%- endcomment -%}
+{% layout none %}
+{% render 'fabric-card', product: product %}

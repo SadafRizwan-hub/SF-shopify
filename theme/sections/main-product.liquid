@@ -1,0 +1,370 @@
+{%- comment -%}
+  The fabric page.
+
+  Cloth is sold in half metres but a cart line quantity is a whole number, so
+  one unit of stock is half a metre and a variant's price is the rate for that
+  half metre. Everything the shopper reads is converted back up here and in
+  fabric-form.js from the single `cut_unit_metres` setting — the same constant
+  the headless storefront calls UNIT_METRES. Get it wrong in the admin and
+  every cut is billed at half price.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+
+  assign shade_pos = 0
+  assign design_pos = 0
+  assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+  for option in product.options_with_values
+    assign key = option.name | strip | downcase
+    if shade_names contains key
+      assign shade_pos = forloop.index
+      assign shade_option = option
+    elsif design_names contains key
+      assign design_pos = forloop.index
+      assign design_option = option
+    endif
+  endfor
+
+  assign current = product.selected_or_first_available_variant
+  if design_pos > 0
+    assign active_design = current.options[design_pos | minus: 1]
+  endif
+  if shade_pos > 0
+    assign active_shade = current.options[shade_pos | minus: 1]
+  endif
+
+  assign subtitle = product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 120
+  assign width = product.metafields.custom.width.value | default: '—'
+  assign counter_note = product.metafields.custom.note.value
+  assign slabs = product.metafields.custom.price_slabs.value
+
+  assign metres = 0
+  assign tracked = false
+  for variant in product.variants
+    if variant.inventory_management != blank
+      assign tracked = true
+      if variant.inventory_quantity > 0
+        assign metres = variant.inventory_quantity | times: unit | plus: metres
+      endif
+    endif
+  endfor
+  assign stock = 'in stock'
+  if product.available == false
+    assign stock = 'out of stock'
+  elsif tracked and metres > 0 and metres <= settings.low_stock_metres
+    assign stock = 'low stock'
+  endif
+
+  assign rate = product.price | times: factor | round
+  assign min_cut = current.metafields.custom.min_cut.value | default: unit
+-%}
+
+<div class="shell fabric" data-fabric-page>
+  <a class="back" href="{{ section.settings.catalog_url | default: routes.all_products_collection_url }}">
+    {% render 'icon', name: 'back', size: 13 %} Back to catalog
+  </a>
+
+  <div class="split">
+    <div class="visual">
+      {%- capture overlay -%}
+        {%- if section.settings.show_scale -%}<span class="scale">&#8600; True scale 1:1</span>{%- endif -%}
+      {%- endcapture -%}
+      <div data-gallery-main>
+        {% render 'fabric-surface',
+          image: current.featured_image | default: product.featured_image,
+          alt: product.title,
+          ratio: '4 / 5',
+          sizes: '(max-width: 900px) 100vw, 50vw',
+          overlay: overlay %}
+      </div>
+
+      <button class="heart" type="button" data-save="{{ product.handle }}" aria-pressed="false" aria-label="Save {{ product.title | escape }}">
+        {% render 'icon', name: 'heart' %}
+      </button>
+
+      {%- if product.images.size > 1 -%}
+        <div class="thumbs" data-gallery-thumbs>
+          {%- for image in product.images limit: 8 -%}
+            <button type="button" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-src="{{ image | image_url: width: 1200 }}" aria-label="View image {{ forloop.index }}">
+              <img src="{{ image | image_url: width: 160 }}" alt="{{ image.alt | escape }}" width="62" height="62" loading="lazy">
+            </button>
+          {%- endfor -%}
+        </div>
+      {%- endif -%}
+    </div>
+
+    <div class="detail">
+      <div class="titlerow">
+        <div>
+          <h1>{{ product.title }}</h1>
+          {%- if subtitle != blank -%}<p class="meta">{{ subtitle }}</p>{%- endif -%}
+        </div>
+        <p class="rate big">
+          <span data-unit-rate>{{ rate | money }}</span><span class="per">/m</span>
+          {%- if product.compare_at_price > product.price -%}
+            <span class="was">{{ product.compare_at_price | times: factor | round | money }}/m</span>
+          {%- endif -%}
+        </p>
+      </div>
+
+      {%- if counter_note != blank -%}
+        <p class="counternote">{{ counter_note }}</p>
+      {%- endif -%}
+
+      {%- comment -%} ---- shades ---- {%- endcomment -%}
+      {%- if shade_pos > 0 -%}
+        <section class="block">
+          <header>
+            <span class="label">Available shades <span data-shade-count>{{ shade_option.values.size }}</span></span>
+            <span class="chosen" data-shade-chosen>{{ active_shade }}</span>
+          </header>
+          <div class="shadegrid" style="--cols: {{ section.settings.shade_columns }};" data-shade-grid>
+            {%- for value in shade_option.values -%}
+              {%- liquid
+                assign in_group = false
+                assign sellable = false
+                for variant in product.variants
+                  if variant.options[shade_pos | minus: 1] != value
+                    continue
+                  endif
+                  if design_pos > 0 and variant.options[design_pos | minus: 1] != active_design
+                    continue
+                  endif
+                  assign in_group = true
+                  if variant.available
+                    assign sellable = true
+                    break
+                  endif
+                endfor
+                capture hex
+                  render 'shade-hex', name: value
+                endcapture
+              -%}
+              <button
+                type="button"
+                class="cell{% if value == active_shade %} on{% endif %}{% unless sellable %} out{% endunless %}"
+                data-shade="{{ value | escape }}"
+                aria-pressed="{% if value == active_shade %}true{% else %}false{% endif %}"
+                {% unless sellable %}disabled{% endunless %}
+                {% unless in_group %}hidden{% endunless %}
+              >
+                <span class="swatch" style="background: {{ hex | strip }};">
+                  {%- unless sellable -%}<span class="slash"></span>{%- endunless -%}
+                </span>
+                <span class="name">{{ value }}</span>
+              </button>
+            {%- endfor -%}
+          </div>
+        </section>
+      {%- endif -%}
+
+      {%- comment -%}
+        Design. One card per design this fabric is sold under: with a single
+        design the card is the way through to its book page; with several it is
+        also the switcher — picking one re-draws the shade row above it and
+        decides which stock the rest of the page reads. Same card either way.
+      {%- endcomment -%}
+      {%- if design_pos > 0 -%}
+        <section class="block">
+          <header>
+            <span class="label">Design</span>
+            <span class="chosen" data-design-chosen>{{ active_design }}</span>
+          </header>
+          <div class="designs multi" data-design-grid>
+            {%- for value in design_option.values -%}
+              {%- liquid
+                assign book_handle = prefix | append: value | handle
+                assign book = collections[book_handle]
+                assign shade_total = 0
+                for variant in product.variants
+                  if variant.options[design_pos | minus: 1] == value
+                    assign shade_total = shade_total | plus: 1
+                  endif
+                endfor
+              -%}
+              <div class="designcard{% if value == active_design %} on{% endif %}" data-design-card="{{ value | escape }}">
+                <button type="button" class="dpick" data-design="{{ value | escape }}" aria-pressed="{% if value == active_design %}true{% else %}false{% endif %}">
+                  <span class="dthumb">
+                    {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1' %}
+                  </span>
+                  <span class="dtext">
+                    <b>{{ book.title | default: value }}</b>
+                    <i class="meta">
+                      {%- if book.description != blank %}{{ book.description | strip_html | truncate: 32 }} &middot; {% endif -%}
+                      {{ shade_total }} shades
+                    </i>
+                  </span>
+                </button>
+                {%- if book != blank -%}
+                  <a class="djump" href="{{ book.url }}" aria-label="See every ground in {{ book.title | escape }}">
+                    {% render 'icon', name: 'forward', size: 14 %}
+                  </a>
+                {%- endif -%}
+              </div>
+            {%- endfor -%}
+          </div>
+        </section>
+      {%- else -%}
+        {%- assign book_cards = 0 -%}
+        {%- capture single_books -%}
+          {%- for collection in product.collections -%}
+            {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
+            {%- assign book_cards = book_cards | plus: 1 -%}
+            <div class="designcard">
+              <a class="dpick" href="{{ collection.url }}">
+                <span class="dthumb">{% render 'fabric-surface', image: collection.image, alt: collection.title, ratio: '1 / 1' %}</span>
+                <span class="dtext">
+                  <b>{{ collection.title }}</b>
+                  <i class="meta">
+                    {%- if collection.description != blank %}{{ collection.description | strip_html | truncate: 32 }} &middot; {% endif -%}
+                    see every ground
+                  </i>
+                </span>
+              </a>
+              <a class="djump" href="{{ collection.url }}" aria-label="See every ground in {{ collection.title | escape }}">
+                {% render 'icon', name: 'forward', size: 14 %}
+              </a>
+            </div>
+          {%- endfor -%}
+        {%- endcapture -%}
+        {%- if book_cards > 0 -%}
+          <section class="block">
+            <header><span class="label">Design</span></header>
+            <div class="designs">{{ single_books }}</div>
+          </section>
+        {%- endif -%}
+      {%- endif -%}
+
+      {%- comment -%}
+        Every rate is a peer here: retail and each wholesale rung are the same
+        row, so what is pickable (and what is picked) is not a guess.
+      {%- endcomment -%}
+      <section class="block">
+        <header>
+          <span class="label">Pricing</span>
+          <span class="chosen" data-tier-label>Retail</span>
+        </header>
+        <div class="pricelist" data-pricelist>
+          <button type="button" class="prow on" data-tier="retail" data-rate="{{ rate }}" data-from="{{ min_cut }}">
+            <span class="pmark"></span>
+            <span class="pwhat">
+              <b>Retail</b>
+              <i>From <span data-moq>{{ min_cut }}</span> m &middot; cut to order</i>
+            </span>
+            <span class="pamt"><span data-retail-rate>{{ rate | money }}</span><i class="per">/m</i></span>
+          </button>
+
+          {%- if slabs != blank and slabs.size > 0 -%}
+            {%- for slab in slabs -%}
+              {%- assign slab_cents = slab.price | times: 100 | round -%}
+              <button type="button" class="prow" data-tier="wholesale" data-rate="{{ slab_cents }}" data-from="{{ slab.from }}">
+                <span class="pmark"></span>
+                <span class="pwhat">
+                  <b>Wholesale</b>
+                  <i>{{ slab.from }} m and above</i>
+                </span>
+                <span class="pamt">{{ slab_cents | money }}<i class="per">/m</i></span>
+              </button>
+            {%- endfor -%}
+          {%- else -%}
+            <p class="prow none">
+              <span class="pwhat">
+                <b>Wholesale</b>
+                <i>Contact us for bulk pricing</i>
+              </span>
+            </p>
+          {%- endif -%}
+        </div>
+      </section>
+
+      {%- form 'product', product, id: 'fabric-form', novalidate: 'novalidate' -%}
+        <input type="hidden" name="id" value="{{ current.id }}" data-variant-id>
+
+        <div class="tray">
+          <div class="qcol">
+            <span class="tlabel">Quantity</span>
+            <div class="stepper">
+              <button type="button" data-step="-1" aria-label="Less">&minus;</button>
+              <span class="qty"><span data-metres>{{ min_cut }}</span><i>m</i></span>
+              <button type="button" data-step="1" aria-label="More">+</button>
+            </div>
+            <p class="tfine"><span data-step-rate>{{ rate | money }}</span>/m &middot; {{ unit }} m steps</p>
+          </div>
+          <div class="sum">
+            <span class="tlabel">Total</span>
+            <p class="rate big" data-total>{{ rate | times: min_cut | round | money }}</p>
+            {%- if slabs != blank and slabs.size > 0 -%}
+              {%- assign first_slab = slabs.first -%}
+              <p class="slabline" data-slabline>{{ first_slab.from }} m+ at {{ first_slab.price | times: 100 | round | money }}/m</p>
+            {%- endif -%}
+          </div>
+        </div>
+
+        {%- comment -%}
+          The cart line carries whole cut units, never metres — this is the one
+          place metres are turned back into a quantity Shopify can hold.
+        {%- endcomment -%}
+        <input type="hidden" name="quantity" value="1" data-units>
+
+        <div class="actions">
+          <button type="submit" class="btn btn-primary" data-add {% unless product.available %}disabled{% endunless %}>
+            {%- if product.available -%}
+              Add <span data-add-metres>{{ min_cut }}</span> m{% if shade_pos > 0 %} &middot; <span data-add-shade>{{ active_shade }}</span>{% endif %}
+            {%- else -%}
+              Out of stock
+            {%- endif -%}
+          </button>
+        </div>
+      {%- endform -%}
+
+      <dl class="specs">
+        <div><dt>Width</dt><dd>{{ width }}</dd></div>
+        <div><dt>Quality</dt><dd class="cap">{{ product.type | default: 'Uncategorised' }}</dd></div>
+        <div><dt>Stock</dt><dd{% if stock == 'low stock' %} class="low"{% endif %}>{{ stock }}</dd></div>
+      </dl>
+
+      {%- if product.description != blank and settings.show_description != false -%}
+        <div class="rte" style="margin-top: 30px; font-size: 14px; color: var(--ink-70);">
+          {{ product.description }}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+
+  <script type="application/json" data-fabric-json>
+    {
+      "handle": {{ product.handle | json }},
+      "unit": {{ unit }},
+      "shadePosition": {{ shade_pos }},
+      "designPosition": {{ design_pos }},
+      "variants": [
+        {%- for variant in product.variants -%}
+          {
+            "id": {{ variant.id }},
+            "available": {{ variant.available }},
+            "price": {{ variant.price }},
+            "options": {{ variant.options | json }},
+            "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+            "image": {{ variant.featured_image | image_url: width: 1200 | json }}
+          }{% unless forloop.last %},{% endunless %}
+        {%- endfor -%}
+      ]
+    }
+  </script>
+</div>
+
+<script src="{{ 'fabric-form.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Fabric page",
+  "settings": [
+    { "type": "url", "id": "catalog_url", "label": "Back-to-catalog link" },
+    { "type": "checkbox", "id": "show_scale", "label": "Show the \"true scale 1:1\" tag", "default": true },
+    { "type": "range", "id": "shade_columns", "label": "Shade columns", "min": 4, "max": 8, "step": 1, "default": 6 }
+  ]
+}
+{% endschema %}

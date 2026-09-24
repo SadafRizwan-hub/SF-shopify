@@ -1,0 +1,12 @@
+<div class="shell acct">
+  <h1>{{ 'customer.activate_account.title' | t }}</h1>
+  {%- form 'activate_customer_password' -%}
+    {%- if form.errors -%}<div class="errors">{{ form.errors | default_errors }}</div>{%- endif -%}
+    <label class="field"><span>{{ 'customer.activate_account.password' | t }}</span>
+      <input type="password" name="customer[password]" autocomplete="new-password"></label>
+    <label class="field"><span>{{ 'customer.activate_account.password_confirm' | t }}</span>
+      <input type="password" name="customer[password_confirmation]" autocomplete="new-password"></label>
+    <button type="submit" class="btn btn-primary">{{ 'customer.activate_account.submit' | t }}</button>
+    <button type="submit" name="decline" class="linkish" style="margin-left:12px">{{ 'customer.activate_account.cancel' | t }}</button>
+  {%- endform -%}
+</div>

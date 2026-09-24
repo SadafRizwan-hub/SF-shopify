@@ -1,0 +1,169 @@
+[
+  {
+    "name": "theme_info",
+    "theme_name": "Singhania Fabrics",
+    "theme_version": "1.0.0",
+    "theme_author": "Singhania Fabrics",
+    "theme_documentation_url": "https://github.com/SadafRizwan-hub/SF-shopify",
+    "theme_support_url": "https://github.com/SadafRizwan-hub/SF-shopify/issues"
+  },
+  {
+    "name": "The counter",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Cloth is sold in half metres, but a Shopify cart line quantity is a whole number. One unit of stock is therefore half a metre, and a variant's price is the rate for that half metre. A cloth at 240/m is entered in Shopify as 120."
+      },
+      {
+        "type": "select",
+        "id": "cut_unit_metres",
+        "label": "Metres in one cut unit",
+        "info": "The metres one unit of stock represents. Must match the headless storefront's UNIT_METRES.",
+        "default": "0.5",
+        "options": [
+          { "value": "0.25", "label": "0.25 m" },
+          { "value": "0.5", "label": "0.5 m" },
+          { "value": "1", "label": "1 m" }
+        ]
+      },
+      {
+        "type": "number",
+        "id": "low_stock_metres",
+        "label": "Low stock below this many metres",
+        "default": 25
+      },
+      {
+        "type": "text",
+        "id": "design_collection_prefix",
+        "label": "Design collection handle prefix",
+        "info": "Collections whose handle starts with this are design book entries.",
+        "default": "design-"
+      },
+      {
+        "type": "text",
+        "id": "swatch_handle",
+        "label": "Swatch card product handle",
+        "default": "swatch-card"
+      },
+      {
+        "type": "number",
+        "id": "free_delivery_over",
+        "label": "Free delivery over (in your store currency, whole units)",
+        "info": "Prints the threshold on the cut list. Set the matching rate in Settings - Shipping; this does not price anything.",
+        "default": 2000
+      }
+    ]
+  },
+  {
+    "name": "Headless",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "This theme is the Liquid twin of the Nuxt storefront in the same repository. Both read the same products, the same design-* collections and the same custom.* metafields, so either one can be the front of the shop."
+      },
+      {
+        "type": "url",
+        "id": "headless_origin",
+        "label": "Headless storefront URL",
+        "info": "When set, canonical tags point at this origin so the headless site owns the search result while Liquid keeps serving checkout."
+      },
+      {
+        "type": "checkbox",
+        "id": "headless_canonical",
+        "label": "Point canonical tags at the headless storefront",
+        "default": false
+      },
+      {
+        "type": "checkbox",
+        "id": "expose_json_views",
+        "label": "Expose the ?view=json-feed data views",
+        "info": "Lets a headless front read the same fabric shape from this theme without a Storefront API token.",
+        "default": true
+      }
+    ]
+  },
+  {
+    "name": "Contact",
+    "settings": [
+      {
+        "type": "text",
+        "id": "whatsapp_number",
+        "label": "WhatsApp Business number",
+        "info": "Digits only, with country code, e.g. 919820000000. Leave empty to hide the button."
+      },
+      {
+        "type": "text",
+        "id": "whatsapp_message",
+        "label": "Prefilled WhatsApp message",
+        "default": "Hi, I'm enquiring about your fabrics on the website."
+      },
+      {
+        "type": "text",
+        "id": "shop_address",
+        "label": "Address line",
+        "default": "Mangaldas Market, Kalbadevi, Mumbai 400002"
+      }
+    ]
+  },
+  {
+    "name": "Colours",
+    "settings": [
+      { "type": "color", "id": "col_ivory", "label": "Page ground", "default": "#fffdf8" },
+      { "type": "color", "id": "col_paper", "label": "Paper (header, footer, panels)", "default": "#f8f5ef" },
+      { "type": "color", "id": "col_sand", "label": "Sand (hover, unphotographed surface)", "default": "#efe8dc" },
+      { "type": "color", "id": "col_ink", "label": "Ink", "default": "#14110f" },
+      { "type": "color", "id": "col_terracotta", "label": "Terracotta (low stock)", "default": "#b5542e" },
+      { "type": "color", "id": "col_brass", "label": "Brass (links into the design book)", "default": "#96702e" }
+    ]
+  },
+  {
+    "name": "Type",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "load_google_fonts",
+        "label": "Load Cormorant Garamond and Inter from Google Fonts",
+        "default": true
+      },
+      {
+        "type": "text",
+        "id": "serif_stack",
+        "label": "Serif stack",
+        "default": "'Cormorant Garamond', 'EB Garamond', Georgia, 'Times New Roman', serif"
+      },
+      {
+        "type": "text",
+        "id": "sans_stack",
+        "label": "Sans stack",
+        "default": "'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif"
+      }
+    ]
+  },
+  {
+    "name": "Shades",
+    "settings": [
+      {
+        "type": "paragraph",
+        "content": "Shopify stores an option value as a name (\"Indigo\"), never a colour. The swatches are coloured from this table, matched on the handle of the option value the admin typed. An unlisted shade still works - it shows a neutral swatch until it is listed."
+      },
+      {
+        "type": "textarea",
+        "id": "extra_shades",
+        "label": "Extra shades",
+        "info": "One per line, as name:hex - e.g. Firozi:#3fa9a3. These are added to the built-in table and override it on a clash."
+      },
+      {
+        "type": "color",
+        "id": "unknown_shade",
+        "label": "Colour for an unlisted shade",
+        "default": "#b9b3a8"
+      }
+    ]
+  },
+  {
+    "name": "Social",
+    "settings": [
+      { "type": "image_picker", "id": "share_image", "label": "Default social share image" }
+    ]
+  }
+]

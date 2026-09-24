@@ -1,0 +1,78 @@
+{%- comment -%}
+  One product, as a card. Every product grid on the site goes through here, so
+  "what a product looks like" is decided once. A card exists only because the
+  admin posted that product — there are no filler cards.
+
+  Usage: {% render 'fabric-card', product: product %}
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+
+  assign metres = 0
+  assign tracked = false
+  for variant in product.variants
+    if variant.inventory_management != blank
+      assign tracked = true
+      if variant.inventory_quantity > 0
+        assign metres = variant.inventory_quantity | times: unit | plus: metres
+      endif
+    endif
+  endfor
+
+  assign stock = 'in stock'
+  if product.available == false
+    assign stock = 'out of stock'
+  elsif tracked and metres > 0 and metres <= settings.low_stock_metres
+    assign stock = 'low stock'
+  endif
+
+  assign rate = product.price | times: factor | round
+  assign mrp = product.compare_at_price | times: factor | round
+
+  assign subtitle = product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 90
+
+  capture shade_values
+    render 'axis-values', product: product, axis: 'shade'
+  endcapture
+-%}
+<article class="card" data-fabric="{{ product.handle }}">
+  <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+    {%- capture overlay -%}
+      <span class="tag">{{ product.type | default: 'Uncategorised' }}</span>
+      {%- if stock == 'low stock' -%}
+        <span class="low">Low stock</span>
+      {%- elsif stock == 'out of stock' -%}
+        <span class="low out">Out of stock</span>
+      {%- endif -%}
+    {%- endcapture -%}
+    {% render 'fabric-surface',
+      image: product.featured_image,
+      alt: product.title,
+      ratio: '3 / 4',
+      caption: subtitle,
+      overlay: overlay %}
+  </a>
+
+  <button
+    class="heart"
+    type="button"
+    data-save="{{ product.handle }}"
+    aria-pressed="false"
+    aria-label="Save {{ product.title | escape }}"
+  >
+    {% render 'icon', name: 'heart', size: 15 %}
+  </button>
+
+  <a class="body" href="{{ product.url }}">
+    <h3>{{ product.title }}</h3>
+    {%- if subtitle != blank -%}<p class="meta">{{ subtitle }}</p>{%- endif -%}
+    <p class="rate">
+      {{ rate | money }}<span class="per">/m</span>
+      {%- if product.compare_at_price > product.price -%}
+        <span class="was">{{ mrp | money }}</span>
+      {%- endif -%}
+    </p>
+    {% render 'shade-dots', values: shade_values, max: 4 %}
+  </a>
+</article>

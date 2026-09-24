@@ -1,0 +1,59 @@
+<section class="shell homeband">
+  <div class="promise">
+    {%- for block in section.blocks -%}
+      <div {{ block.shopify_attributes }}>
+        <span class="label">{{ block.settings.eyebrow }}</span>
+        <h3>{{ block.settings.heading }}</h3>
+        <p>{{ block.settings.body }}</p>
+      </div>
+    {%- endfor -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Counter promise",
+  "blocks": [
+    {
+      "type": "promise",
+      "name": "Promise",
+      "settings": [
+        { "type": "text", "id": "eyebrow", "label": "Eyebrow" },
+        { "type": "text", "id": "heading", "label": "Heading" },
+        { "type": "textarea", "id": "body", "label": "Body" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Counter promise",
+      "blocks": [
+        {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Wholesale rates on",
+            "heading": "Slab pricing past 10 metres",
+            "body": "Cross the slab and the rate drops on the whole cut — no negotiation, the app shows it before you order."
+          }
+        },
+        {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Swatch first",
+            "heading": "Swatch before you commit",
+            "body": "Screen colour cannot be trusted. Order the shade card, hold it to your light, then order the than."
+          }
+        },
+        {
+          "type": "promise",
+          "settings": {
+            "eyebrow": "Cut to order",
+            "heading": "Half-metre increments",
+            "body": "Cut fresh off the than, folded and dispatched the same evening from Kalbadevi."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

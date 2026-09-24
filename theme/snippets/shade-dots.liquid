@@ -1,0 +1,17 @@
+{%- comment -%}
+  Usage: {% render 'shade-dots', values: 'Indigo,Rust', max: 4 %}
+{%- endcomment -%}
+{%- liquid
+  assign max = max | default: 4
+  assign list = values | split: ','
+  assign rest = list.size | minus: max
+-%}
+{%- if list.size > 0 -%}
+  <div class="dots">
+    {%- for value in list limit: max -%}
+      {%- capture hex %}{% render 'shade-hex', name: value %}{% endcapture -%}
+      <span class="dot" style="background: {{ hex | strip }};" title="{{ value | strip | escape }}"></span>
+    {%- endfor -%}
+    {%- if rest > 0 -%}<span class="more">+{{ rest }} shades</span>{%- endif -%}
+  </div>
+{%- endif -%}

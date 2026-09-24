@@ -1,7 +1,22 @@
-# Singhania Fabrics — headless storefront
+# Singhania Fabrics
 
-The Singhania Fabrics counter as a Nuxt 3 storefront on the Shopify Storefront
-API. Runs locally; no hosting provider config is included.
+The Singhania Fabrics counter, in two interchangeable fronts over one Shopify
+store:
+
+| | |
+|---|---|
+| **Headless storefront** (this directory) | Nuxt 3 on the Shopify Storefront API |
+| **Liquid theme** (`theme/`) | a Shopify Online Store 2.0 theme, same design, same data model |
+
+Both read the same products, the same `design-*` collections and the same
+`custom.*` metafields, so stock entered for one is stock entered for the
+other. Pick either as the public face; Shopify serves checkout in both cases.
+See **[theme/README.md](theme/README.md)** for importing the Liquid theme and
+for how the two stay in step.
+
+## The headless storefront
+
+Runs locally; no hosting provider config is included.
 
 ```bash
 npm install

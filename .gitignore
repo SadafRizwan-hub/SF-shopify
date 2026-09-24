@@ -1,22 +1,14 @@
-# Nuxt
-.nuxt
-.output
-.data
-.nitro
-.cache
+# build output
 dist
 
 # deps
 node_modules
 
-# env — never commit real tokens
-.env
-.env.*
-!.env.example
+# Shopify CLI
+.shopify
 
 # logs / editor / os
 *.log
-npm-debug.log*
 .DS_Store
 .idea
 .vscode/*

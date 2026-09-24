@@ -1,146 +1,43 @@
-# Singhania Fabrics
+# Singhania Fabrics — Shopify theme
 
-The Singhania Fabrics counter, in two interchangeable fronts over one Shopify
-store:
-
-| | |
-|---|---|
-| **Headless storefront** (this directory) | Nuxt 3 on the Shopify Storefront API |
-| **Liquid theme** (`theme/`) | a Shopify Online Store 2.0 theme, same design, same data model |
-
-Both read the same products, the same `design-*` collections and the same
-`custom.*` metafields, so stock entered for one is stock entered for the
-other. Pick either as the public face; Shopify serves checkout in both cases.
-See **[theme/README.md](theme/README.md)** for importing the Liquid theme and
-for how the two stay in step.
-
-## The headless storefront
-
-Runs locally; no hosting provider config is included.
+The Singhania Fabrics counter as a Shopify Online Store 2.0 theme, in
+`theme/`. This branch carries the theme and nothing else.
 
 ```bash
-npm install
-cp .env.example .env    # add your store domain + Storefront token
-npm run dev             # http://localhost:3000
-npm test                # the Shopify → fabric translation
+./scripts/package-theme.sh    # writes dist/sf-shopi-theme.zip
 ```
 
-Running `dev` before the credentials are in place is fine: the pages render
-their own empty states, and a notice at the bottom of the screen names the
-variable that is missing. That notice only ever appears under `nuxt dev`.
+Then **Online Store → Themes → Add theme → Upload zip file**, and preview
+before publishing. Full setup, the data model and the three limits to know
+about are in **[theme/README.md](theme/README.md)**.
 
-## Getting the two credentials
+Working on it with the CLI instead:
 
-Use the **Headless** sales channel (Shopify admin → left nav → Headless; add
-it from the Sales channels list if it isn't there):
+```bash
+cd theme
+shopify theme dev --store your-store.myshopify.com
+shopify theme check
+```
 
-1. Create a storefront in that channel.
-2. Open **Storefront API** on it.
-3. Copy the **public access token** into `NUXT_PUBLIC_SHOPIFY_TOKEN`.
-4. `NUXT_PUBLIC_SHOPIFY_DOMAIN` is your `*.myshopify.com` domain — the
-   permanent one from Settings → Domains, not a custom domain.
+## Where the headless storefront went
 
-The public token is read/cart scoped and is meant to ship in frontend code.
-Never put the **private** token or an Admin API token in this project.
+The Nuxt 3 storefront that used to sit beside this theme is not on this
+branch — Shopify's Online Store cannot run it, so it is only noise here. It
+is unchanged on **`sf-shopi`**, which carries both fronts, and on
+`claude/dazzling-keller-e79a7d`.
 
-A custom app with `unauthenticated_*` scopes works too, but the Headless
-channel already grants the right scopes, so prefer it.
+Nothing was lost by splitting them: the theme never referenced a file outside
+`theme/`. The two fronts are interchangeable because they share a data model,
+not code — the same products, the same `design-*` collections and the same
+`custom.*` metafields, described in `theme/README.md`.
 
-**Every product must be published to the Headless channel** or the Storefront
-API returns an empty catalogue with no error. This is the most common reason
-the catalog looks empty when the credentials are correct.
+Two constants are therefore duplicated on purpose, and must be kept in step if
+you run both fronts over one store:
 
-## Read this first: cloth is sold in half metres
-
-A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So
-**one unit of stock is half a metre**, and a variant's price is the rate for
-that half metre.
-
-> A cloth at **₹240/m** is entered in Shopify as **120**.
-
-The UI multiplies back up: rates shown are `variantPrice / 0.5`, metres are
-`quantity * 0.5`. The constant is `UNIT_METRES` in `composables/catalogStore.js`
-and it is the only place that conversion happens. Get this wrong in the admin
-and every cut is billed at half price.
-
-## How a fabric is entered in Shopify
-
-| Shopify field | Becomes |
+| The theme | The headless storefront |
 |---|---|
-| product | one quality, e.g. `Mercerized Cambric 44"` |
-| product type | the fabric-type filter chip |
-| option **Design** | one value per design it is printed on (optional) |
-| option **Shade** | one value per dyed colour, matched to `data/shades.js` |
-| collection `design-*` | the design book entry — its image and tag line |
-| variant price | the rate for **one half metre** |
-| variant metafield `custom.min_cut` | per-shade MOQ in metres |
-| product metafield `custom.subtitle` | the line under the name |
-| product metafield `custom.width` | e.g. `44"` |
-| product metafield `custom.note` | counter note on the fabric page |
-| product metafield `custom.price_slabs` | `[{"from":10,"price":210}]` wholesale rungs |
+| `cut_unit_metres` (Theme settings → The counter) | `UNIT_METRES` in `composables/catalogStore.js` |
+| `theme/snippets/shade-table.liquid` | `data/shades.js` |
 
-Metafields must have **Storefront API access** enabled on their definition or
-they read back as null.
-
-**Shade colours come from `data/shades.js`**, not Shopify — Shopify stores an
-option value as a name (`"Indigo"`), never a hex. Add a row there for each
-shade you dye. An unlisted shade still works; it just shows a neutral swatch
-until you list it.
-
-## Layout
-
-```
-composables/
-  catalogStore.js   ← THE ONLY FILE THAT KNOWS ABOUT SHOPIFY
-  store.js          search, filters, shortlist, cut list, toasts
-  queries.js        GraphQL documents
-  useShopify.js     client + error wrapper
-stores/cart.js      Shopify Cart API — the cut list's backing store
-data/shades.js      shade name → hex
-data/photos.js      the shop's own photography (public/photos/)
-components/         your ten components, unchanged in look
-pages/              home, catalog, fabrics/[code], designs, designs/[id],
-                    cut-list, shortlist, about
-assets/css/base.css design tokens + the global primitives
-test/               guards the Shopify → fabric translation
-```
-
-Every component and page speaks `fabric` / `designGroups` / `slabs`. Shopify's
-own shape stops at `catalogStore.js`, so changing how stock is entered — a new
-metafield, a renamed option — touches that one file and nothing else.
-
-## Three limits to know about
-
-These are live in the UI but **not enforced at checkout**:
-
-1. **Slab pricing is display-only.** `fabric.slabs` renders the rungs and the
-   fabric page totals against the selected tier, but Shopify's cart does not
-   apply tier pricing on standard plans. **The shopper can be shown ₹210/m and
-   charged ₹240/m.** To close it: a Shopify Function (product discount), or
-   automatic quantity discounts mirroring each rung, or B2B quantity rules
-   (Plus). Until then the tier is a quote, not a price.
-2. **Per-shade MOQ is client-side only.** `custom.min_cut` drives the stepper
-   floor; nothing stops a crafted cart from going under it.
-3. **Order confirmation is Shopify's own page.** Its hosted checkout ends on a
-   thank-you page you don't control, and the Storefront API cannot read an
-   arbitrary order without customer accounts. There is no `/order/…` route here.
-
-Checkout itself is Shopify's: it collects the customer's name, address and
-payment, and calculates shipping from its own rules. Set the free-over-₹2,000
-threshold as a Shopify shipping rate — `FREE_OVER` in `pages/cut-list.vue`
-only prints the message, it does not price anything.
-
-The ₹20 swatch card expects an ordinary Shopify product with handle
-`swatch-card`; until it exists the button says so.
-
-## Commands
-
-| Command | Does |
-|---|---|
-| `npm run dev` | dev server, HMR |
-| `npm test` | adapter tests |
-| `npm run build` | server build into `.output/` |
-| `npm run generate` | static site into `.output/public/` |
-
-`generate` prerenders `/` and crawls the fabric and design links from it.
-Rates and stock in static output are frozen at build time.
+Get the first pair out of step and one front bills every cut at half price.
+A shade missing from one only means a neutral swatch there, not a breakage.

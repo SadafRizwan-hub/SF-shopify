@@ -109,10 +109,23 @@ rows also override a built-in of the same name. An unlisted shade still works
    `design-` and assign it the **design** collection template. Collections
    with no products are never shown — a design with nothing under it opens
    onto nothing.
-4. **Filters.** Install **Search & Discovery** and add filters for Product
-   type, the Shade option, the Design option and price. The catalog's rail and
-   its mobile sheet are built from whatever filters the store defines, so no
-   filter is hardcoded here.
+4. **Filters.** The catalog always offers the counter's three facets —
+   **Fabric** (product type), **Colour** (the Shade option) and **Design**
+   (the Design option, or a `design-*` collection) — and serves each of them
+   one of two ways:
+
+   - **Native.** Install **Search & Discovery** and add a filter for that
+     facet. Shopify then filters server-side, across the whole collection and
+     through pagination. Always preferred, and the rail renders it as links
+     that work with JavaScript off.
+   - **Theme-side.** No such filter configured, so the rail builds that facet
+     from the products on the page and filters the grid in the browser. This
+     is why colour, design and fabric work on a shop with no app installed —
+     but it only spans the products currently rendered, and the rail says so
+     once a collection runs past one page.
+
+   Any other filter the store defines (price, availability, vendor) is
+   rendered below the three, so nothing is lost by this.
 5. **Free delivery.** Theme settings → The counter → *Free delivery over* only
    prints the threshold. Set the matching rate in **Settings → Shipping**, or
    the cut list will promise something checkout does not honour.

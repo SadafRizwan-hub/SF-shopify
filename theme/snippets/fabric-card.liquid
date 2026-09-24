@@ -35,8 +35,43 @@
   capture shade_values
     render 'axis-values', product: product, axis: 'shade'
   endcapture
+
+  # The three counter facets, as handles on the card itself. The filter rail
+  # reads them when the store has no Search & Discovery filter for that facet,
+  # so colour / design / fabric filtering works on a shop that has not
+  # installed the app.
+  capture design_values
+    render 'axis-values', product: product, axis: 'design'
+  endcapture
+
+  assign shade_keys = ''
+  assign shade_list = shade_values | strip | split: ','
+  for value in shade_list
+    assign shade_keys = shade_keys | append: ' ' | append: value | strip | handle
+  endfor
+
+  assign design_keys = ''
+  assign design_list = design_values | strip | split: ','
+  for value in design_list
+    assign design_keys = design_keys | append: ' ' | append: value | strip | handle
+  endfor
+
+  # a design is also a design-* collection the product sits in
+  assign design_prefix = settings.design_collection_prefix | default: 'design-'
+  for collection in product.collections
+    if collection.handle contains design_prefix
+      assign slug = collection.handle | remove_first: design_prefix
+      assign design_keys = design_keys | append: ' ' | append: slug
+    endif
+  endfor
 -%}
-<article class="card" data-fabric="{{ product.handle }}">
+<article
+  class="card"
+  data-fabric="{{ product.handle }}"
+  data-type="{{ product.type | handle }}"
+  data-shades="{{ shade_keys | strip }}"
+  data-designs="{{ design_keys | strip }}"
+>
   <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
     {%- capture overlay -%}
       <span class="tag">{{ product.type | default: 'Uncategorised' }}</span>

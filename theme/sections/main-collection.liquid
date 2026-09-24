@@ -63,10 +63,10 @@
           <div class="railhead">
             <span class="label">Filter</span>
             {%- if active_count > 0 -%}
-              <a class="linkish" href="{{ collection.url }}">Reset all</a>
+              <a class="linkish" href="{{ collection.url }}" data-facet-reset>Reset all</a>
             {%- endif -%}
           </div>
-          {% render 'filter-panel', collection: collection %}
+          {% render 'filter-panel', collection: collection, paginate: paginate %}
         </aside>
 
         <section class="results">
@@ -86,12 +86,12 @@
                   </a>
                 {%- endfor -%}
               {%- endfor -%}
-              <a class="linkish clear" href="{{ collection.url }}">Clear</a>
+              <a class="linkish clear" href="{{ collection.url }}" data-facet-reset>Clear</a>
             </div>
           {%- endif -%}
 
           <p class="count meta">
-            Showing {{ collection.products.size }} of {{ collection.all_products_count }}
+            Showing <span data-shown>{{ collection.products.size }}</span> of {{ collection.all_products_count }}
           </p>
 
           {%- if collection.products.size > 0 -%}
@@ -100,11 +100,20 @@
                 {% render 'fabric-card', product: product %}
               {%- endfor -%}
             </div>
+            {%- comment -%}
+              The same words as the server-rendered empty state below, for when
+              the theme-side facets hide every card on the page.
+            {%- endcomment -%}
+            <div class="empty" data-facet-empty hidden>
+              <h3>Nothing on the shelf matches that</h3>
+              <p class="meta">Drop a filter, or ask the counter — we hold more in the godown than in the app.</p>
+              <button type="button" class="btn btn-ghost" data-facet-reset>Reset everything</button>
+            </div>
           {%- else -%}
             <div class="empty">
               <h3>Nothing on the shelf matches that</h3>
               <p class="meta">Drop a filter, or ask the counter — we hold more in the godown than in the app.</p>
-              <a class="btn btn-ghost" href="{{ collection.url }}">Reset everything</a>
+              <a class="btn btn-ghost" href="{{ collection.url }}" data-facet-reset>Reset everything</a>
             </div>
           {%- endif -%}
 
@@ -133,10 +142,10 @@
         <div class="grab"></div>
         <header class="sheethead">
           <h2>Filter</h2>
-          <a class="linkish" href="{{ collection.url }}">Reset all</a>
+          <a class="linkish" href="{{ collection.url }}" data-facet-reset>Reset all</a>
         </header>
         <div class="sheetbody">
-          {% render 'filter-panel', collection: collection %}
+          {% render 'filter-panel', collection: collection, paginate: paginate %}
         </div>
         <footer class="sheetfoot">
           <button type="button" class="btn btn-ghost" data-sheet-close>Cancel</button>
@@ -145,6 +154,7 @@
       </div>
     {%- endif -%}
   </div>
+<script src="{{ 'catalog-filters.js' | asset_url }}" defer></script>
 {%- endpaginate -%}
 
 {% schema %}

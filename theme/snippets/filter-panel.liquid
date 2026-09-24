@@ -1,23 +1,52 @@
 {%- comment -%}
-  The filter rail, built from the store's own Search & Discovery filters.
+  The filter rail.
 
-  Only a filter that can return something is offered: a fabric type or a
-  design with no posted product behind it is a dead chip — it reads as stock
-  we carry and lands the shopper on an empty grid. Shopify already drops
-  zero-count values from a filter's list, so the same rule holds here.
+  The counter filters on three things: the fabric (product type), the colour
+  (the Shade option) and the design (the Design option, or a design-*
+  collection). Each is served two ways:
 
-  Every control is a link, so the rail works before a line of JavaScript runs.
+    native   the store has a Search & Discovery filter for it. Shopify does
+             the filtering server-side, so it spans the whole collection and
+             paginates correctly. Always preferred.
+    theme    no such filter exists. The rail is then built from the products
+             on this page and the grid is filtered in the browser, so the shop
+             has working facets before anyone installs an app — but only
+             across the products currently rendered. The panel says so.
+
+  Every native control is a link, so that path works with no JavaScript.
 {%- endcomment -%}
 {%- liquid
   assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+
+  assign native_fabric = false
+  assign native_colour = false
+  assign native_design = false
+
+  for filter in collection.filters
+    assign key = filter.label | strip | downcase
+    if shade_names contains key
+      assign native_colour = true
+    elsif design_names contains key
+      assign native_design = true
+    elsif key == 'product type' or key == 'fabric' or key == 'quality'
+      assign native_fabric = true
+    endif
+  endfor
 -%}
+
 <div class="panel">
+  {%- comment -%} ---- native facets, in the counter's order ---- {%- endcomment -%}
   {%- for filter in collection.filters -%}
     {%- liquid
       assign key = filter.label | strip | downcase
-      assign is_shade = false
+      assign is_colour = false
+      assign is_design = false
       if shade_names contains key
-        assign is_shade = true
+        assign is_colour = true
+      elsif design_names contains key
+        assign is_design = true
       endif
     -%}
 
@@ -25,7 +54,6 @@
       <section>
         <header>
           <span class="label">{{ filter.label }}</span>
-          <span class="meta">{{ filter.min_value.value | default: 0 | money }} – {{ filter.max_value.value | default: filter.range_max | money }}</span>
         </header>
         <form method="get" class="range">
           {%- for other in collection.filters -%}
@@ -45,24 +73,35 @@
         <header>
           <span class="label">{{ filter.label }}</span>
           <span class="meta">
-            {%- if filter.active_values.size > 0 -%}
-              {{ filter.active_values.size }} selected
-            {%- else -%}
-              none
-            {%- endif -%}
+            {%- if filter.active_values.size > 0 -%}{{ filter.active_values.size }} selected{%- else -%}none{%- endif -%}
           </span>
         </header>
 
-        {%- if is_shade -%}
+        {%- if is_colour -%}
           <div class="shades">
             {%- for value in filter.values -%}
               {%- capture hex %}{% render 'shade-hex', name: value.label %}{% endcapture -%}
-              <a
-                class="shade{% if value.active %} on{% endif %}"
-                href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
-                aria-pressed="{{ value.active }}"
-              >
+              <a class="shade{% if value.active %} on{% endif %}"
+                 href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}">
                 <span class="ring" style="background: {{ hex | strip }};"></span>
+                <span class="nm">{{ value.label }}</span>
+              </a>
+            {%- endfor -%}
+          </div>
+
+        {%- elsif is_design -%}
+          <div class="designs-facet">
+            {%- for value in filter.values -%}
+              {%- assign book_slug = value.label | handle -%}
+              {%- assign book_handle = prefix | append: book_slug -%}
+              {%- assign book = collections[book_handle] -%}
+              <a class="designpick{% if value.active %} on{% endif %}"
+                 href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}">
+                <span class="thumb">
+                  {%- if book.image -%}
+                    <img src="{{ book.image | image_url: width: 160 }}" alt="{{ value.label | escape }}" loading="lazy" width="80" height="80">
+                  {%- endif -%}
+                </span>
                 <span class="nm">{{ value.label }}</span>
               </a>
             {%- endfor -%}
@@ -71,12 +110,9 @@
         {%- else -%}
           <div class="chips">
             {%- for value in filter.values -%}
-              <a
-                class="chip{% if value.active %} on{% endif %}"
-                href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}"
-              >
-                {{ value.label }}
-                {%- if value.count > 0 %} <span class="n">{{ value.count }}</span>{% endif -%}
+              <a class="chip{% if value.active %} on{% endif %}"
+                 href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}">
+                {{ value.label }}{% if value.count > 0 %} <span class="n">{{ value.count }}</span>{% endif %}
               </a>
             {%- endfor -%}
           </div>
@@ -84,4 +120,146 @@
       </section>
     {%- endif -%}
   {%- endfor -%}
+
+  {%- comment -%}
+    ---- theme-side facets, for whatever the store has no native filter for ----
+    Built from the products on this page, so a value only appears when
+    something rendered actually carries it — never a chip that leads nowhere.
+  {%- endcomment -%}
+  {%- unless native_fabric -%}
+    {%- liquid
+      assign types = ''
+      for product in collection.products
+        if product.type == blank
+          continue
+        endif
+        assign slug = product.type | handle
+        assign probe = '|' | append: slug | append: '|'
+        assign seen = '|' | append: types | append: '|'
+        unless seen contains probe
+          assign types = types | append: slug | append: '|' | append: product.type | append: '||'
+        endunless
+      endfor
+      assign type_rows = types | split: '||'
+    -%}
+    {%- if type_rows.size > 0 -%}
+      <section data-facet-group="type">
+        <header>
+          <span class="label">Fabric</span>
+          <span class="meta" data-facet-count="type">none</span>
+        </header>
+        <div class="chips">
+          {%- for row in type_rows -%}
+            {%- assign parts = row | split: '|' -%}
+            <button type="button" class="chip" data-facet="type" data-value="{{ parts[0] }}">{{ parts[1] }}</button>
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+  {%- endunless -%}
+
+  {%- unless native_colour -%}
+    {%- liquid
+      assign shades = ''
+      for product in collection.products
+        for option in product.options_with_values
+          assign key = option.name | strip | downcase
+          unless shade_names contains key
+            continue
+          endunless
+          for value in option.values
+            assign slug = value | handle
+            assign probe = '|' | append: slug | append: '|'
+            assign seen = '|' | append: shades | append: '|'
+            unless seen contains probe
+              assign shades = shades | append: slug | append: '|' | append: value | append: '||'
+            endunless
+          endfor
+        endfor
+      endfor
+      assign shade_rows = shades | split: '||'
+    -%}
+    {%- if shade_rows.size > 0 -%}
+      <section data-facet-group="shades">
+        <header>
+          <span class="label">Colour</span>
+          <span class="meta" data-facet-count="shades">tap to add</span>
+        </header>
+        <div class="shades">
+          {%- for row in shade_rows -%}
+            {%- assign parts = row | split: '|' -%}
+            {%- capture hex %}{% render 'shade-hex', name: parts[1] %}{% endcapture -%}
+            <button type="button" class="shade" data-facet="shades" data-value="{{ parts[0] }}">
+              <span class="ring" style="background: {{ hex | strip }};"></span>
+              <span class="nm">{{ parts[1] }}</span>
+            </button>
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+  {%- endunless -%}
+
+  {%- unless native_design -%}
+    {%- liquid
+      assign designs = ''
+      for product in collection.products
+        for option in product.options_with_values
+          assign key = option.name | strip | downcase
+          unless design_names contains key
+            continue
+          endunless
+          for value in option.values
+            assign slug = value | handle
+            assign probe = '|' | append: slug | append: '|'
+            assign seen = '|' | append: designs | append: '|'
+            unless seen contains probe
+              assign designs = designs | append: slug | append: '|' | append: value | append: '||'
+            endunless
+          endfor
+        endfor
+        for book in product.collections
+          unless book.handle contains prefix
+            continue
+          endunless
+          assign slug = book.handle | remove_first: prefix
+          assign probe = '|' | append: slug | append: '|'
+          assign seen = '|' | append: designs | append: '|'
+          unless seen contains probe
+            assign designs = designs | append: slug | append: '|' | append: book.title | append: '||'
+          endunless
+        endfor
+      endfor
+      assign design_rows = designs | split: '||'
+    -%}
+    {%- if design_rows.size > 0 -%}
+      <section data-facet-group="designs">
+        <header>
+          <span class="label">Design / Pattern</span>
+          <span class="meta" data-facet-count="designs">none selected</span>
+        </header>
+        <div class="designs-facet">
+          {%- for row in design_rows -%}
+            {%- assign parts = row | split: '|' -%}
+            {%- assign book_handle = prefix | append: parts[0] -%}
+            {%- assign book = collections[book_handle] -%}
+            <button type="button" class="designpick" data-facet="designs" data-value="{{ parts[0] }}">
+              <span class="thumb">
+                {%- if book.image -%}
+                  <img src="{{ book.image | image_url: width: 160 }}" alt="{{ parts[1] | escape }}" loading="lazy" width="80" height="80">
+                {%- endif -%}
+              </span>
+              <span class="nm">{{ parts[1] }}</span>
+            </button>
+          {%- endfor -%}
+        </div>
+      </section>
+    {%- endif -%}
+  {%- endunless -%}
+
+  {%- if paginate.pages > 1 and native_fabric == false or paginate.pages > 1 and native_colour == false or paginate.pages > 1 and native_design == false -%}
+    <p class="meta facetnote">
+      Colour, design and fabric filter the {{ collection.products.size }} shown here.
+      Enable them in Search &amp; Discovery to filter the whole catalogue.
+    </p>
+  {%- endif -%}
 </div>

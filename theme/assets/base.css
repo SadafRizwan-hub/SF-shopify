@@ -683,6 +683,29 @@ body.drawer-open { overflow: hidden; }
 .panel .shade.on .ring { box-shadow: inset 0 0 0 1px rgba(20,17,15,.14), 0 0 0 2px var(--ivory), 0 0 0 4px var(--ink); }
 .panel .nm { font-size: 10.5px; color: var(--ink-70); text-align: center; }
 .panel .shade.on .nm { color: var(--ink); font-weight: 500; }
+.panel .designs-facet {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px 10px;
+}
+.panel .designpick { display: flex; flex-direction: column; gap: 7px; text-align: left; }
+.panel .designpick .thumb {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--sand);
+  box-shadow: inset 0 0 0 1px var(--line-soft);
+  transition: box-shadow 0.14s;
+}
+.panel .designpick .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.panel .designpick:hover .thumb { box-shadow: inset 0 0 0 1px var(--line-strong); }
+.panel .designpick.on .thumb { box-shadow: 0 0 0 2px var(--ink); }
+.panel .designpick .nm { font-size: 10.5px; color: var(--ink-70); text-align: left; }
+.panel .designpick.on .nm { color: var(--ink); font-weight: 500; }
+
+.panel .facetnote { margin-top: -10px; line-height: 1.5; }
+
 .panel .range { display: flex; align-items: center; gap: 8px; }
 .panel .range input {
   width: 100%; min-width: 0; height: 34px; padding: 0 10px;

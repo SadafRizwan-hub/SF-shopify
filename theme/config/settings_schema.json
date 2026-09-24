@@ -2,7 +2,7 @@
   {
     "name": "theme_info",
     "theme_name": "Singhania Fabrics",
-    "theme_version": "1.0.0",
+    "theme_version": "1.1.0",
     "theme_author": "Singhania Fabrics",
     "theme_documentation_url": "https://github.com/SadafRizwan-hub/SF-shopify",
     "theme_support_url": "https://github.com/SadafRizwan-hub/SF-shopify/issues"
@@ -21,9 +21,18 @@
         "info": "The metres one unit of stock represents. Must match the headless storefront's UNIT_METRES.",
         "default": "0.5",
         "options": [
-          { "value": "0.25", "label": "0.25 m" },
-          { "value": "0.5", "label": "0.5 m" },
-          { "value": "1", "label": "1 m" }
+          {
+            "value": "0.25",
+            "label": "0.25 m"
+          },
+          {
+            "value": "0.5",
+            "label": "0.5 m"
+          },
+          {
+            "value": "1",
+            "label": "1 m"
+          }
         ]
       },
       {
@@ -108,12 +117,42 @@
   {
     "name": "Colours",
     "settings": [
-      { "type": "color", "id": "col_ivory", "label": "Page ground", "default": "#fffdf8" },
-      { "type": "color", "id": "col_paper", "label": "Paper (header, footer, panels)", "default": "#f8f5ef" },
-      { "type": "color", "id": "col_sand", "label": "Sand (hover, unphotographed surface)", "default": "#efe8dc" },
-      { "type": "color", "id": "col_ink", "label": "Ink", "default": "#14110f" },
-      { "type": "color", "id": "col_terracotta", "label": "Terracotta (low stock)", "default": "#b5542e" },
-      { "type": "color", "id": "col_brass", "label": "Brass (links into the design book)", "default": "#96702e" }
+      {
+        "type": "color",
+        "id": "col_ivory",
+        "label": "Page ground",
+        "default": "#fffdf8"
+      },
+      {
+        "type": "color",
+        "id": "col_paper",
+        "label": "Paper (header, footer, panels)",
+        "default": "#f8f5ef"
+      },
+      {
+        "type": "color",
+        "id": "col_sand",
+        "label": "Sand (hover, unphotographed surface)",
+        "default": "#efe8dc"
+      },
+      {
+        "type": "color",
+        "id": "col_ink",
+        "label": "Ink",
+        "default": "#14110f"
+      },
+      {
+        "type": "color",
+        "id": "col_terracotta",
+        "label": "Terracotta (low stock)",
+        "default": "#b5542e"
+      },
+      {
+        "type": "color",
+        "id": "col_brass",
+        "label": "Brass (links into the design book)",
+        "default": "#96702e"
+      }
     ]
   },
   {
@@ -163,7 +202,11 @@
   {
     "name": "Social",
     "settings": [
-      { "type": "image_picker", "id": "share_image", "label": "Default social share image" }
+      {
+        "type": "image_picker",
+        "id": "share_image",
+        "label": "Default social share image"
+      }
     ]
   }
 ]

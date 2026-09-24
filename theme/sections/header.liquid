@@ -5,7 +5,7 @@
   # resolve to the page handles the README asks the admin to create — that way
   # a freshly imported theme still has a usable nav before anyone opens the
   # editor, and a configured store is never second-guessed.
-  assign menu = section.settings.menu | default: linklists.main-menu
+  assign menu = section.settings.menu | default: linklists['main-menu']
   assign use_menu = false
   if menu.links.size > 0
     assign use_menu = true
@@ -141,24 +141,50 @@
 {
   "name": "Header",
   "settings": [
-    { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Singhania Fabrics" },
+    {
+      "type": "text",
+      "id": "wordmark",
+      "label": "Wordmark",
+      "default": "Singhania Fabrics"
+    },
     {
       "type": "link_list",
       "id": "menu",
       "label": "Menu",
-      "info": "Defaults to your Main menu. Leave the Main menu empty to use the built-in Home / Catalog / Designs / The shop links instead."
+      "info": "Defaults to your Main menu. Leave the Main menu empty to use the built-in Home / Catalog / Designs / The shop links instead.",
+      "default": "main-menu"
     },
     {
       "type": "header",
       "content": "Built-in links",
       "info": "Only used when no menu has any links."
     },
-    { "type": "url", "id": "catalog_url", "label": "Catalog link" },
-    { "type": "url", "id": "designs_url", "label": "Design book link" },
-    { "type": "url", "id": "about_url", "label": "The shop link" },
-    { "type": "text", "id": "about_label", "label": "The shop label", "default": "The shop" },
-    { "type": "url", "id": "shortlist_url", "label": "Shortlist link" }
-  ],
-  "enabled_on": { "templates": ["*"] }
+    {
+      "type": "url",
+      "id": "catalog_url",
+      "label": "Catalog link"
+    },
+    {
+      "type": "url",
+      "id": "designs_url",
+      "label": "Design book link"
+    },
+    {
+      "type": "url",
+      "id": "about_url",
+      "label": "The shop link"
+    },
+    {
+      "type": "text",
+      "id": "about_label",
+      "label": "The shop label",
+      "default": "The shop"
+    },
+    {
+      "type": "url",
+      "id": "shortlist_url",
+      "label": "Shortlist link"
+    }
+  ]
 }
 {% endschema %}

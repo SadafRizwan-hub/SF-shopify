@@ -32,7 +32,11 @@
 {
   "name": "Footer",
   "settings": [
-    { "type": "text", "id": "address", "label": "Address line" },
+    {
+      "type": "text",
+      "id": "address",
+      "label": "Address line"
+    },
     {
       "type": "textarea",
       "id": "fine_print",
@@ -46,17 +50,35 @@
       "name": "Menu column",
       "limit": 3,
       "settings": [
-        { "type": "text", "id": "heading", "label": "Heading", "default": "Shop" },
-        { "type": "link_list", "id": "menu", "label": "Menu" }
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Shop"
+        },
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu"
+        }
       ]
     }
   ],
   "default": {
     "blocks": [
-      { "type": "menu", "settings": { "heading": "Shop" } },
-      { "type": "menu", "settings": { "heading": "The shop" } }
+      {
+        "type": "menu",
+        "settings": {
+          "heading": "Shop"
+        }
+      },
+      {
+        "type": "menu",
+        "settings": {
+          "heading": "The shop"
+        }
+      }
     ]
-  },
-  "enabled_on": { "templates": ["*"] }
+  }
 }
 {% endschema %}

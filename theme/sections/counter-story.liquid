@@ -14,7 +14,7 @@
     {%- for block in section.blocks -%}
       {%- if block.type == 'photo' and block.settings.image -%}
         {%- assign images = images | plus: 1 -%}
-        {{ block.settings.image | image_url: width: 900 | image_tag: loading: 'lazy', alt: block.settings.alt, sizes: '33vw', widths: '300,600,900' }}
+        {% render 'responsive-img', image: block.settings.image, alt: block.settings.alt, sizes: '33vw' %}
       {%- endif -%}
     {%- endfor -%}
   {%- endcapture -%}

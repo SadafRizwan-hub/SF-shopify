@@ -1,0 +1,43 @@
+{%- comment -%}
+  One <img>, with a srcset that never asks for a width the source does not
+  have.
+
+  image_tag's `widths` is the tidy way to do this until someone uploads a
+  photograph smaller than the widths asked for, at which point Liquid prints an
+  error into the page — and a Liquid error inside a JSON payload or an
+  attribute takes far more than the picture down with it. Building the srcset
+  here costs a few lines and cannot fail that way.
+
+  Usage: {% render 'responsive-img', image: img, alt: 'x', sizes: '100vw' %}
+{%- endcomment -%}
+{%- if image -%}
+  {%- liquid
+    assign sizes = sizes | default: '100vw'
+    assign loading = loading | default: 'lazy'
+    assign max_w = image.width | default: 1200
+    assign candidates = '180,360,540,720,900,1200,1600,2200' | split: ','
+    assign srcset = ''
+    for candidate in candidates
+      assign cw = candidate | times: 1
+      if cw >= max_w
+        continue
+      endif
+      assign url = image | image_url: width: cw
+      assign srcset = srcset | append: url | append: ' ' | append: cw | append: 'w, '
+    endfor
+    assign native = image | image_url: width: max_w
+    assign srcset = srcset | append: native | append: ' ' | append: max_w | append: 'w'
+    assign alt_text = alt | default: image.alt | escape
+  -%}
+  <img
+    {% if class != blank %}class="{{ class }}" {% endif %}
+    src="{{ native }}"
+    srcset="{{ srcset }}"
+    sizes="{{ sizes }}"
+    alt="{{ alt_text }}"
+    width="{{ image.width }}"
+    height="{{ image.height }}"
+    loading="{{ loading }}"
+    {% if fetchpriority != blank %}fetchpriority="{{ fetchpriority }}"{% endif %}
+  >
+{%- endif -%}

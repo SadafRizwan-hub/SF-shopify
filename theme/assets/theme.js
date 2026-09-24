@@ -132,8 +132,66 @@
     else document.addEventListener('DOMContentLoaded', fn);
   }
 
+  /* ---- drawer ---------------------------------------------------------- */
+
+  function drawerParts() {
+    return {
+      panel: document.querySelector('[data-drawer]'),
+      scrim: document.querySelector('.drawer-scrim'),
+      button: document.querySelector('[data-drawer-open]')
+    };
+  }
+
+  function openDrawer() {
+    var d = drawerParts();
+    if (!d.panel) return;
+    d.panel.hidden = false;
+    if (d.scrim) d.scrim.hidden = false;
+    /* one frame with the element laid out, so the transform animates */
+    requestAnimationFrame(function () {
+      d.panel.classList.add('on');
+      if (d.scrim) d.scrim.classList.add('on');
+    });
+    document.body.classList.add('drawer-open');
+    if (d.button) d.button.setAttribute('aria-expanded', 'true');
+    var first = d.panel.querySelector('a, button, input');
+    if (first) first.focus();
+  }
+
+  function closeDrawer() {
+    var d = drawerParts();
+    if (!d.panel) return;
+    d.panel.classList.remove('on');
+    if (d.scrim) d.scrim.classList.remove('on');
+    document.body.classList.remove('drawer-open');
+    if (d.button) {
+      d.button.setAttribute('aria-expanded', 'false');
+      d.button.focus();
+    }
+    setTimeout(function () {
+      if (!d.panel.classList.contains('on')) {
+        d.panel.hidden = true;
+        if (d.scrim) d.scrim.hidden = true;
+      }
+    }, 280);
+  }
+
   ready(function () {
     paintShortlist();
+
+    /* A scroll lock that outlives its drawer freezes the whole page, so it is
+       cleared on every load rather than trusted to have been cleared on close. */
+    document.body.classList.remove('drawer-open');
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') closeDrawer();
+    });
+
+    /* The drawer holds the same links as the bar; above the breakpoint the bar
+       shows them itself, so a resize past it should not leave a panel open. */
+    window.addEventListener('resize', function () {
+      if (window.innerWidth > 900) closeDrawer();
+    });
 
     document.addEventListener('click', function (event) {
       var save = event.target.closest('[data-save]');
@@ -144,17 +202,32 @@
         return;
       }
 
-      var open = event.target.closest('[data-sheet-open]');
-      if (open) {
+      if (event.target.closest('[data-drawer-open]')) {
         event.preventDefault();
-        document.querySelector('[data-sheet]').classList.add('open');
-        document.querySelector('[data-scrim]').classList.add('on');
+        openDrawer();
         return;
       }
 
-      if (event.target.closest('[data-sheet-close]') || event.target.closest('[data-scrim]')) {
-        document.querySelector('[data-sheet]').classList.remove('open');
-        document.querySelector('[data-scrim]').classList.remove('on');
+      if (event.target.closest('[data-drawer-close]')) {
+        event.preventDefault();
+        closeDrawer();
+        return;
+      }
+
+      var open = event.target.closest('[data-sheet-open]');
+      var sheet = document.querySelector('[data-sheet]');
+      var scrim = document.querySelector('[data-scrim]');
+
+      if (open && sheet) {
+        event.preventDefault();
+        sheet.classList.add('open');
+        if (scrim) scrim.classList.add('on');
+        return;
+      }
+
+      if (sheet && (event.target.closest('[data-sheet-close]') || event.target.closest('[data-scrim]'))) {
+        sheet.classList.remove('open');
+        if (scrim) scrim.classList.remove('on');
       }
     });
 

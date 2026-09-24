@@ -1,31 +1,73 @@
 {%- liquid
-  # Unset links fall back to the page handles the README tells the admin to
-  # create, so the nav is right the moment those pages exist — a fresh import
-  # is not left with a two-item header until someone opens the editor.
+  # The navigation is the store's own menu, so it is edited in Navigation like
+  # any other Shopify theme. Only when no menu is set (or the chosen one is
+  # empty) does it fall back to the counter's four built-in doors, whose links
+  # resolve to the page handles the README asks the admin to create — that way
+  # a freshly imported theme still has a usable nav before anyone opens the
+  # editor, and a configured store is never second-guessed.
+  assign menu = section.settings.menu | default: linklists.main-menu
+  assign use_menu = false
+  if menu.links.size > 0
+    assign use_menu = true
+  endif
+
   assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
   assign designs_url = section.settings.designs_url | default: pages['design-book'].url
   assign about_url = section.settings.about_url | default: pages['the-shop'].url
   assign shortlist_url = section.settings.shortlist_url | default: pages.shortlist.url
   assign path = request.path
+
+  assign in_catalog = false
+  if request.page_type == 'collection' or request.page_type == 'product' or request.page_type == 'list-collections' or request.page_type == 'search'
+    assign in_catalog = true
+  endif
 -%}
+
+{%- comment -%}
+  Rendered once and reused by the bar and the drawer, so the two can never
+  drift apart — the phone and the desktop show the same navigation.
+{%- endcomment -%}
+{%- capture nav_links -%}
+  {%- if use_menu -%}
+    {%- for link in menu.links -%}
+      <a
+        href="{{ link.url }}"
+        {% if link.active or link.child_active %}class="on" aria-current="page"{% endif %}
+      >{{ link.title }}</a>
+    {%- endfor -%}
+  {%- else -%}
+    <a href="{{ routes.root_url }}"{% if path == routes.root_url %} class="on" aria-current="page"{% endif %}>Home</a>
+    <a href="{{ catalog_url }}"{% if in_catalog %} class="on" aria-current="page"{% endif %}>Catalog</a>
+    {%- if designs_url != blank -%}
+      <a href="{{ designs_url }}"{% if path == designs_url %} class="on" aria-current="page"{% endif %}>Designs</a>
+    {%- endif -%}
+    {%- if about_url != blank -%}
+      <a href="{{ about_url }}"{% if path == about_url %} class="on" aria-current="page"{% endif %}>{{ section.settings.about_label | default: 'The shop' }}</a>
+    {%- endif -%}
+  {%- endif -%}
+{%- endcapture -%}
+
 <header class="bar">
   <div class="shell inner">
+    {%- comment -%} Phones get the same navigation behind a menu button. {%- endcomment -%}
+    <button
+      class="burger"
+      type="button"
+      data-drawer-open
+      aria-expanded="false"
+      aria-controls="site-drawer"
+      aria-label="Open menu"
+    >
+      {% render 'icon', name: 'menu', size: 18 %}
+    </button>
+
     <a class="brand" href="{{ routes.root_url }}">
       <span class="mark">SF</span>
       <span class="word">{{ section.settings.wordmark | default: shop.name }}</span>
       <span class="wordmob">{{ section.settings.wordmark | default: shop.name }}</span>
     </a>
 
-    <nav class="nav">
-      <a href="{{ routes.root_url }}"{% if path == routes.root_url %} class="on"{% endif %}>Home</a>
-      <a href="{{ catalog_url }}"{% if request.page_type == 'collection' or request.page_type == 'product' or request.page_type == 'list-collections' %} class="on"{% endif %}>Catalog</a>
-      {%- if designs_url != blank -%}
-        <a href="{{ designs_url }}"{% if path == designs_url %} class="on"{% endif %}>Designs</a>
-      {%- endif -%}
-      {%- if about_url != blank -%}
-        <a href="{{ about_url }}"{% if path == about_url %} class="on"{% endif %}>{{ section.settings.about_label | default: 'The shop' }}</a>
-      {%- endif -%}
-    </nav>
+    <nav class="nav" aria-label="Primary">{{ nav_links }}</nav>
 
     <div class="tools">
       <form class="search" action="{{ routes.search_url }}" method="get" role="search">
@@ -42,6 +84,10 @@
         <input type="hidden" name="type" value="product">
       </form>
 
+      <a class="icon searchjump" href="{{ routes.search_url }}" aria-label="Search">
+        {% render 'icon', name: 'search' %}
+      </a>
+
       {%- if shortlist_url != blank -%}
         <a class="icon" href="{{ shortlist_url }}" title="Shortlist" aria-label="Shortlist">
           {% render 'icon', name: 'heart' %}
@@ -57,11 +103,56 @@
   </div>
 </header>
 
+<div class="drawer-scrim" data-drawer-close hidden></div>
+
+<div class="drawer" id="site-drawer" data-drawer hidden>
+  <div class="drawerhead">
+    <span class="mark">SF</span>
+    <button class="icon" type="button" data-drawer-close aria-label="Close menu">
+      {% render 'icon', name: 'close', size: 14 %}
+    </button>
+  </div>
+
+  <form class="drawersearch" action="{{ routes.search_url }}" method="get" role="search">
+    <label class="visually-hidden" for="drawer-search">Search the catalog</label>
+    {% render 'icon', name: 'search', size: 15 %}
+    <input id="drawer-search" type="search" name="q" placeholder="{{ 'general.search.placeholder' | t }}">
+    <input type="hidden" name="type" value="product">
+  </form>
+
+  <nav class="drawernav" aria-label="Primary">{{ nav_links }}</nav>
+
+  <div class="drawerfoot">
+    {%- if shortlist_url != blank -%}
+      <a href="{{ shortlist_url }}">Shortlist</a>
+    {%- endif -%}
+    <a href="{{ routes.cart_url }}">Cut list ({{ cart.item_count }})</a>
+    {%- if shop.customer_accounts_enabled -%}
+      {%- if customer -%}
+        <a href="{{ routes.account_url }}">Account</a>
+      {%- else -%}
+        <a href="{{ routes.account_login_url }}">Sign in</a>
+      {%- endif -%}
+    {%- endif -%}
+  </div>
+</div>
+
 {% schema %}
 {
   "name": "Header",
   "settings": [
     { "type": "text", "id": "wordmark", "label": "Wordmark", "default": "Singhania Fabrics" },
+    {
+      "type": "link_list",
+      "id": "menu",
+      "label": "Menu",
+      "info": "Defaults to your Main menu. Leave the Main menu empty to use the built-in Home / Catalog / Designs / The shop links instead."
+    },
+    {
+      "type": "header",
+      "content": "Built-in links",
+      "info": "Only used when no menu has any links."
+    },
     { "type": "url", "id": "catalog_url", "label": "Catalog link" },
     { "type": "url", "id": "designs_url", "label": "Design book link" },
     { "type": "url", "id": "about_url", "label": "The shop link" },

@@ -260,15 +260,118 @@ input, select, textarea { font: inherit; color: inherit; }
 }
 .pip[hidden] { display: none; }
 
+/* The menu button and the search shortcut are the phone's navigation; on a
+   wide screen the links themselves are in the bar, so both are hidden. */
+.burger, .searchjump { display: none; }
+.burger {
+  width: 38px;
+  height: 38px;
+  display: none;
+  place-items: center;
+  margin-left: -8px;
+  border-radius: 50%;
+  color: var(--ink-70);
+}
+.burger:hover { background: var(--sand); color: var(--ink); }
+
 @media (max-width: 900px) {
   .nav, .bar .search { display: none; }
-  .bar .inner { height: 58px; gap: 12px; }
-  .tools { margin-left: auto; }
+  .burger, .searchjump { display: grid; }
+  .bar .inner { height: 58px; gap: 10px; }
+  .brand { margin-right: auto; }
+  .tools { margin-left: 0; }
   .brand .word { display: none; }
   .brand .mark { font-size: 21px; }
   .brand .wordmob { font-family: var(--serif); font-size: 16px; }
 }
 @media (min-width: 901px) { .brand .wordmob { display: none; } }
+
+/* --- drawer ------------------------------------------------------------- */
+
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(20, 17, 15, 0.42);
+  opacity: 0;
+  transition: opacity 0.22s ease;
+}
+.drawer-scrim.on { opacity: 1; }
+.drawer-scrim[hidden] { display: none; }
+
+.drawer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  width: min(84vw, 330px);
+  padding: 14px 20px calc(20px + env(safe-area-inset-bottom));
+  background: var(--paper);
+  border-right: 1px solid var(--line-soft);
+  box-shadow: 8px 0 40px rgba(20, 17, 15, 0.18);
+  transform: translateX(-102%);
+  transition: transform 0.26s cubic-bezier(0.32, 0.72, 0, 1);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.drawer.on { transform: translateX(0); }
+.drawer[hidden] { display: none; }
+
+.drawerhead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.drawerhead .mark { font-family: var(--serif); font-size: 23px; }
+
+.drawersearch {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  margin-bottom: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-pill);
+  background: var(--ivory);
+  color: var(--ink-45);
+}
+.drawersearch input {
+  width: 100%;
+  border: none;
+  background: none;
+  outline: none;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.drawersearch input::-webkit-search-cancel-button { -webkit-appearance: none; }
+
+.drawernav { display: flex; flex-direction: column; }
+.drawernav a {
+  padding: 13px 4px;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 16px;
+  color: var(--ink-70);
+}
+.drawernav a.on { color: var(--ink); font-weight: 500; }
+
+.drawerfoot {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 22px;
+}
+.drawerfoot a { font-size: 13px; color: var(--ink-45); }
+.drawerfoot a:hover { color: var(--ink); }
+
+/* Only while the drawer is open — a stuck class here would freeze the page,
+   so theme.js clears it on load as well as on close. */
+body.drawer-open { overflow: hidden; }
 
 /* --- footer ------------------------------------------------------------- */
 

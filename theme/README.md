@@ -91,6 +91,13 @@ rows also override a built-in of the same name. An unlisted shade still works
    Use exactly those handles — `design-book`, `shortlist`, `the-shop` — and
    the header and the mobile tabs pick them up on their own; a nav link whose
    page does not exist is hidden rather than left pointing at a 404.
+   The header's navigation is your **Main menu** (Navigation → Main menu) —
+   edit it there, as in any Shopify theme. Only when no menu has any links
+   does the header fall back to built-in Home / Catalog / Designs / The shop
+   doors, so a fresh import is never left without a nav.
+
+   The same links appear behind a menu button on phones: below 900px the bar
+   has no room for them, so they move into a drawer rather than disappearing.
 2. **Header and footer.** Only needed to override the above: point the
    header's Catalog / Designs / The shop / Shortlist links somewhere else
    (Theme editor → Header), or set the two footer columns to specific menus.

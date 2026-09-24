@@ -88,9 +88,16 @@ rows also override a built-in of the same name. An unlisted shade still works
    - *Design book* → template `page.design-book`
    - *Shortlist* → template `page.shortlist`
    - *The shop* → template `page.the-shop`
-2. **Header and footer.** Point the header's Catalog / Designs / The shop /
-   Shortlist links at those pages (Theme editor → Header), and fill the two
-   footer menu columns from Navigation.
+   Use exactly those handles — `design-book`, `shortlist`, `the-shop` — and
+   the header and the mobile tabs pick them up on their own; a nav link whose
+   page does not exist is hidden rather than left pointing at a 404.
+2. **Header and footer.** Only needed to override the above: point the
+   header's Catalog / Designs / The shop / Shortlist links somewhere else
+   (Theme editor → Header), or set the two footer columns to specific menus.
+   An unset footer column falls back to the store's own footer menu.
+   Until a collection is chosen, the hero and *By the metre* both read from
+   the whole shelf, so a freshly imported theme shows real stock rather than
+   an empty page.
 3. **Design collections.** Give each design collection a handle starting with
    `design-` and assign it the **design** collection template. Collections
    with no products are never shown — a design with nothing under it opens

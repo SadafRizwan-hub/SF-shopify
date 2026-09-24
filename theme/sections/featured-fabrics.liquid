@@ -1,5 +1,8 @@
 {%- liquid
   assign source = collections[section.settings.collection]
+  unless source.products.size > 0
+    assign source = collections.all
+  endunless
   assign count = section.settings.count | default: 8
 -%}
 {%- if source.products.size > 0 -%}

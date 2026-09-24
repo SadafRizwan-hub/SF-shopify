@@ -9,6 +9,9 @@
   assign factor = 1 | divided_by: unit
 
   assign source = collections[section.settings.collection]
+  unless source.products.size > 0
+    assign source = collections.all
+  endunless
   assign hero = source.products.first
   assign qualities = collections.all.products_count
 

@@ -1,6 +1,6 @@
 {%- liquid
   assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
-  assign designs_url = section.settings.designs_url | default: routes.collections_url
+  assign designs_url = section.settings.designs_url | default: pages['design-book'].url | default: routes.collections_url
   assign path = request.path
 -%}
 <nav class="tabs" aria-label="Primary">

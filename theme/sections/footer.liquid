@@ -10,14 +10,19 @@
 
     {%- for block in section.blocks -%}
       {%- if block.type == 'menu' -%}
-        <nav {{ block.shopify_attributes }}>
-          <span class="label">{{ block.settings.heading }}</span>
-          {%- if block.settings.menu != blank -%}
-            {%- for link in block.settings.menu.links -%}
+        {%- comment -%}
+          An unset column falls back to the store's own footer menu, so a
+          fresh import shows real links rather than a bare heading.
+        {%- endcomment -%}
+        {%- assign menu = block.settings.menu | default: linklists.footer -%}
+        {%- if menu.links.size > 0 -%}
+          <nav {{ block.shopify_attributes }}>
+            <span class="label">{{ block.settings.heading }}</span>
+            {%- for link in menu.links -%}
               <a href="{{ link.url }}">{{ link.title }}</a>
             {%- endfor -%}
-          {%- endif -%}
-        </nav>
+          </nav>
+        {%- endif -%}
       {%- endif -%}
     {%- endfor -%}
   </div>

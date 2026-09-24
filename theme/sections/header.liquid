@@ -1,8 +1,11 @@
 {%- liquid
+  # Unset links fall back to the page handles the README tells the admin to
+  # create, so the nav is right the moment those pages exist — a fresh import
+  # is not left with a two-item header until someone opens the editor.
   assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
-  assign designs_url = section.settings.designs_url
-  assign about_url = section.settings.about_url
-  assign shortlist_url = section.settings.shortlist_url
+  assign designs_url = section.settings.designs_url | default: pages['design-book'].url
+  assign about_url = section.settings.about_url | default: pages['the-shop'].url
+  assign shortlist_url = section.settings.shortlist_url | default: pages.shortlist.url
   assign path = request.path
 -%}
 <header class="bar">

@@ -31,7 +31,7 @@
 -%}
 
 <div class="shell book design">
-  <a class="back" href="{{ section.settings.book_url | default: routes.collections_url }}">
+  <a class="back" href="{{ section.settings.book_url | default: pages['design-book'].url | default: routes.collections_url }}">
     {% render 'icon', name: 'back', size: 13 %} All designs
   </a>
 
@@ -39,7 +39,7 @@
     <div class="gone">
       <h1>{{ collection.title }}</h1>
       <p class="meta">There's no cloth listed under this design at the moment. The rest of the book is still open.</p>
-      <a class="btn btn-primary" href="{{ section.settings.book_url | default: routes.collections_url }}">Back to the design book</a>
+      <a class="btn btn-primary" href="{{ section.settings.book_url | default: pages['design-book'].url | default: routes.collections_url }}">Back to the design book</a>
     </div>
   {%- else -%}
     <header class="head">

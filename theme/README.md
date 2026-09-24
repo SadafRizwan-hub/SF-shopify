@@ -174,6 +174,19 @@ Liquid hands a theme at most 50 products outside a paginated loop, so
 a collection whose own sort order is *Newest first* in the admin — Shopify
 then does the sorting and the cap stops mattering.
 
+## Which build is installed
+
+A re-uploaded ZIP does **not** update a theme already in the admin — Shopify
+adds it as a separate theme, and an old preview link keeps serving the old
+one. Two ways to tell which build you are looking at:
+
+- **Online Store → Themes** shows the theme's version next to its name.
+- **View source** on any page: the fourth line is
+  `<!-- Singhania Fabrics theme, build X.Y.Z -->`.
+
+If that number is not the one in `config/settings_schema.json`, the preview is
+running an older upload and no amount of fixing will show up in it.
+
 ## Validating a change
 
 The theme passes `shopify theme check` with no errors. Run it before pushing:

@@ -1,6 +1,7 @@
 <!doctype html>
 <html lang="{{ request.locale.iso_code }}">
   <head>
+    <!-- Singhania Fabrics theme, build 1.1.0 -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="{{ settings.col_paper }}">
@@ -103,13 +104,15 @@
   <body class="layout template-{{ request.page_type | handle }}">
     <a class="visually-hidden" href="#main">Skip to content</a>
 
-    {% sections 'header-group' %}
+    {% section 'header' %}
 
     <main id="main">
       {{ content_for_layout }}
     </main>
 
-    {% sections 'footer-group' %}
+    {% section 'footer' %}
+    {% section 'mobile-tabs' %}
+    {% section 'whatsapp' %}
 
     <p class="toast" role="status" data-toast></p>
   </body>

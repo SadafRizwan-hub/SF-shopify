@@ -28,19 +28,61 @@ shopify theme dev --store your-store.myshopify.com
 shopify theme push
 ```
 
-## Read this first: cloth is sold in half metres
+## Read this first: what the price you type means
 
-A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So
-**one unit of stock is half a metre**, and a variant's price is the rate for
-that half metre.
+A Shopify cart line quantity is a **whole number** — it cannot hold 6.5. So one
+unit of stock is one **cut unit**, and a variant's price is the rate for that
+unit. Shopify multiplies the two at checkout and nothing in a theme can change
+that, which makes the cut unit the one decision everything else follows from.
 
-> A cloth at **₹240/m** is entered in Shopify as **120**.
+Set it in **Theme settings → The counter → One cut unit is**.
 
-Everything the shopper reads is converted back up: rates are
-`variant price / cut unit`, metres are `quantity × cut unit`. The constant is
-**Theme settings → The counter → Metres in one cut unit**, and it must match
-`UNIT_METRES` in the headless storefront's `composables/catalogStore.js`. Get
-it wrong in the admin and every cut is billed at half price.
+| Cut unit | The price you type | Inventory of `40` | Cuts in |
+|---|---|---|---|
+| **1 m** (default) | **is the rate per metre** — type `200`, the page shows `Rs 200.00/m` | 40 m | whole metres |
+| 0.5 m | is the rate per **half** metre — a cloth at `200/m` is entered as `100` | 20 m | half metres |
+
+**You cannot have both**: typing the per-metre rate *and* cutting in half
+metres would mean charging a full metre's price for half a metre. Getting both
+needs a Shopify Function to reprice the line, which is outside a theme.
+
+The default is 1 m because that is the one that cannot be entered wrong. Only
+move to 0.5 m if half-metre cutting matters more than the entry being obvious —
+and if you do, go back through every variant and halve its price, or every cut
+bills at double.
+
+## Setting up stock
+
+Stock is counted in **cut units**, so at the default of 1 m an inventory of 40
+is 40 metres. The fabric page turns it back into metres everywhere it shows it.
+
+For each product:
+
+1. **Variants → tick every variant → Inventory.** Turn **Track quantity** on.
+   Without it Shopify reports no quantity, the theme cannot say how many metres
+   are on the shelf, and the Stock line reads `in stock` with nothing behind it.
+2. **Set the available quantity** to the metres you hold of that shade. Shopify
+   counts per location; if the godown is a second location, add it there too.
+3. **"Continue selling when out of stock"** — leave it **off** if the than is
+   finite and you would rather the shade struck through than oversell. Turn it
+   **on** for a cloth you can always reorder; the shade then stays sellable at
+   zero.
+4. Prices are per variant, so a shade dyed at a different rate carries its own.
+
+What the theme does with it:
+
+- **Sold-out shades** strike through in the picker and cannot be chosen — a
+  shade is only struck through when nothing under it is sellable.
+- **`Low stock`** appears on a card and on the fabric page when the metres left
+  fall at or below **Theme settings → The counter → Low stock below this many
+  metres** (default 25).
+- **`Out of stock`** disables Add to cut list. The button in your screenshot
+  said this because every variant was at 0 with tracking on.
+- The **Stock** cell in the specs table reads `inventory x cut unit`.
+
+Per-shade minimums are separate from stock: the variant metafield
+`custom.min_cut` sets the smallest cut in **metres** for that shade, and the
+stepper will not go below it.
 
 ## How a fabric is entered in Shopify
 

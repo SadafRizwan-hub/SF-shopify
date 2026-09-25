@@ -2,7 +2,7 @@
   {
     "name": "theme_info",
     "theme_name": "Singhania Fabrics",
-    "theme_version": "1.3.0",
+    "theme_version": "1.4.0",
     "theme_author": "Singhania Fabrics",
     "theme_documentation_url": "https://github.com/SadafRizwan-hub/SF-shopify",
     "theme_support_url": "https://github.com/SadafRizwan-hub/SF-shopify/issues"
@@ -12,14 +12,14 @@
     "settings": [
       {
         "type": "paragraph",
-        "content": "Cloth is sold in half metres, but a Shopify cart line quantity is a whole number. One unit of stock is therefore half a metre, and a variant's price is the rate for that half metre. A cloth at 240/m is entered in Shopify as 120."
+        "content": "A Shopify cart line quantity is a whole number, so one unit of stock is one CUT UNIT and the variant price is the rate for that unit. Pick the cut unit below and it decides two things at once: what the price you type means, and what an inventory count means."
       },
       {
         "type": "select",
         "id": "cut_unit_metres",
-        "label": "Metres in one cut unit",
-        "info": "The metres one unit of stock represents. Must match the headless storefront's UNIT_METRES.",
-        "default": "0.5",
+        "label": "One cut unit is",
+        "info": "1 m: the price you type IS the rate per metre, and an inventory of 40 is 40 m. Cuts are in whole metres. 0.5 m: cloth cuts in half metres, but you must type HALF the per-metre rate (240/m is entered as 120) and an inventory of 40 is 20 m. Shopify multiplies the variant price by a whole quantity at checkout, so these cannot be mixed.",
+        "default": "1",
         "options": [
           {
             "value": "0.25",
@@ -39,7 +39,8 @@
         "type": "number",
         "id": "low_stock_metres",
         "label": "Low stock below this many metres",
-        "default": 25
+        "default": 25,
+        "info": "Read from the variant's inventory x the cut unit, so it is metres either way."
       },
       {
         "type": "text",

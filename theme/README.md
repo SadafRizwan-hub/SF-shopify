@@ -51,6 +51,25 @@ move to 0.5 m if half-metre cutting matters more than the entry being obvious �
 and if you do, go back through every variant and halve its price, or every cut
 bills at double.
 
+## One photograph per shade
+
+Attach a photograph to a **variant** in the admin (Products → the product →
+Variants → the shade → its image) and the whole site starts answering in
+colour:
+
+- On the **fabric page**, picking that shade moves the main photograph to it.
+- On the **catalog**, filtering by that colour shows each card in that colour —
+  the grid is answering "show me the black ones", so it has to look like it.
+- Filtering server-side (a Search & Discovery colour filter) and filtering in
+  the browser both do this; the server picks the photo while rendering, the
+  browser swaps it from a per-shade map on the card.
+
+A shade with no image of its own keeps the product's default photograph. That
+is deliberate: showing the wrong colour is worse than showing a generic one.
+
+This is the one part of the colour story that is data, not code — without
+variant images there is nothing to switch to, and every shade looks the same.
+
 ## Setting up stock
 
 Stock is counted in **cut units**, so at the default of 1 m an inventory of 40

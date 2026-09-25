@@ -36,6 +36,58 @@
     render 'axis-values', product: product, axis: 'shade'
   endcapture
 
+  # Which photograph this card shows.
+  #
+  # A card filtered to Black should show the black cloth, not whatever the
+  # product's default photo happens to be — the grid is answering "show me the
+  # black ones", so it has to look like it. Each shade's photograph is the
+  # image attached to that shade's variant in the admin; a shade with no image
+  # of its own falls back to the product's, which is the honest thing to do
+  # rather than showing the wrong colour.
+  assign shade_axis = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign shade_pos = 0
+  for option in product.options_with_values
+    assign okey = option.name | strip | downcase
+    if shade_axis contains okey
+      assign shade_pos = forloop.index
+      break
+    endif
+  endfor
+  assign shade_i = shade_pos | minus: 1
+
+  assign card_image = product.featured_image
+  assign shade_images = ''
+
+  if shade_pos > 0
+    assign wanted = shade_filter | default: '' | split: ','
+
+    for variant in product.variants
+      if variant.featured_image == blank
+        continue
+      endif
+      assign vshade = variant.options[shade_i] | handle
+
+      # the map the browser uses when it filters without a page load
+      assign probe = '"' | append: vshade | append: '"'
+      unless shade_images contains probe
+        assign vurl = variant.featured_image | image_url: width: 720
+        assign shade_images = shade_images | append: probe | append: ':"' | append: vurl | append: '",'
+      endunless
+
+      # and the server-rendered choice, when a colour filter is already applied
+      if wanted.size > 0 and card_image == product.featured_image
+        if wanted contains vshade
+          assign card_image = variant.featured_image
+        endif
+      endif
+    endfor
+  endif
+
+  if shade_images != blank
+    assign trim = shade_images.size | minus: 1
+    assign shade_images = shade_images | slice: 0, trim
+  endif
+
   # The three counter facets, as handles on the card itself. The filter rail
   # reads them when the store has no Search & Discovery filter for that facet,
   # so colour / design / fabric filtering works on a shop that has not
@@ -71,6 +123,12 @@
   data-type="{{ product.type | handle }}"
   data-shades="{{ shade_keys | strip }}"
   data-designs="{{ design_keys | strip }}"
+  {%- comment -%}
+    escaped, because a Shopify CDN url carries &width=… and an unescaped & in
+    an attribute is an entity waiting to be mis-parsed. The browser decodes it
+    back before JSON.parse ever sees it.
+  {%- endcomment -%}
+  data-shade-images='{ {{- shade_images | escape -}} }'
 >
   <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
     {%- capture overlay -%}
@@ -82,7 +140,7 @@
       {%- endif -%}
     {%- endcapture -%}
     {% render 'fabric-surface',
-      image: product.featured_image,
+      image: card_image,
       alt: product.title,
       ratio: '3 / 4',
       caption: subtitle,

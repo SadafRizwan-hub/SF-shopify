@@ -10,6 +10,21 @@
     for filter in collection.filters
       assign active_count = filter.active_values.size | plus: active_count
     endfor
+
+    # the colours a native filter currently has applied, so each card can show
+    # that shade's own photograph rather than the product's default
+    assign shade_axis = 'shade,shades,colour,colours,color,colors' | split: ','
+    assign active_shades = ''
+    for filter in collection.filters
+      assign fkey = filter.label | strip | downcase
+      unless shade_axis contains fkey
+        continue
+      endunless
+      for value in filter.active_values
+        assign vh = value.label | handle
+        assign active_shades = active_shades | append: vh | append: ','
+      endfor
+    endfor
   -%}
 
   <div class="shell page">
@@ -97,7 +112,7 @@
           {%- if collection.products.size > 0 -%}
             <div class="grid" style="--cols: {{ section.settings.columns }};">
               {%- for product in collection.products -%}
-                {% render 'fabric-card', product: product %}
+                {% render 'fabric-card', product: product, shade_filter: active_shades %}
               {%- endfor -%}
             </div>
             {%- comment -%}

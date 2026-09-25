@@ -46,6 +46,47 @@
     return true;
   }
 
+  /*
+   * A card filtered to Black shows the black cloth. The photographs come from
+   * the image attached to each shade's variant in the admin; a shade with none
+   * keeps the product's default rather than showing the wrong colour.
+   *
+   * The surface serves a srcset, so the browser picks from that and ignores a
+   * changed src — clearing it is what actually swaps the photograph.
+   */
+  function shadePhoto(card) {
+    var img = card.querySelector('img');
+    if (!img) return;
+
+    if (!img.hasAttribute('data-original-src')) {
+      img.setAttribute('data-original-src', img.currentSrc || img.src);
+      img.setAttribute('data-original-srcset', img.getAttribute('srcset') || '');
+    }
+
+    var wanted = null;
+    if (chosen.shades.length) {
+      var map;
+      try {
+        map = JSON.parse(card.getAttribute('data-shade-images') || '{}');
+      } catch (e) {
+        map = {};
+      }
+      for (var i = 0; i < chosen.shades.length; i++) {
+        if (map[chosen.shades[i]]) { wanted = map[chosen.shades[i]]; break; }
+      }
+    }
+
+    if (wanted) {
+      img.removeAttribute('srcset');
+      img.removeAttribute('sizes');
+      img.src = wanted;
+    } else {
+      var back = img.getAttribute('data-original-srcset');
+      if (back) img.setAttribute('srcset', back);
+      img.src = img.getAttribute('data-original-src');
+    }
+  }
+
   function apply() {
     var cards = grid.querySelectorAll('.card');
     var shown = 0;
@@ -57,7 +98,7 @@
         ? card.parentElement
         : card;
       host.hidden = !ok;
-      if (ok) shown += 1;
+      if (ok) { shown += 1; shadePhoto(card); }
     });
 
     var count = document.querySelector('[data-shown]');

@@ -1,12 +1,25 @@
 {%- comment -%}
-  The design book: every collection whose handle starts with the design
-  prefix, and that has cloth actually posted under it. A design with no
-  product opens onto nothing, so it isn't a door.
+  The design book.
+
+  Every collection whose handle starts with the design prefix and has cloth
+  actually posted under it. A design with no product opens onto nothing, so it
+  is not a door.
+
+  Above the designs sits the counter's own taxonomy — see snippets/
+  design-families.liquid. The family chips filter the book in the browser
+  because every design is already on this page; ?family=<slug> deep-links one,
+  so a family can be sent on WhatsApp like anything else.
 {%- endcomment -%}
 {%- liquid
   assign prefix = settings.design_collection_prefix | default: 'design-'
   assign shown = 0
+
+  capture family_rows
+    render 'design-families'
+  endcapture
+  assign family_list = family_rows | strip | split: '||'
 -%}
+
 <div class="shell book">
   <header class="top">
     <h1>{{ section.settings.heading | default: 'The design book' }}</h1>
@@ -20,22 +33,45 @@
       {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
       {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
       {%- assign shown = shown | plus: 1 -%}
-      <a class="card" href="{{ collection.url }}">
-        {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
-      {% render 'fabric-surface',
+      {%- capture design_families %}{% render 'design-of', collection: collection %}{% endcapture -%}
+      {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
+      <a class="card" href="{{ collection.url }}" data-design-card data-families="{{ design_families | strip }}">
+        {% render 'fabric-surface',
           image: book_image,
           alt: collection.title,
           ratio: '4 / 3',
           sizes: '(max-width: 700px) 50vw, 25vw' %}
         <h3>{{ collection.title }}</h3>
-        <p class="meta">{{ collection.description | strip_html | truncate: 70 }}</p>
+        {%- if collection.description != blank -%}
+          <p class="meta">{{ collection.description | strip_html | truncate: 70 }}</p>
+        {%- endif -%}
         <p class="on">On {{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
       </a>
     {%- endfor -%}
   {%- endcapture -%}
 
   {%- if shown > 0 -%}
-    <div class="bookgrid">{{ cards }}</div>
+    {%- if family_list.size > 0 and section.settings.show_families -%}
+      <nav class="families" aria-label="Design families">
+        <button type="button" class="chip on" data-family="" aria-pressed="true">
+          All <span class="n">{{ shown }}</span>
+        </button>
+        {%- for row in family_list -%}
+          {%- assign parts = row | split: '|' -%}
+          <button type="button" class="chip" data-family="{{ parts[0] }}" aria-pressed="false">
+            {{ parts[1] }}
+          </button>
+        {%- endfor -%}
+      </nav>
+    {%- endif -%}
+
+    <div class="bookgrid" data-design-grid>{{ cards }}</div>
+
+    <div class="empty" data-design-empty hidden>
+      <h3>Nothing in the book under that</h3>
+      <p class="meta">Try another family, or open the whole book.</p>
+      <button type="button" class="btn btn-ghost" data-family-reset>Show every design</button>
+    </div>
   {%- else -%}
     <div class="empty">
       <h3>The book is still being drawn up</h3>
@@ -44,6 +80,8 @@
     </div>
   {%- endif -%}
 </div>
+
+<script src="{{ 'design-book.js' | asset_url }}" defer></script>
 
 {% schema %}
 {
@@ -55,6 +93,13 @@
       "id": "body",
       "label": "Body",
       "default": "Every drawing in the book can be printed or woven on more than one ground. Pick the design, then choose the cloth underneath it."
+    },
+    {
+      "type": "checkbox",
+      "id": "show_families",
+      "label": "Show family chips",
+      "info": "Families come from the collection metafield custom.design_family. The row hides itself when no design has been filed under one.",
+      "default": true
     },
     { "type": "url", "id": "catalog_url", "label": "Catalog link" }
   ],

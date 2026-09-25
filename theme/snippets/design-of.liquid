@@ -1,0 +1,24 @@
+{%- comment -%}
+  The families one design collection belongs to, as handles, space separated.
+  Empty when the design has not been filed under any — which is allowed: an
+  unfiled design still appears in the book, it just isn't reachable by family.
+
+  Usage: {% render 'design-of', collection: collection %}
+{%- endcomment -%}
+{%- liquid
+  assign raw = collection.metafields.custom.design_family.value
+  assign out = ''
+  if raw != blank
+    assign joined = raw | join: ','
+    assign parts = joined | split: ','
+    for part in parts
+      assign name = part | strip
+      if name == blank
+        continue
+      endif
+      assign slug = name | handle
+      assign out = out | append: ' ' | append: slug
+    endfor
+  endif
+  echo out | strip
+-%}

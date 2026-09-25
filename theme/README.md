@@ -51,6 +51,51 @@ move to 0.5 m if half-metre cutting matters more than the entry being obvious �
 and if you do, go back through every variant and halve its price, or every cut
 bills at double.
 
+## The design taxonomy
+
+Shopify has no concept of a design, and none of a category of designs. So the
+counter's own is built from two native pieces and needs no app:
+
+| The counter calls it | Shopify carries it as |
+|---|---|
+| **a design** — one drawing, e.g. *Floral Printed* | a **collection** whose handle starts with `design-` |
+| **a family** — the category it belongs to, e.g. *Florals* | the collection metafield **`custom.design_family`** |
+
+Collections are the right carrier for a design: a real URL, real product
+membership, pagination and native filtering all come free, and a product sits
+under a design simply by being in that collection.
+
+### Setting it up
+
+1. **Settings → Custom data → Collections → Add definition.** Name it
+   `Design family`, namespace and key **`custom.design_family`**, type
+   *Single line text* — or *Single line text (list)* if you prefer picking
+   several. Tick **Storefront API access** if the headless front should read it
+   too.
+2. Make a collection per design, handle `design-floral-printed`, and add the
+   cloth it is printed on.
+3. Fill `custom.design_family` on it — `Florals`, or `Florals, Block prints`
+   for a design that belongs to more than one. A list metafield works as-is.
+4. Give the collection an image and a one-line description; the book uses both.
+
+That is the whole taxonomy. A design left unfiled still appears in the book —
+it just cannot be reached by family.
+
+### What it drives
+
+- **The design book** (`page.design-book`) shows a chip per family, filters in
+  the browser, and writes `?family=<slug>` so a family can be sent to someone.
+  A family nothing is filed under never gets a chip.
+- **A design page** (`collection.design`) names its families under the title,
+  each linking back into the book filtered to it, and ends with up to four
+  other designs in the same family.
+- **The catalog** gains a **Design family** facet beside Fabric, Colour and
+  Design, so the grid can be narrowed to a whole category rather than one
+  drawing.
+
+Families are always theme-side, because Shopify has nothing to filter on — the
+facet lists only the families something on the page is actually filed under.
+
 ## One photograph per shade
 
 Attach a photograph to a **variant** in the admin (Products → the product →

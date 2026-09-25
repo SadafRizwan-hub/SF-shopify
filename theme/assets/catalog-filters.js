@@ -19,12 +19,13 @@
   if (!grid || !buttons.length) return;
 
   /* group -> Set of selected handles */
-  var chosen = { type: [], shades: [], designs: [] };
+  var chosen = { type: [], shades: [], designs: [], families: [] };
 
   var EMPTY_LABEL = {
     type: 'none',
     shades: 'tap to add',
-    designs: 'none selected'
+    designs: 'none selected',
+    families: 'none'
   };
 
   function tokensOf(card, group) {
@@ -128,12 +129,12 @@
   document.addEventListener('click', function (event) {
     var reset = event.target.closest('[data-facet-reset]');
     if (reset) {
-      var any = chosen.type.length || chosen.shades.length || chosen.designs.length;
+      var any = chosen.type.length || chosen.shades.length || chosen.designs.length || chosen.families.length;
       if (any) {
         /* a native filter is in the URL too, so only swallow the click when
            this page's selection is the only thing that needs clearing */
         if (window.location.search.indexOf('filter.') === -1) event.preventDefault();
-        chosen = { type: [], shades: [], designs: [] };
+        chosen = { type: [], shades: [], designs: [], families: [] };
         paint();
         apply();
       }

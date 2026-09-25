@@ -1,0 +1,59 @@
+{%- comment -%}
+  The design taxonomy.
+
+  Shopify has no notion of a "design", let alone a family of designs, so the
+  counter's own is built from two native pieces and nothing else:
+
+    a design   a collection whose handle starts with the design prefix.
+               Collections are the right carrier: a real URL, real product
+               membership, pagination and native filtering come free.
+
+    a family   the collection metafield `custom.design_family` — Florals,
+               Geometrics, Block prints, whatever the counter calls them.
+               Comma separated for a design that sits in more than one, or a
+               list metafield, which arrives already split.
+
+  Echoes the distinct families across every design that has cloth under it, as
+  `slug|Name||slug|Name`. A family with nothing sellable in it is never
+  emitted, so the book cannot offer a door that opens onto an empty room.
+
+  Usage: {% render 'design-families' %}
+{%- endcomment -%}
+{%- liquid
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+  assign families = ''
+
+  for collection in collections
+    unless collection.handle contains prefix
+      continue
+    endunless
+    if collection.products_count == 0
+      continue
+    endif
+
+    assign raw = collection.metafields.custom.design_family.value
+    if raw == blank
+      continue
+    endif
+
+    # a list metafield arrives as an array, a text one as a string; join
+    # leaves the string alone and flattens the list, so both read alike
+    assign joined = raw | join: ','
+    assign parts = joined | split: ','
+
+    for part in parts
+      assign name = part | strip
+      if name == blank
+        continue
+      endif
+      assign slug = name | handle
+      assign probe = '|' | append: slug | append: '|'
+      assign seen = '|' | append: families | append: '|'
+      unless seen contains probe
+        assign families = families | append: slug | append: '|' | append: name | append: '||'
+      endunless
+    endfor
+  endfor
+
+  echo families
+-%}

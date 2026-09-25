@@ -110,10 +110,17 @@
 
   # a design is also a design-* collection the product sits in
   assign design_prefix = settings.design_collection_prefix | default: 'design-'
+  assign family_keys = ''
   for collection in product.collections
     if collection.handle contains design_prefix
       assign slug = collection.handle | remove_first: design_prefix
       assign design_keys = design_keys | append: ' ' | append: slug
+      # and the families that design is filed under, so the catalog can be
+      # browsed by category and not only by individual drawing
+      capture card_families
+        render 'design-of', collection: collection
+      endcapture
+      assign family_keys = family_keys | append: ' ' | append: card_families
     endif
   endfor
 -%}
@@ -123,6 +130,7 @@
   data-type="{{ product.type | handle }}"
   data-shades="{{ shade_keys | strip }}"
   data-designs="{{ design_keys | strip }}"
+  data-families="{{ family_keys | strip }}"
   {%- comment -%}
     escaped, because a Shopify CDN url carries &width=… and an unescaped & in
     an attribute is an entity waiting to be mis-parsed. The browser decodes it

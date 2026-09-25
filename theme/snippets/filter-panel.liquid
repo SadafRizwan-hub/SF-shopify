@@ -256,6 +256,55 @@
     {%- endif -%}
   {%- endunless -%}
 
+  {%- comment -%}
+    Family is the counter's own category layer — Shopify has no design
+    taxonomy at all — so it is always theme-side. It only lists families that
+    something on this page is actually filed under.
+  {%- endcomment -%}
+  {%- liquid
+    assign fams = ''
+    for product in collection.products
+      for book in product.collections
+        unless book.handle contains prefix
+          continue
+        endunless
+        assign raw = book.metafields.custom.design_family.value
+        if raw == blank
+          continue
+        endif
+        assign joined = raw | join: ','
+        assign parts = joined | split: ','
+        for part in parts
+          assign name = part | strip
+          if name == blank
+            continue
+          endif
+          assign slug = name | handle
+          assign probe = '|' | append: slug | append: '|'
+          assign seen = '|' | append: fams | append: '|'
+          unless seen contains probe
+            assign fams = fams | append: slug | append: '|' | append: name | append: '||'
+          endunless
+        endfor
+      endfor
+    endfor
+    assign fam_rows = fams | split: '||'
+  -%}
+  {%- if fam_rows.size > 0 -%}
+    <section data-facet-group="families">
+      <header>
+        <span class="label">Design family</span>
+        <span class="meta" data-facet-count="families">none</span>
+      </header>
+      <div class="chips">
+        {%- for row in fam_rows -%}
+          {%- assign parts = row | split: '|' -%}
+          <button type="button" class="chip" data-facet="families" data-value="{{ parts[0] }}">{{ parts[1] }}</button>
+        {%- endfor -%}
+      </div>
+    </section>
+  {%- endif -%}
+
   {%- if paginate.pages > 1 and native_fabric == false or paginate.pages > 1 and native_colour == false or paginate.pages > 1 and native_design == false -%}
     <p class="meta facetnote">
       Colour, design and fabric filter the {{ collection.products.size }} shown here.

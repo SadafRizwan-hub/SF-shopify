@@ -1,6 +1,6 @@
 {
   "current": {
-    "cut_unit_metres": "0.5",
+    "cut_unit_metres": "1",
     "low_stock_metres": 25,
     "design_collection_prefix": "design-",
     "swatch_handle": "swatch-card",
@@ -25,7 +25,7 @@
   },
   "presets": {
     "Kalbadevi": {
-      "cut_unit_metres": "0.5",
+      "cut_unit_metres": "1",
       "low_stock_metres": 25,
       "design_collection_prefix": "design-",
       "swatch_handle": "swatch-card",

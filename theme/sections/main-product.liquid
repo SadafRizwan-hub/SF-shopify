@@ -1,12 +1,16 @@
 {%- comment -%}
   The fabric page.
 
-  Cloth is sold in half metres but a cart line quantity is a whole number, so
-  one unit of stock is half a metre and a variant's price is the rate for that
-  half metre. Everything the shopper reads is converted back up here and in
-  fabric-form.js from the single `cut_unit_metres` setting — the same constant
-  the headless storefront calls UNIT_METRES. Get it wrong in the admin and
-  every cut is billed at half price.
+  A cart line quantity is a whole number, so one unit of stock is one CUT UNIT
+  and a variant's price is the rate for that unit. Everything the shopper reads
+  — the per-metre rate, the metres on the stepper, the metres in stock — is
+  derived here and in fabric-form.js from the single `cut_unit_metres` setting,
+  the same constant the headless storefront calls UNIT_METRES.
+
+  At the default of 1 m the price typed in the admin IS the per-metre rate. At
+  0.5 m the admin must type half of it, because Shopify multiplies the variant
+  price by a whole quantity at checkout and nothing here can change that. Get
+  the setting and the entered prices out of step and every cut bills wrong.
 {%- endcomment -%}
 {%- liquid
   assign unit = settings.cut_unit_metres | times: 1.0

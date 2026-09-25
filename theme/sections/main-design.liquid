@@ -10,6 +10,14 @@
   assign unit = settings.cut_unit_metres | times: 1.0
   assign factor = 1 | divided_by: unit
   assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+
+  # the counter's own taxonomy: see snippets/design-families.liquid
+  assign fam_raw = collection.metafields.custom.design_family.value
+  assign fam_joined = fam_raw | join: ','
+  assign fam_parts = fam_joined | split: ','
+
+  assign book_url = section.settings.book_url | default: pages['design-book'].url | default: routes.collections_url
 
   assign shades = ''
   for product in collection.products
@@ -48,6 +56,16 @@
         Design &middot; available on {{ collection.products_count }}
         {% if collection.products_count == 1 %}fabric{% else %}fabrics{% endif %}
       </p>
+      {%- if fam_parts.size > 0 -%}
+        <nav class="families" aria-label="Design family" style="margin-top:14px;padding-bottom:0;border:0;">
+          {%- for part in fam_parts -%}
+            {%- assign fam_name = part | strip -%}
+            {%- if fam_name == blank -%}{%- continue -%}{%- endif -%}
+            {%- assign fam_slug = fam_name | handle -%}
+            <a class="chip" href="{{ book_url }}?family={{ fam_slug }}">{{ fam_name }}</a>
+          {%- endfor -%}
+        </nav>
+      {%- endif -%}
     </header>
 
     <div class="split">
@@ -103,6 +121,46 @@
             {%- endfor -%}
           </div>
         </section>
+
+        {%- comment -%}
+          Siblings in the same family. The book's taxonomy is only worth having
+          if it leads somewhere from a design, not just down from the index.
+        {%- endcomment -%}
+        {%- if fam_parts.size > 0 -%}
+          {%- assign siblings = 0 -%}
+          {%- capture sibling_cards -%}
+            {%- for other in collections -%}
+              {%- if siblings >= 4 -%}{%- break -%}{%- endif -%}
+              {%- unless other.handle contains prefix -%}{%- continue -%}{%- endunless -%}
+              {%- if other.handle == collection.handle or other.products_count == 0 -%}{%- continue -%}{%- endif -%}
+              {%- capture other_families %}{% render 'design-of', collection: other %}{% endcapture -%}
+              {%- assign other_families = other_families | strip -%}
+              {%- if other_families == blank -%}{%- continue -%}{%- endif -%}
+              {%- assign shares = false -%}
+              {%- for part in fam_parts -%}
+                {%- assign fam_slug = part | strip | handle -%}
+                {%- if fam_slug != blank and other_families contains fam_slug -%}
+                  {%- assign shares = true -%}
+                  {%- break -%}
+                {%- endif -%}
+              {%- endfor -%}
+              {%- unless shares -%}{%- continue -%}{%- endunless -%}
+              {%- assign siblings = siblings | plus: 1 -%}
+              {%- assign sib_image = other.image | default: other.products.first.featured_image -%}
+              <a class="card" href="{{ other.url }}">
+                {% render 'fabric-surface', image: sib_image, alt: other.title, ratio: '4 / 3', sizes: '(max-width: 700px) 50vw, 25vw' %}
+                <h3>{{ other.title }}</h3>
+                <p class="on">On {{ other.products_count }} {% if other.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
+              </a>
+            {%- endfor -%}
+          {%- endcapture -%}
+          {%- if siblings > 0 -%}
+            <section class="block">
+              <header><span class="label">More in this family</span></header>
+              <div class="bookgrid">{{ sibling_cards }}</div>
+            </section>
+          {%- endif -%}
+        {%- endif -%}
 
         {%- if section.settings.swatch_url != blank -%}
           <div class="actions" style="margin-top: 20px;">

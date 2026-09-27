@@ -1,20 +1,41 @@
-<div class="shell book">
-  <header class="top">
-    <h1>Collections</h1>
-  </header>
-  <div class="bookgrid">
-    {%- for collection in collections -%}
-      {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
-      <a class="card" href="{{ collection.url }}">
-        {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
+{%- comment -%}
+  /collections.
+
+  This is where the nav's Designs link lands when the shop has no design-book
+  page of its own, so the book has to be the first thing on it — a plain list
+  of every collection is not what "Designs" promises. The book section brings
+  its own heading, family chips and empty state.
+
+  Whatever is filed outside the design prefix — a quality, a season, a sale —
+  is still reachable, listed underneath the book rather than dropped.
+{%- endcomment -%}
+{% section 'design-book' %}
+
+{%- liquid
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+  assign others = 0
+-%}
+{%- capture other_cards -%}
+  {%- for collection in collections -%}
+    {%- if collection.handle contains prefix -%}{%- continue -%}{%- endif -%}
+    {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
+    {%- assign others = others | plus: 1 -%}
+    {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
+    <a class="card" href="{{ collection.url }}">
       {% render 'fabric-surface',
-          image: book_image,
-          alt: collection.title,
-          ratio: '4 / 3',
-          sizes: '(max-width: 700px) 50vw, 25vw' %}
-        <h3>{{ collection.title }}</h3>
-        <p class="on">{{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
-      </a>
-    {%- endfor -%}
+        image: book_image,
+        alt: collection.title,
+        ratio: '4 / 3',
+        sizes: '(max-width: 700px) 50vw, 25vw' %}
+      <h3>{{ collection.title }}</h3>
+      <p class="on">{{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
+    </a>
+  {%- endfor -%}
+{%- endcapture -%}
+
+{%- if others > 0 -%}
+  <div class="shell book" style="padding-top: 0;">
+    <header class="top"><h2>Other collections</h2></header>
+    <div class="bookgrid">{{ other_cards }}</div>
   </div>
-</div>
+{%- endif -%}

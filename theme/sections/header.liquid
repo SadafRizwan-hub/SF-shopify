@@ -12,7 +12,18 @@
   endif
 
   assign catalog_url = section.settings.catalog_url | default: routes.all_products_collection_url
+
+  # The design book is a door the counter cannot do without, so it always
+  # resolves to something: the shop's own design-book page when that page has
+  # been created, and otherwise /collections, which this theme renders as the
+  # book. Without the fallback a store that never made the page gets a nav
+  # with no way into the designs at all.
   assign designs_url = section.settings.designs_url | default: pages['design-book'].url
+  if designs_url == blank
+    assign designs_url = routes.collections_url
+  endif
+  assign designs_label = section.settings.designs_label | default: 'Designs'
+
   assign about_url = section.settings.about_url | default: pages['the-shop'].url
   assign shortlist_url = section.settings.shortlist_url | default: pages.shortlist.url
   assign path = request.path
@@ -29,17 +40,31 @@
 {%- endcomment -%}
 {%- capture nav_links -%}
   {%- if use_menu -%}
+    {%- comment -%}
+      The store's menu is shown as the admin wrote it. The one addition is the
+      design book: a menu built before the book existed silently drops the
+      only way into the designs, so it is appended when — and only when — the
+      menu does not already point at it. Each target is collected wrapped in
+      spaces so /collections is not mistaken for a menu link to
+      /collections/all.
+    {%- endcomment -%}
+    {%- assign menu_targets = ' ' -%}
     {%- for link in menu.links -%}
+      {%- assign menu_targets = menu_targets | append: link.url | append: ' ' -%}
       <a
         href="{{ link.url }}"
         {% if link.active or link.child_active %}class="on" aria-current="page"{% endif %}
       >{{ link.title }}</a>
     {%- endfor -%}
+    {%- assign designs_probe = ' ' | append: designs_url | append: ' ' -%}
+    {%- unless menu_targets contains designs_probe -%}
+      <a href="{{ designs_url }}"{% if path == designs_url %} class="on" aria-current="page"{% endif %}>{{ designs_label }}</a>
+    {%- endunless -%}
   {%- else -%}
     <a href="{{ routes.root_url }}"{% if path == routes.root_url %} class="on" aria-current="page"{% endif %}>Home</a>
     <a href="{{ catalog_url }}"{% if in_catalog %} class="on" aria-current="page"{% endif %}>Catalog</a>
     {%- if designs_url != blank -%}
-      <a href="{{ designs_url }}"{% if path == designs_url %} class="on" aria-current="page"{% endif %}>Designs</a>
+      <a href="{{ designs_url }}"{% if path == designs_url %} class="on" aria-current="page"{% endif %}>{{ designs_label }}</a>
     {%- endif -%}
     {%- if about_url != blank -%}
       <a href="{{ about_url }}"{% if path == about_url %} class="on" aria-current="page"{% endif %}>{{ section.settings.about_label | default: 'The shop' }}</a>
@@ -157,7 +182,7 @@
     {
       "type": "header",
       "content": "Built-in links",
-      "info": "Only used when no menu has any links."
+      "info": "Used when no menu has any links. The design book link is the exception — it is shown either way."
     },
     {
       "type": "url",
@@ -167,7 +192,14 @@
     {
       "type": "url",
       "id": "designs_url",
-      "label": "Design book link"
+      "label": "Design book link",
+      "info": "Defaults to your design-book page, or /collections when there isn't one. Always shown, even alongside a menu — unless the menu already links to it."
+    },
+    {
+      "type": "text",
+      "id": "designs_label",
+      "label": "Design book label",
+      "default": "Designs"
     },
     {
       "type": "url",

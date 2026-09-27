@@ -82,7 +82,12 @@
         {%- if section.settings.show_scale -%}<span class="scale">&#8600; True scale 1:1</span>{%- endif -%}
       {%- endcapture -%}
       {%- assign hero_image = current.featured_image | default: product.featured_image -%}
-      <div data-gallery-main>
+      {%- comment -%}
+        The id of the photograph Liquid painted, so the script can tell that
+        the first shade's picture is already up and leave the responsive
+        srcset it rendered alone.
+      {%- endcomment -%}
+      <div data-gallery-main data-image-id="{{ hero_image.id }}">
         {% render 'fabric-surface',
           image: hero_image,
           alt: product.title,
@@ -95,10 +100,22 @@
         {% render 'icon', name: 'heart' %}
       </button>
 
+      {%- comment -%}
+        The strip marks the photograph that is actually on screen, not the
+        first one in the list. A shade with its own photograph moves the main
+        image, so the current thumbnail has to move with it — carrying the
+        image id lets fabric-form.js match the two without comparing URLs.
+      {%- endcomment -%}
       {%- if product.images.size > 1 -%}
         <div class="thumbs" data-gallery-thumbs>
           {%- for image in product.images -%}
-            <button type="button" aria-current="{% if forloop.first %}true{% else %}false{% endif %}" data-src="{{ image | image_url: width: 1200 }}" aria-label="View image {{ forloop.index }}">
+            <button
+              type="button"
+              aria-current="{% if image.id == hero_image.id %}true{% else %}false{% endif %}"
+              data-image-id="{{ image.id }}"
+              data-src="{{ image | image_url: width: 1200 }}"
+              aria-label="View image {{ forloop.index }}"
+            >
               <img src="{{ image | image_url: width: 160 }}" alt="{{ image.alt | escape }}" width="62" height="62" loading="lazy">
             </button>
           {%- endfor -%}
@@ -354,6 +371,8 @@
       "unit": {{ unit }},
       "shadePosition": {{ shade_pos }},
       "designPosition": {{ design_pos }},
+      "heroImage": {% if product.featured_image %}{{ product.featured_image | image_url: width: 1200 | json }}{% else %}null{% endif %},
+      "heroImageId": {% if product.featured_image %}{{ product.featured_image.id }}{% else %}null{% endif %},
       "variants": [
         {%- for variant in product.variants -%}
           {
@@ -362,7 +381,8 @@
             "price": {{ variant.price }},
             "options": {{ variant.options | json }},
             "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
-            "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1200 | json }}{% else %}null{% endif %}
+            "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1200 | json }}{% else %}null{% endif %},
+            "imageId": {% if variant.featured_image %}{{ variant.featured_image.id }}{% else %}null{% endif %}
           }{% unless forloop.last %},{% endunless %}
         {%- endfor -%}
       ]

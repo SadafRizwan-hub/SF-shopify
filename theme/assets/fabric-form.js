@@ -19,25 +19,61 @@
    * Switching photographs is not worth that coupling.
    */
   var galleryMain = root.querySelector('[data-gallery-main]');
+  var thumbs = [].slice.call(root.querySelectorAll('[data-src]'));
+  var shownPhoto = null;
+  var shownId = galleryMain ? galleryMain.getAttribute('data-image-id') || null : null;
+
+  /*
+   * The strip has to follow the main image, whoever moved it — a thumbnail
+   * click or a shade that carries its own photograph. Matching on the image
+   * id rather than the URL keeps that true when Shopify hands the same
+   * picture out under different width parameters; the URL is only the
+   * fallback for a thumbnail rendered before ids were carried.
+   */
+  function markThumb(id, url) {
+    if (!thumbs.length) return;
+    var hit = null;
+    thumbs.forEach(function (thumb) {
+      var same = false;
+      if (id != null && thumb.getAttribute('data-image-id') === String(id)) {
+        same = true;
+      } else if (url && thumb.getAttribute('data-src') === url) {
+        same = true;
+      }
+      if (same && !hit) hit = thumb;
+    });
+    /* nothing in the strip is the photograph on screen: leave none marked
+       rather than leaving the mark on a picture nobody is looking at */
+    thumbs.forEach(function (thumb) {
+      thumb.setAttribute('aria-current', thumb === hit ? 'true' : 'false');
+    });
+  }
 
   /* The surface serves a srcset, so the browser picks from that and ignores a
      changed src. Clearing it is what actually swaps the photograph. */
-  function showPhoto(url) {
+  function showPhoto(url, id) {
     if (!galleryMain || !url) return;
+    var key = id == null ? null : String(id);
+    /* already on screen — swapping it again would only throw away the
+       responsive srcset Liquid rendered for a picture nobody is changing */
+    if ((key !== null && key === shownId) || (key === null && url === shownPhoto)) {
+      markThumb(key, url);
+      return;
+    }
     var img = galleryMain.querySelector('img');
     if (!img) return;
     img.removeAttribute('srcset');
     img.removeAttribute('sizes');
     img.src = url;
+    shownPhoto = url;
+    shownId = key;
+    markThumb(key, url);
   }
 
   root.addEventListener('click', function (event) {
     var thumb = event.target.closest('[data-src]');
     if (!thumb) return;
-    showPhoto(thumb.getAttribute('data-src'));
-    root.querySelectorAll('[data-src]').forEach(function (other) {
-      other.setAttribute('aria-current', other === thumb ? 'true' : 'false');
-    });
+    showPhoto(thumb.getAttribute('data-src'), thumb.getAttribute('data-image-id'));
   });
 
   var payload = root.querySelector('[data-fabric-json]');
@@ -79,6 +115,9 @@
     slabline: root.querySelector('[data-slabline]'),
     minus: root.querySelector('[data-step="-1"]')
   };
+
+  /* the variant the gallery is currently showing the photograph of */
+  var galleryVariant = firstSelected() ? firstSelected().id : null;
 
   var state = {
     design: designIndex >= 0 ? optionOf(firstSelected(), designIndex) : null,
@@ -256,10 +295,20 @@
       }
     }
 
-    /* a shade with its own photograph moves the gallery to it */
-    if (variant && variant.image) {
-      var shown = galleryMain && galleryMain.querySelector('img');
-      if (shown && shown.src !== variant.image) showPhoto(variant.image);
+    /*
+     * A shade with its own photograph moves the gallery to it, and a shade
+     * without one falls back to the fabric's own hero rather than leaving
+     * the previous colour's cloth on screen under the new shade's name.
+     *
+     * Only a change of variant does this. Every other repaint — a tier, the
+     * stepper — leaves the gallery alone, so a photograph the shopper chose
+     * from the strip is not snatched back the moment they ask for another
+     * metre.
+     */
+    if (variant && variant.id !== galleryVariant) {
+      galleryVariant = variant.id;
+      if (variant.image) showPhoto(variant.image, variant.imageId);
+      else if (data.heroImage) showPhoto(data.heroImage, data.heroImageId);
     }
 
     /* keep the address bar on the variant being read, so a shared link opens

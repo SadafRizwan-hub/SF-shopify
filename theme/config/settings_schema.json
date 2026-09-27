@@ -43,6 +43,12 @@
         "info": "Read from the variant's inventory x the cut unit, so it is metres either way."
       },
       {
+        "type": "number",
+        "id": "default_min_cut",
+        "label": "Shop-wide minimum cut (metres)",
+        "info": "The smallest cut a shopper can order when a fabric does not set its own. Overridden by the product metafield custom.min_cut, and by the variant metafield of the same name for a single shade. Leave blank or 0 for no minimum beyond one cut unit."
+      },
+      {
         "type": "text",
         "id": "design_collection_prefix",
         "label": "Design collection handle prefix",

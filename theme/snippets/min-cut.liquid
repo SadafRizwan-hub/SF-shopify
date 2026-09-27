@@ -1,0 +1,56 @@
+{%- comment -%}
+  The smallest cut allowed for a variant, echoed as a whole number of CUT
+  UNITS — the quantity a Shopify cart line actually holds, not metres.
+
+  Every floor on the site has to come from here. The fabric page's stepper,
+  the cut list's minus link and the JSON feeds all read the same number, so a
+  shopper cannot be shown one minimum and charged against another.
+
+  The value is looked for in three places, nearest first, because a counter
+  setting a 5 m minimum thinks of it as belonging to the fabric at least as
+  often as to one shade of it:
+
+    variant metafield  custom.min_cut   this shade only
+    product metafield  custom.min_cut   every shade of this quality
+    theme setting      default_min_cut  the whole shop
+
+  Metres are turned into cut units by rounding UP: a 5 m minimum under a
+  0.5 m cut unit is 10 units, and a 0.7 m minimum is 2 units, never 1.4.
+
+  Usage: {%- capture units -%}{%- render 'min-cut', variant: v -%}{%- endcapture -%}
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+
+  assign floor_m = variant.metafields.custom.min_cut.value
+  if floor_m == blank
+    assign floor_m = variant.product.metafields.custom.min_cut.value
+  endif
+  if floor_m == blank
+    assign floor_m = settings.default_min_cut
+  endif
+
+  # a text metafield arrives as a string; anything unset, zero or negative
+  # means "no minimum beyond the one cut unit the cart cannot go below"
+  assign floor_m = floor_m | times: 1.0
+  if floor_m <= 0
+    assign floor_m = unit
+  endif
+
+  assign units = floor_m | divided_by: unit | ceil
+
+  # ceil on a float can overshoot by one when the division lands just past a
+  # whole number; drop that unit back if the smaller one still covers the
+  # minimum, so a 5 m floor can never quietly become 6 m
+  assign lower = units | minus: 1
+  assign lower_m = lower | times: unit
+  if lower >= 1 and lower_m >= floor_m
+    assign units = lower
+  endif
+
+  if units < 1
+    assign units = 1
+  endif
+
+  echo units
+-%}

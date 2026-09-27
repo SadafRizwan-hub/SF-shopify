@@ -68,7 +68,13 @@
   endif
 
   assign rate = product.price | times: factor | round
-  assign min_cut = current.metafields.custom.min_cut.value | default: unit
+
+  # the floor comes from snippets/min-cut.liquid and nowhere else, so the
+  # stepper here and the minus link on the cut list agree on one number
+  capture min_units
+    render 'min-cut', variant: current
+  endcapture
+  assign min_cut = min_units | strip | times: unit
 -%}
 
 <div class="shell fabric" data-fabric-page>
@@ -375,12 +381,14 @@
       "heroImageId": {% if product.featured_image %}{{ product.featured_image.id }}{% else %}null{% endif %},
       "variants": [
         {%- for variant in product.variants -%}
+          {%- capture variant_min_units -%}{%- render 'min-cut', variant: variant -%}{%- endcapture -%}
+          {%- assign variant_min = variant_min_units | strip | times: unit -%}
           {
             "id": {{ variant.id }},
             "available": {{ variant.available }},
             "price": {{ variant.price }},
             "options": {{ variant.options | json }},
-            "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+            "minCut": {{ variant_min }},
             "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1200 | json }}{% else %}null{% endif %},
             "imageId": {% if variant.featured_image %}{{ variant.featured_image.id }}{% else %}null{% endif %}
           }{% unless forloop.last %},{% endunless %}

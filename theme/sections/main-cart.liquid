@@ -23,6 +23,20 @@
 
   assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
   assign design_names = 'design,designs,pattern,patterns' | split: ','
+
+  # A line already under its minimum — added before the minimum was raised,
+  # or by something that went round the fabric page — has to be found before
+  # the summary is drawn, because it is what holds checkout back.
+  assign under_count = 0
+  for line in cart.items
+    capture line_units
+      render 'min-cut', variant: line.variant
+    endcapture
+    assign line_units = line_units | strip | times: 1
+    if line.quantity < line_units
+      assign under_count = under_count | plus: 1
+    endif
+  endfor
 -%}
 
 <div class="shell page cutlist">
@@ -71,7 +85,32 @@
                 endif
               endif
 
+              # The minus link stops at this line's own minimum, not at one
+              # unit. Stepping below a 5 m floor is not a thing the cut list
+              # offers, so the link is not rendered as a link there.
+              capture floor_units
+                render 'min-cut', variant: line.variant
+              endcapture
+              assign floor_units = floor_units | strip | times: 1
+              assign floor_metres = floor_units | times: unit
+              assign has_floor = false
+              if floor_units > 1
+                assign has_floor = true
+              endif
+
               assign less = line.quantity | minus: 1
+              if less < floor_units
+                assign less = floor_units
+              endif
+              assign at_floor = false
+              if line.quantity <= floor_units
+                assign at_floor = true
+              endif
+              assign under_floor = false
+              if line.quantity < floor_units
+                assign under_floor = true
+              endif
+
               assign more = line.quantity | plus: 1
             -%}
             <article class="line">
@@ -92,7 +131,15 @@
                 <p class="meta unit">
                   {{ per_metre | money }}/m
                   {%- if on_slab %}<span class="slab">slab rate</span>{% endif -%}
+                  {%- if has_floor %} &middot; minimum {{ floor_metres }} m{% endif -%}
                 </p>
+                {%- if under_floor -%}
+                  <p class="underfloor">
+                    This cut is under the {{ floor_metres }} m minimum.
+                    <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ floor_units }}">Raise it to {{ floor_metres }} m</a>
+                    or remove it.
+                  </p>
+                {%- endif -%}
               </div>
 
               <div class="lqty">
@@ -102,11 +149,14 @@
                   is usable before a line of JavaScript runs.
                 {%- endcomment -%}
                 <div class="stepper">
-                  <a
-                    class="{% if line.quantity <= 1 %}off{% endif %}"
-                    href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ less }}"
-                    aria-label="Less"
-                  >&minus;</a>
+                  {%- if at_floor -%}
+                    <span class="off" aria-disabled="true" title="{{ floor_metres }} m is the smallest cut for this cloth">&minus;</span>
+                  {%- else -%}
+                    <a
+                      href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ less }}"
+                      aria-label="Less"
+                    >&minus;</a>
+                  {%- endif -%}
                   <span class="m">{{ metres }} m</span>
                   <a href="{{ routes.cart_change_url }}?line={{ forloop.index }}&quantity={{ more }}" aria-label="More">+</a>
                 </div>
@@ -144,9 +194,25 @@
             <textarea id="cart-note" name="note" placeholder="Anything the counter should know">{{ cart.note }}</textarea>
           {%- endif -%}
 
-          <button type="submit" name="checkout" class="btn btn-primary wide">
-            {{ section.settings.checkout_label | default: 'Place the cut order' }}
-          </button>
+          {%- comment -%}
+            A cut under its minimum cannot go to checkout: the counter would
+            be billed for cloth it will not cut. The line says what to do
+            about it, so the button only has to hold the door.
+          {%- endcomment -%}
+          {%- if under_count > 0 -%}
+            <p class="underfloor block">
+              {% if under_count == 1 %}One cut is{% else %}{{ under_count }} cuts are{% endif %}
+              under the minimum. Raise {% if under_count == 1 %}it{% else %}them{% endif %}
+              or remove {% if under_count == 1 %}it{% else %}them{% endif %} to carry on.
+            </p>
+            <button type="submit" name="checkout" class="btn btn-primary wide" disabled>
+              {{ section.settings.checkout_label | default: 'Place the cut order' }}
+            </button>
+          {%- else -%}
+            <button type="submit" name="checkout" class="btn btn-primary wide">
+              {{ section.settings.checkout_label | default: 'Place the cut order' }}
+            </button>
+          {%- endif -%}
 
           <p class="fine">{{ section.settings.fine_print }}</p>
         </aside>

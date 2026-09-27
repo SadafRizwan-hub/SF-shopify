@@ -144,9 +144,20 @@ What the theme does with it:
   said this because every variant was at 0 with tracking on.
 - The **Stock** cell in the specs table reads `inventory x cut unit`.
 
-Per-shade minimums are separate from stock: the variant metafield
-`custom.min_cut` sets the smallest cut in **metres** for that shade, and the
-stepper will not go below it.
+Minimums are separate from stock. The smallest cut in **metres** is looked
+for in three places, nearest first:
+
+| Where | Covers |
+|---|---|
+| variant metafield `custom.min_cut` | one shade |
+| product metafield `custom.min_cut` | every shade of that quality |
+| **Theme settings → The counter → Shop-wide minimum cut** | everything else |
+
+The fabric page's stepper starts there and will not go below it, and neither
+will the minus link on the cut list — a line already under the minimum (added
+before you raised it) says so and holds checkout until it is raised or
+removed. Metres are rounded **up** to whole cut units, so a 5 m minimum under
+a 0.5 m cut unit is 10 units.
 
 ## How a fabric is entered in Shopify
 
@@ -161,6 +172,7 @@ Identical to the headless storefront — this theme adds no new conventions.
 | collection `design-*` | the design book entry — its image and tag line |
 | variant price | the rate for **one cut unit** (half a metre) |
 | variant metafield `custom.min_cut` | per-shade MOQ in metres |
+| product metafield `custom.min_cut` | MOQ in metres for every shade |
 | product metafield `custom.subtitle` | the line under the name |
 | product metafield `custom.width` | e.g. `44"` |
 | product metafield `custom.note` | counter note on the fabric page |
@@ -248,8 +260,12 @@ The same three the headless storefront has, for the same reasons.
    ₹240/m.** To close it: a Shopify Function (product discount), automatic
    quantity discounts mirroring each rung, or B2B quantity rules on Plus.
    Until then the tier is a quote, not a price.
-2. **Per-shade MOQ is client-side only.** `custom.min_cut` drives the stepper
-   floor; nothing stops a crafted cart from going under it.
+2. **The MOQ is enforced in the theme, not on the server.** `custom.min_cut`
+   floors the fabric page's stepper and the cut list's minus link, and a line
+   under its minimum blocks the checkout button. All of that is Liquid and
+   HTML, so a crafted POST to `/cart/add` or `/cart/change` still goes under
+   it. To close it properly: a **Cart and Checkout Validation** Shopify
+   Function, which is the only thing that can reject the order itself.
 3. **Checkout is Shopify's.** It collects the name, address and payment and
    prices shipping from its own rules. There is no payment form in this theme
    by design.

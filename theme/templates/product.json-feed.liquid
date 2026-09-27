@@ -88,9 +88,10 @@
               {%- endif -%}
               {%- unless first_row %},{% endunless -%}
               {%- assign first_row = false -%}
+              {%- capture feed_min_units -%}{%- render 'min-cut', variant: variant -%}{%- endcapture -%}
               {{ shade_key | json }}: {
                 "stockUnitId": {{ variant.id }},
-                "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+                "minCut": {{ feed_min_units | strip | times: unit }},
                 "metres": {{ variant.inventory_quantity | times: unit | default: 0 }},
                 "available": {{ variant.available }},
                 "price": {{ variant.price | times: factor | divided_by: 100.0 }}
@@ -113,9 +114,10 @@
             {%- endif -%}
             {%- unless first_row %},{% endunless -%}
             {%- assign first_row = false -%}
+            {%- capture feed_min_units -%}{%- render 'min-cut', variant: variant -%}{%- endcapture -%}
             {{ shade_key | json }}: {
               "stockUnitId": {{ variant.id }},
-              "minCut": {{ variant.metafields.custom.min_cut.value | default: unit }},
+              "minCut": {{ feed_min_units | strip | times: unit }},
               "metres": {{ variant.inventory_quantity | times: unit | default: 0 }},
               "available": {{ variant.available }},
               "price": {{ variant.price | times: factor | divided_by: 100.0 }}

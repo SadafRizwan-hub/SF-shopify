@@ -201,6 +201,43 @@
     if (el.addShade) el.addShade.textContent = state.shade || '';
   }
 
+  function paintDesigns() {
+    root.querySelectorAll('[data-design-card]').forEach(function (card) {
+      card.classList.toggle('on', card.getAttribute('data-design-card') === state.design);
+    });
+    root.querySelectorAll('[data-design]').forEach(function (pick) {
+      pick.setAttribute('aria-pressed', pick.getAttribute('data-design') === state.design ? 'true' : 'false');
+    });
+  }
+
+  /*
+   * A photograph picked from the strip moves the shade to the one it is a
+   * photograph OF. Without this the page can sit on a black cloth with White
+   * still lit up and White in the add button — the picture and the thing
+   * being bought disagreeing about what the shopper chose.
+   *
+   * A thumbnail behind no variant at all — a detail shot, a drape, the
+   * selvedge — moves nothing but the picture, which is the right answer: it
+   * is not a colourway, so it is not a choice.
+   */
+  function adoptImage(id) {
+    if (id == null || id === '') return false;
+    var hit = find(function (v) { return v.imageId != null && String(v.imageId) === String(id) && v.available; })
+      || find(function (v) { return v.imageId != null && String(v.imageId) === String(id); });
+    if (!hit) return false;
+
+    var moved = false;
+    if (designIndex >= 0 && hit.options[designIndex] !== state.design) {
+      state.design = hit.options[designIndex];
+      moved = true;
+    }
+    if (shadeIndex >= 0 && hit.options[shadeIndex] !== state.shade) {
+      state.shade = hit.options[shadeIndex];
+      moved = true;
+    }
+    return moved;
+  }
+
   /* Switching design can leave the chosen shade outside the new design's
      colour set. Move to the first sellable shade under it rather than
      leaving a selection that resolves to no stock unit. */
@@ -323,6 +360,18 @@
   /* ---- events ---------------------------------------------------------- */
 
   root.addEventListener('click', function (event) {
+    var thumb = event.target.closest('[data-src]');
+    if (thumb) {
+      /* the gallery listener above has already swapped the photograph; this
+         only catches the selection up with it */
+      if (adoptImage(thumb.getAttribute('data-image-id'))) {
+        paintDesigns();
+        paintShades();
+        paint();
+      }
+      return;
+    }
+
     var shade = event.target.closest('[data-shade]');
     if (shade && !shade.disabled) {
       state.shade = shade.getAttribute('data-shade');
@@ -334,12 +383,7 @@
     var design = event.target.closest('[data-design]');
     if (design) {
       state.design = design.getAttribute('data-design');
-      root.querySelectorAll('[data-design-card]').forEach(function (card) {
-        card.classList.toggle('on', card.getAttribute('data-design-card') === state.design);
-      });
-      root.querySelectorAll('[data-design]').forEach(function (pick) {
-        pick.setAttribute('aria-pressed', pick.getAttribute('data-design') === state.design ? 'true' : 'false');
-      });
+      paintDesigns();
       reconcileShade();
       paintShades();
       paint();

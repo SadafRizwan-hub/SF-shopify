@@ -839,6 +839,45 @@ body.drawer-open { overflow: hidden; }
 .block > header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 20px; }
 .chosen { font-size: 12.5px; color: var(--ink); }
 
+/* --- design block: the drawing's name, and the drawings themselves ------ */
+.designblock > .designhead {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: 24px;
+}
+.designnow { min-width: 0; }
+.designnow .label { display: block; margin-bottom: 6px; }
+.designname {
+  display: block;
+  font-family: var(--serif);
+  font-size: clamp(24px, 2.8vw, 30px);
+  line-height: 1.15;
+  color: var(--ink);
+}
+a.designname[href]:hover { color: var(--brass); }
+.designnow .meta { margin: 5px 0 0; font-size: 13px; }
+
+.designtiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
+.dtile {
+  position: relative; display: block; padding: 0;
+  width: 64px; border-radius: var(--r-md);
+  box-shadow: inset 0 0 0 1px var(--line);
+  cursor: pointer;
+  transition: box-shadow 0.14s, transform 0.14s;
+}
+.dtile .surface { border-radius: var(--r-md); overflow: hidden; }
+.dtile:hover { transform: translateY(-1px); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.dtile.on { box-shadow: 0 0 0 2px var(--ivory), 0 0 0 3.5px var(--ink); }
+.dcheck {
+  position: absolute; top: 5px; right: 5px;
+  width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--ink); color: var(--ivory);
+  opacity: 0; transform: scale(0.7);
+  transition: opacity 0.14s, transform 0.14s;
+}
+.dtile.on .dcheck { opacity: 1; transform: scale(1); }
+.dtile:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; }
+
 .designs { display: grid; gap: 8px; }
 .designs.multi { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); }
 .designcard {
@@ -867,44 +906,62 @@ body.drawer-open { overflow: hidden; }
 .djump { align-self: stretch; display: grid; place-items: center; padding: 0 12px; color: var(--ink-45); transition: color 0.14s; }
 .djump:hover { color: var(--ink); }
 
-.pricelist { border: 1px solid var(--line); border-radius: var(--r-md); background: var(--paper); overflow: hidden; }
-.prow { display: flex; align-items: center; gap: 13px; width: 100%; padding: 13px 16px; text-align: left; transition: background 0.14s; }
-.prow + .prow { border-top: 1px solid var(--line-soft); }
-button.prow:hover { background: var(--sand); }
-.prow.on { background: var(--sand); }
+/* Every rate is a row on the page itself: a card around them made the
+   cheaper one look like a footnote to the dearer one. */
+.pricelist { display: grid; gap: 4px; }
+.prow {
+  display: flex; align-items: center; gap: 16px;
+  width: 100%; padding: 11px 6px;
+  border-radius: var(--r-md);
+  text-align: left; transition: background 0.14s;
+}
+button.prow:hover { background: var(--paper); }
 .pmark {
-  width: 15px; height: 15px; flex-shrink: 0;
+  width: 21px; height: 21px; flex-shrink: 0;
   border-radius: 50%;
   box-shadow: inset 0 0 0 1.5px var(--line-strong);
   transition: box-shadow 0.14s;
 }
-.prow.on .pmark { box-shadow: inset 0 0 0 4.5px var(--ink); }
+.prow.on .pmark { box-shadow: inset 0 0 0 6px var(--ink); }
 .pwhat { min-width: 0; }
-.pwhat b { display: block; font-weight: 400; font-size: 13.5px; color: var(--ink); }
-.prow.on .pwhat b { font-weight: 500; }
-.pwhat i { display: block; font-style: normal; margin-top: 2px; font-size: 11.5px; color: var(--ink-45); }
-.prow .pamt { margin: 0 0 0 auto; font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.prow .pamt i { font-style: normal; font-size: 12px; color: var(--ink-45); }
-.prow.none { margin: 0; padding-left: 44px; }
+.pwhat b {
+  display: block;
+  font-family: var(--serif); font-weight: 500;
+  font-size: 19px; line-height: 1.2; color: var(--ink);
+}
+.pwhat i { display: block; font-style: normal; margin-top: 3px; font-size: 12.5px; color: var(--ink-45); }
+.prow .pamt {
+  margin: 0 0 0 auto;
+  font-family: var(--serif); font-size: 21px;
+  white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.prow .pamt i { font-style: normal; font-family: var(--sans); font-size: 12px; color: var(--ink-45); }
+/* Wholesale with no rungs entered is still a rate the counter offers, so it
+   keeps its place in the row — the empty ring says it is not a thing you
+   pick here, and the line underneath says how you do. */
+.prow.none { margin: 0; }
+.prow.none .pmark { box-shadow: inset 0 0 0 1.5px var(--line); }
+.prow.none .pwhat b { color: var(--ink-70); }
 
 .tray {
-  display: flex; align-items: flex-end; justify-content: space-between;
-  gap: 18px;
-  margin: 26px 0 14px;
-  padding: 15px 18px 14px;
-  background: var(--sand);
-  border-radius: var(--r-lg);
+  display: flex; align-items: flex-start;
+  gap: 26px;
+  margin: 26px 0 18px;
+  padding: 0;
 }
+.tray .qcol { flex: 1; min-width: 0; }
+.tray .sum { flex-shrink: 0; padding-left: 26px; border-left: 1px solid var(--line-soft); align-self: stretch; }
 .tlabel { display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-45); }
 .stepper {
-  display: inline-flex; align-items: center;
-  margin-top: 8px; padding: 4px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-top: 10px; padding: 5px;
   background: var(--paper);
   border-radius: var(--r-pill);
   box-shadow: inset 0 0 0 1px var(--line);
 }
+.fabric .stepper { width: 100%; max-width: 260px; }
 .stepper button {
-  width: 34px; height: 34px;
+  width: 38px; height: 38px;
   display: grid; place-items: center;
   border-radius: 50%;
   font-size: 18px; line-height: 1;
@@ -913,30 +970,65 @@ button.prow:hover { background: var(--sand); }
 }
 .stepper button:hover:not(:disabled) { background: var(--sand); }
 .stepper button:disabled { color: var(--ink-45); opacity: 0.5; cursor: not-allowed; }
-.qty { min-width: 58px; text-align: center; font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
-.qty i { font-style: normal; font-size: 12px; color: var(--ink-45); margin-left: 3px; }
-.tfine { margin: 8px 0 0; font-size: 11.5px; color: var(--ink-45); }
+.qty {
+  min-width: 58px; text-align: center;
+  font-family: var(--serif); font-size: 24px; font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.qty i { font-style: normal; font-family: var(--sans); font-size: 12px; color: var(--ink-45); margin-left: 3px; }
+.tfine { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-45); }
 .sum { text-align: right; }
-.sum .rate.big { font-size: 26px; margin: 6px 0 0; }
+.sum .rate.big { font-family: var(--serif); font-size: clamp(26px, 3.4vw, 34px); margin: 10px 0 0; }
 .slabline { margin: 4px 0 0; font-size: 11.5px; color: var(--ink-45); }
 .slabline.hit { color: var(--terracotta); }
 
 .actions { display: flex; gap: 10px; }
 .actions .btn-primary { flex: 1; }
 
+/* The label is centred on the button, not on what is left of it after the
+   icons — so it does not shift when the metres go from 9 to 10. */
+.addbtn {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; padding: 17px 54px;
+  font-size: 14.5px;
+}
+.addbtn .addicon { display: grid; place-items: center; opacity: 0.9; }
+.addbtn .addlabel { letter-spacing: 0.2px; }
+.addbtn .addarrow {
+  position: absolute; right: 24px; top: 50%;
+  transform: translateY(-50%);
+  display: grid; place-items: center;
+  opacity: 0.8; transition: transform 0.16s;
+}
+.addbtn:hover:not(:disabled) .addarrow { transform: translateY(-50%) translateX(3px); }
+
 .specs {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1px; margin: 30px 0 0;
-  background: var(--line-soft);
-  border: 1px solid var(--line-soft);
-  border-radius: var(--r-md);
-  overflow: hidden;
+  margin: 28px 0 0; padding-top: 24px;
+  border-top: 1px solid var(--line-soft);
 }
-.specs > div { background: var(--paper); padding: 14px 15px; }
+.specs > div { display: flex; align-items: center; gap: 12px; padding: 2px 16px; min-width: 0; }
+.specs > div + div { border-left: 1px solid var(--line-soft); }
+.specs > div:first-child { padding-left: 0; }
+.specs .sicon {
+  width: 38px; height: 38px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--sand); color: var(--ink);
+}
+.specs .stext { min-width: 0; }
 .specs dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-45); }
-.specs dd { margin: 5px 0 0; font-size: 13.5px; }
+.specs dd { margin: 4px 0 0; font-size: 14px; display: flex; align-items: center; gap: 7px; }
 .specs .cap { text-transform: capitalize; }
 .specs .low { color: var(--terracotta); }
+/* the dot carries the state, so the word does not have to shout it */
+.stockdot {
+  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  background: var(--in-stock);
+}
+.stockdd.low .stockdot, .stockdd.gone .stockdot { background: var(--terracotta); }
+.stockdd.gone { color: var(--ink-45); }
 
 .related { margin-top: 70px; }
 .related h2 { font-size: 26px; margin-bottom: 20px; }
@@ -975,6 +1067,28 @@ button.prow:hover { background: var(--sand); }
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--line-soft);
   }
+}
+
+/* --- the fabric page on a phone ---------------------------------------- */
+@media (max-width: 620px) {
+  /* the drawings drop under their own name rather than squeezing beside it */
+  .designblock > .designhead { flex-direction: column; gap: 16px; }
+  .designtiles { justify-content: flex-start; }
+
+  /* and the total drops under the stepper, its rule turning into one across */
+  .tray { flex-direction: column; gap: 18px; }
+  .tray .sum {
+    text-align: left; align-self: stretch;
+    padding: 16px 0 0; border-left: 0; border-top: 1px solid var(--line-soft);
+  }
+  .fabric .stepper { max-width: none; }
+
+  .specs { grid-template-columns: 1fr; gap: 0; }
+  .specs > div { padding: 14px 0; }
+  .specs > div + div { border-left: 0; border-top: 1px solid var(--line-soft); }
+
+  .addbtn { padding: 16px 46px; }
+  .addbtn .addarrow { right: 18px; }
 }
 
 /* --- design book -------------------------------------------------------- */

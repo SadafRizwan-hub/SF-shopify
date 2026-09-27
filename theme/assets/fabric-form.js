@@ -102,6 +102,7 @@
     addMetres: root.querySelector('[data-add-metres]'),
     addShade: root.querySelector('[data-add-shade]'),
     add: root.querySelector('[data-add]'),
+    addLabel: root.querySelector('[data-add-label]'),
     total: root.querySelector('[data-total]'),
     unitRate: root.querySelector('[data-unit-rate]'),
     retailRate: root.querySelector('[data-retail-rate]'),
@@ -111,6 +112,8 @@
     shadeChosen: root.querySelector('[data-shade-chosen]'),
     shadeCount: root.querySelector('[data-shade-count]'),
     designChosen: root.querySelector('[data-design-chosen]'),
+    designShades: root.querySelector('[data-design-shades]'),
+    designLink: root.querySelector('[data-design-link]'),
     tierLabel: root.querySelector('[data-tier-label]'),
     slabline: root.querySelector('[data-slabline]'),
     minus: root.querySelector('[data-step="-1"]')
@@ -202,12 +205,28 @@
   }
 
   function paintDesigns() {
+    var active = null;
     root.querySelectorAll('[data-design-card]').forEach(function (card) {
-      card.classList.toggle('on', card.getAttribute('data-design-card') === state.design);
+      var on = card.getAttribute('data-design-card') === state.design;
+      card.classList.toggle('on', on);
+      if (on) active = card;
     });
     root.querySelectorAll('[data-design]').forEach(function (pick) {
       pick.setAttribute('aria-pressed', pick.getAttribute('data-design') === state.design ? 'true' : 'false');
     });
+
+    if (!active) return;
+
+    if (el.designShades) {
+      el.designShades.textContent = active.getAttribute('data-design-shades') || '';
+    }
+    /* a design with no book page behind it loses the href rather than
+       keeping the previous design's — an anchor with none is not a link */
+    if (el.designLink) {
+      var url = active.getAttribute('data-design-url');
+      if (url) el.designLink.setAttribute('href', url);
+      else el.designLink.removeAttribute('href');
+    }
   }
 
   /*
@@ -291,6 +310,53 @@
     }
   }
 
+  /*
+   * The add button's label.
+   *
+   * "Out of stock" replaces the metres and the shade, which used to mean
+   * replacing the button's whole contents — taking the spans this file
+   * writes into with it, so a shade chosen after a sold-out one could never
+   * put its metres back. Only the label span is rewritten now, and the spans
+   * inside it are rebuilt when a sold-out shade has removed them.
+   */
+  function setAddLabel(variant, sellable) {
+    if (!el.addLabel) return;
+
+    if (!variant) {
+      el.addLabel.textContent = 'Unavailable';
+      el.addMetres = null;
+      el.addShade = null;
+      return;
+    }
+    if (!sellable) {
+      el.addLabel.textContent = 'Out of stock';
+      el.addMetres = null;
+      el.addShade = null;
+      return;
+    }
+
+    if (!el.addMetres || !root.contains(el.addMetres)) {
+      el.addLabel.textContent = '';
+      el.addLabel.appendChild(document.createTextNode('Add '));
+      var metres = document.createElement('span');
+      metres.setAttribute('data-add-metres', '');
+      el.addLabel.appendChild(metres);
+      el.addLabel.appendChild(document.createTextNode(' m'));
+      el.addMetres = metres;
+
+      if (shadeIndex >= 0) {
+        el.addLabel.appendChild(document.createTextNode(' \u00b7 '));
+        var shade = document.createElement('span');
+        shade.setAttribute('data-add-shade', '');
+        el.addLabel.appendChild(shade);
+        el.addShade = shade;
+      }
+    }
+
+    el.addMetres.textContent = showMetres(state.metres);
+    if (el.addShade) el.addShade.textContent = state.shade || '';
+  }
+
   /* ---- paint ----------------------------------------------------------- */
 
   function paint() {
@@ -323,13 +389,7 @@
     if (el.add) {
       var sellable = variant && variant.available;
       el.add.disabled = !sellable;
-      if (!variant) el.add.textContent = 'Unavailable';
-      else if (!variant.available) el.add.textContent = 'Out of stock';
-      else if (el.addMetres) {
-        /* rebuild the label without clobbering the spans the rest of this
-           function writes into */
-        el.addMetres.textContent = showMetres(state.metres);
-      }
+      setAddLabel(variant, sellable);
     }
 
     /*

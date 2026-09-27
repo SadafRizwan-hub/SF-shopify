@@ -201,47 +201,73 @@
         decides which stock the rest of the page reads. Same card either way.
       {%- endcomment -%}
       {%- if design_pos > 0 -%}
-        <section class="block">
-          <header>
-            <span class="label">Design</span>
-            <span class="chosen" data-design-chosen>{{ active_design }}</span>
-          </header>
-          <div class="designs multi" data-design-grid>
-            {%- for value in design_option.values -%}
-              {%- liquid
-                assign book_handle = prefix | append: value | handle
-                assign book = collections[book_handle]
-                assign shade_total = 0
-                for variant in product.variants
-                  if variant.options[design_i] == value
-                    assign shade_total = shade_total | plus: 1
-                  endif
-                endfor
-              -%}
-              <div class="designcard{% if value == active_design %} on{% endif %}" data-design-card="{{ value | escape }}">
-                <button type="button" class="dpick" data-design="{{ value | escape }}" aria-pressed="{% if value == active_design %}true{% else %}false{% endif %}">
+        {%- liquid
+          assign active_book_handle = prefix | append: active_design | handle
+          assign active_book = collections[active_book_handle]
+          assign active_shades = 0
+          for variant in product.variants
+            if variant.options[design_i] == active_design
+              assign active_shades = active_shades | plus: 1
+            endif
+          endfor
+        -%}
+        <section class="block designblock">
+          <div class="designhead">
+            {%- comment -%}
+              The design the page is on reads as a heading, because that is
+              what it is — the drawing this cloth carries. The switcher is
+              the drawings themselves, which is how the counter picks one.
+            {%- endcomment -%}
+            <div class="designnow">
+              <span class="label">Design</span>
+              {%- comment -%}
+                An anchor with no href is not a link, which is exactly right
+                for a design that has no book page behind it yet. The script
+                adds and removes the href as the design changes.
+              {%- endcomment -%}
+              <a
+                class="designname"
+                data-design-chosen
+                data-design-link
+                {% if active_book != blank %}href="{{ active_book.url }}"{% endif %}
+              >{{ active_design }}</a>
+              <p class="meta"><span data-design-shades>{{ active_shades }}</span> shades available</p>
+            </div>
+
+            <div class="designtiles" data-design-grid>
+              {%- for value in design_option.values -%}
+                {%- liquid
+                  assign book_handle = prefix | append: value | handle
+                  assign book = collections[book_handle]
+                  assign shade_total = 0
+                  for variant in product.variants
+                    if variant.options[design_i] == value
+                      assign shade_total = shade_total | plus: 1
+                    endif
+                  endfor
+                -%}
+                <button
+                  type="button"
+                  class="dtile{% if value == active_design %} on{% endif %}"
+                  data-design-card="{{ value | escape }}"
+                  data-design="{{ value | escape }}"
+                  data-design-url="{{ book.url }}"
+                  data-design-shades="{{ shade_total }}"
+                  aria-pressed="{% if value == active_design %}true{% else %}false{% endif %}"
+                  title="{{ book.title | default: value | escape }} &middot; {{ shade_total }} shades"
+                >
                   <span class="dthumb">
                     {%- if book.image -%}
-                      {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1', sizes: '52px' %}
+                      {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1', sizes: '64px' %}
                     {%- else -%}
                       <span class="surface" style="aspect-ratio: 1 / 1;"><span class="blank"></span></span>
                     {%- endif -%}
                   </span>
-                  <span class="dtext">
-                    <b>{{ book.title | default: value }}</b>
-                    <i class="meta">
-                      {%- if book.description != blank %}{{ book.description | strip_html | truncate: 32 }} &middot; {% endif -%}
-                      {{ shade_total }} shades
-                    </i>
-                  </span>
+                  <span class="dcheck">{% render 'icon', name: 'check', size: 11 %}</span>
+                  <span class="visually-hidden">{{ book.title | default: value }} &middot; {{ shade_total }} shades</span>
                 </button>
-                {%- if book != blank -%}
-                  <a class="djump" href="{{ book.url }}" aria-label="See every ground in {{ book.title | escape }}">
-                    {% render 'icon', name: 'forward', size: 14 %}
-                  </a>
-                {%- endif -%}
-              </div>
-            {%- endfor -%}
+              {%- endfor -%}
+            </div>
           </div>
         </section>
       {%- else -%}
@@ -280,10 +306,7 @@
         row, so what is pickable (and what is picked) is not a guess.
       {%- endcomment -%}
       <section class="block">
-        <header>
-          <span class="label">Pricing</span>
-          <span class="chosen" data-tier-label>Retail</span>
-        </header>
+        <header><span class="label">Pricing</span></header>
         <div class="pricelist" data-pricelist>
           <button type="button" class="prow on" data-tier="retail" data-rate="{{ rate }}" data-from="{{ min_cut }}">
             <span class="pmark"></span>
@@ -308,6 +331,7 @@
             {%- endfor -%}
           {%- else -%}
             <p class="prow none">
+              <span class="pmark"></span>
               <span class="pwhat">
                 <b>Wholesale</b>
                 <i>Contact us for bulk pricing</i>
@@ -333,6 +357,7 @@
           <div class="sum">
             <span class="tlabel">Total</span>
             <p class="rate big" data-total>{{ rate | times: min_cut | round | money }}</p>
+            {%- comment -%} the slab line keeps its place under the total {%- endcomment -%}
             {%- if slabs != blank and slabs.size > 0 -%}
               {%- assign first_slab = slabs.first -%}
               <p class="slabline" data-slabline>{{ first_slab.from }} m+ at {{ first_slab.price | times: 100 | round | money }}/m</p>
@@ -347,20 +372,38 @@
         <input type="hidden" name="quantity" value="1" data-units>
 
         <div class="actions">
-          <button type="submit" class="btn btn-primary" data-add {% unless product.available %}disabled{% endunless %}>
-            {%- if product.available -%}
-              Add <span data-add-metres>{{ min_cut }}</span> m{% if shade_pos > 0 %} &middot; <span data-add-shade>{{ active_shade }}</span>{% endif %}
-            {%- else -%}
-              Out of stock
-            {%- endif -%}
+          <button type="submit" class="btn btn-primary addbtn" data-add {% unless product.available %}disabled{% endunless %}>
+            <span class="addicon">{% render 'icon', name: 'bag', size: 17 %}</span>
+            <span class="addlabel" data-add-label>
+              {%- if product.available -%}
+                Add <span data-add-metres>{{ min_cut }}</span> m{% if shade_pos > 0 %} &middot; <span data-add-shade>{{ active_shade }}</span>{% endif %}
+              {%- else -%}
+                Out of stock
+              {%- endif -%}
+            </span>
+            <span class="addarrow">{% render 'icon', name: 'arrow', size: 17 %}</span>
           </button>
         </div>
       {%- endform -%}
 
       <dl class="specs">
-        <div><dt>Width</dt><dd>{{ width }}</dd></div>
-        <div><dt>Quality</dt><dd class="cap">{{ product.type | default: 'Uncategorised' }}</dd></div>
-        <div><dt>Stock</dt><dd{% if stock == 'low stock' %} class="low"{% endif %}>{{ stock }}</dd></div>
+        <div>
+          <span class="sicon">{% render 'icon', name: 'ruler', size: 16 %}</span>
+          <span class="stext"><dt>Width</dt><dd>{{ width }}</dd></span>
+        </div>
+        <div>
+          <span class="sicon">{% render 'icon', name: 'layers', size: 16 %}</span>
+          <span class="stext"><dt>Quality</dt><dd class="cap">{{ product.type | default: 'Uncategorised' }}</dd></span>
+        </div>
+        <div>
+          <span class="sicon">{% render 'icon', name: 'box', size: 16 %}</span>
+          <span class="stext">
+            <dt>Stock</dt>
+            <dd class="stockdd{% if stock == 'low stock' %} low{% elsif stock == 'out of stock' %} gone{% endif %}">
+              <span class="stockdot"></span>{{ stock }}
+            </dd>
+          </span>
+        </div>
       </dl>
 
       {%- if product.description != blank and settings.show_description != false -%}

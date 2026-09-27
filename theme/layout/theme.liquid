@@ -59,6 +59,13 @@
         --ivory-92: {{ settings.col_ivory | color_modify: 'alpha', 0.92 }};
         --terracotta: {{ settings.col_terracotta }};
         --brass: {{ settings.col_brass }};
+        {%- comment -%}
+          The only colour on the site that is not the counter's own: the dot
+          that says cloth is on the shelf. Green because that is what a
+          shopper reads without being told, and muted so it sits inside the
+          palette rather than on top of it.
+        {%- endcomment -%}
+        --in-stock: #3f7d52;
 
         --line-soft: {{ settings.col_ink | color_modify: 'alpha', 0.09 }};
         --line: {{ settings.col_ink | color_modify: 'alpha', 0.16 }};

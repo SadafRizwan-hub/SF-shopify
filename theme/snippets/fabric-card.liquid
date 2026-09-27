@@ -56,36 +56,58 @@
   assign shade_i = shade_pos | minus: 1
 
   assign card_image = product.featured_image
+  assign card_shade = ''
   assign shade_images = ''
+  assign shade_variants = ''
 
   if shade_pos > 0
     assign wanted = shade_filter | default: '' | split: ','
 
-    for variant in product.variants
-      if variant.featured_image == blank
-        continue
-      endif
-      assign vshade = variant.options[shade_i] | handle
-
-      # the map the browser uses when it filters without a page load
-      assign probe = '"' | append: vshade | append: '"'
-      unless shade_images contains probe
-        assign vurl = variant.featured_image | image_url: width: 720
-        assign shade_images = shade_images | append: probe | append: ':"' | append: vurl | append: '",'
-      endunless
-
-      # and the server-rendered choice, when a colour filter is already applied
-      if wanted.size > 0 and card_image == product.featured_image
-        if wanted contains vshade
-          assign card_image = variant.featured_image
+    # Sellable variants first, so a dot opens onto cloth that can be bought
+    # when one colourway is listed twice and only one of them is in stock.
+    for pass in (1..2)
+      for variant in product.variants
+        if pass == 1 and variant.available == false
+          continue
         endif
-      endif
+        assign vshade = variant.options[shade_i] | handle
+        assign probe = '"' | append: vshade | append: '"'
+
+        # which variant a dot puts in the card's link, so opening the fabric
+        # lands on the colour that was pressed
+        unless shade_variants contains probe
+          assign shade_variants = shade_variants | append: probe | append: ':' | append: variant.id | append: ','
+        endunless
+
+        if variant.featured_image == blank
+          continue
+        endif
+
+        # the map the browser uses when it filters — or when a dot is
+        # pressed — without a page load
+        unless shade_images contains probe
+          assign vurl = variant.featured_image | image_url: width: 720
+          assign shade_images = shade_images | append: probe | append: ':"' | append: vurl | append: '",'
+        endunless
+
+        # and the server-rendered choice, when a colour filter is already applied
+        if wanted.size > 0 and card_shade == blank
+          if wanted contains vshade
+            assign card_image = variant.featured_image
+            assign card_shade = vshade
+          endif
+        endif
+      endfor
     endfor
   endif
 
   if shade_images != blank
     assign trim = shade_images.size | minus: 1
     assign shade_images = shade_images | slice: 0, trim
+  endif
+  if shade_variants != blank
+    assign trim = shade_variants.size | minus: 1
+    assign shade_variants = shade_variants | slice: 0, trim
   endif
 
   # The three counter facets, as handles on the card itself. The filter rail
@@ -137,6 +159,8 @@
     back before JSON.parse ever sees it.
   {%- endcomment -%}
   data-shade-images='{ {{- shade_images | escape -}} }'
+  data-shade-variants='{ {{- shade_variants | escape -}} }'
+  data-url="{{ product.url }}"
 >
   <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
     {%- capture overlay -%}
@@ -174,6 +198,13 @@
         <span class="was">{{ mrp | money }}</span>
       {%- endif -%}
     </p>
-    {% render 'shade-dots', values: shade_values, max: 4 %}
   </a>
+
+  {%- comment -%}
+    Outside the link, and after it: a button inside an anchor is invalid, and
+    a dot that navigates is the one thing a shade picker must not do.
+  {%- endcomment -%}
+  <div class="cardshades">
+    {% render 'shade-dots', values: shade_values, max: 4, images: shade_images, active: card_shade %}
+  </div>
 </article>

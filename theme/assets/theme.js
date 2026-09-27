@@ -231,6 +231,69 @@
       }
     });
 
+    /*
+     * The shade dots on a card.
+     *
+     * Pressing one answers "what does this look like in black" where the
+     * shopper is standing, without opening the fabric and coming back. It
+     * also points the card's links at that colour's variant, so following
+     * the card afterwards opens on the shade that was pressed rather than
+     * on the fabric's default one.
+     *
+     * The pick is remembered on the card so the catalog filter, which
+     * repaints these same photographs, does not undo it — see shadePhoto in
+     * catalog-filters.js.
+     */
+    function cardMap(card, attribute) {
+      try {
+        return JSON.parse(card.getAttribute(attribute) || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    document.addEventListener('click', function (event) {
+      var dot = event.target.closest('[data-card-shade]');
+      if (!dot) return;
+
+      var card = dot.closest('.card');
+      if (!card) return;
+
+      event.preventDefault();
+
+      var slug = dot.getAttribute('data-card-shade');
+      var img = card.querySelector('img');
+      var url = cardMap(card, 'data-shade-images')[slug];
+
+      if (img && url) {
+        if (!img.hasAttribute('data-original-src')) {
+          img.setAttribute('data-original-src', img.currentSrc || img.src);
+          img.setAttribute('data-original-srcset', img.getAttribute('srcset') || '');
+        }
+        /* the surface serves a srcset, so the browser picks from that and
+           ignores a changed src — clearing it is what swaps the photograph */
+        img.removeAttribute('srcset');
+        img.removeAttribute('sizes');
+        img.src = url;
+      }
+
+      card.setAttribute('data-picked-shade', slug);
+
+      var variant = cardMap(card, 'data-shade-variants')[slug];
+      var base = card.getAttribute('data-url');
+      if (variant && base) {
+        card.querySelectorAll('a[href]').forEach(function (link) {
+          link.href = base + (base.indexOf('?') === -1 ? '?' : '&') + 'variant=' + variant;
+        });
+      }
+
+      card.querySelectorAll('[data-card-shade]').forEach(function (other) {
+        var on = other === dot;
+        other.classList.toggle('on', on);
+        other.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+    });
+
     /* the sort control is a plain select so it works without JS too; this
        only saves the shopper a trip to a submit button */
     var sort = document.querySelector('[data-sort]');

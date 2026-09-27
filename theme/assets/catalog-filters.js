@@ -64,17 +64,26 @@
       img.setAttribute('data-original-srcset', img.getAttribute('srcset') || '');
     }
 
+    var map;
+    try {
+      map = JSON.parse(card.getAttribute('data-shade-images') || '{}');
+    } catch (e) {
+      map = {};
+    }
+
     var wanted = null;
     if (chosen.shades.length) {
-      var map;
-      try {
-        map = JSON.parse(card.getAttribute('data-shade-images') || '{}');
-      } catch (e) {
-        map = {};
-      }
       for (var i = 0; i < chosen.shades.length; i++) {
         if (map[chosen.shades[i]]) { wanted = map[chosen.shades[i]]; break; }
       }
+    }
+
+    /* a shade the shopper pressed on the card itself outlives a filter that
+       says nothing about colour — repainting over their choice would undo a
+       thing they did on purpose */
+    if (!wanted) {
+      var picked = card.getAttribute('data-picked-shade');
+      if (picked && map[picked]) wanted = map[picked];
     }
 
     if (wanted) {

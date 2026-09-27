@@ -846,15 +846,14 @@ body.drawer-open { overflow: hidden; }
 }
 .designnow { min-width: 0; }
 .designnow .label { display: block; margin-bottom: 6px; }
+/* the sans of the card title it replaced, not a new serif heading */
 .designname {
   display: block;
-  font-family: var(--serif);
-  font-size: clamp(24px, 2.8vw, 30px);
-  line-height: 1.15;
+  font-weight: 500; font-size: 15px; line-height: 1.3;
   color: var(--ink);
 }
 a.designname[href]:hover { color: var(--brass); }
-.designnow .meta { margin: 5px 0 0; font-size: 13px; }
+.designnow .meta { margin: 3px 0 0; font-size: 11.5px; color: var(--ink-45); }
 
 .designtiles { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; flex-shrink: 0; }
 .dtile {
@@ -924,18 +923,11 @@ button.prow:hover { background: var(--paper); }
 }
 .prow.on .pmark { box-shadow: inset 0 0 0 6px var(--ink); }
 .pwhat { min-width: 0; }
-.pwhat b {
-  display: block;
-  font-family: var(--serif); font-weight: 500;
-  font-size: 19px; line-height: 1.2; color: var(--ink);
-}
-.pwhat i { display: block; font-style: normal; margin-top: 3px; font-size: 12.5px; color: var(--ink-45); }
-.prow .pamt {
-  margin: 0 0 0 auto;
-  font-family: var(--serif); font-size: 21px;
-  white-space: nowrap; font-variant-numeric: tabular-nums;
-}
-.prow .pamt i { font-style: normal; font-family: var(--sans); font-size: 12px; color: var(--ink-45); }
+.pwhat b { display: block; font-weight: 400; font-size: 13.5px; color: var(--ink); }
+.prow.on .pwhat b { font-weight: 500; }
+.pwhat i { display: block; font-style: normal; margin-top: 2px; font-size: 11.5px; color: var(--ink-45); }
+.prow .pamt { margin: 0 0 0 auto; font-size: 17px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.prow .pamt i { font-style: normal; font-size: 12px; color: var(--ink-45); }
 /* Wholesale with no rungs entered is still a rate the counter offers, so it
    keeps its place in the row — the empty ring says it is not a thing you
    pick here, and the line underneath says how you do. */
@@ -970,15 +962,11 @@ button.prow:hover { background: var(--paper); }
 }
 .stepper button:hover:not(:disabled) { background: var(--sand); }
 .stepper button:disabled { color: var(--ink-45); opacity: 0.5; cursor: not-allowed; }
-.qty {
-  min-width: 58px; text-align: center;
-  font-family: var(--serif); font-size: 24px; font-weight: 500;
-  font-variant-numeric: tabular-nums;
-}
-.qty i { font-style: normal; font-family: var(--sans); font-size: 12px; color: var(--ink-45); margin-left: 3px; }
+.qty { min-width: 58px; text-align: center; font-size: 17px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.qty i { font-style: normal; font-size: 12px; color: var(--ink-45); margin-left: 3px; }
 .tfine { margin: 10px 0 0; font-size: 11.5px; color: var(--ink-45); }
 .sum { text-align: right; }
-.sum .rate.big { font-family: var(--serif); font-size: clamp(26px, 3.4vw, 34px); margin: 10px 0 0; }
+.sum .rate.big { font-size: 26px; margin: 10px 0 0; }
 .slabline { margin: 4px 0 0; font-size: 11.5px; color: var(--ink-45); }
 .slabline.hit { color: var(--terracotta); }
 
@@ -991,7 +979,6 @@ button.prow:hover { background: var(--paper); }
   position: relative;
   display: flex; align-items: center; justify-content: center;
   gap: 10px; padding: 17px 54px;
-  font-size: 14.5px;
 }
 .addbtn .addicon { display: grid; place-items: center; opacity: 0.9; }
 .addbtn .addlabel { letter-spacing: 0.2px; }
@@ -1019,7 +1006,7 @@ button.prow:hover { background: var(--paper); }
 }
 .specs .stext { min-width: 0; }
 .specs dt { font-size: 10.5px; text-transform: uppercase; letter-spacing: 1.2px; color: var(--ink-45); }
-.specs dd { margin: 4px 0 0; font-size: 14px; display: flex; align-items: center; gap: 7px; }
+.specs dd { margin: 5px 0 0; font-size: 13.5px; display: flex; align-items: center; gap: 7px; }
 .specs .cap { text-transform: capitalize; }
 .specs .low { color: var(--terracotta); }
 /* the dot carries the state, so the word does not have to shout it */

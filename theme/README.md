@@ -159,6 +159,20 @@ before you raised it) says so and holds checkout until it is raised or
 removed. Metres are rounded **up** to whole cut units, so a 5 m minimum under
 a 0.5 m cut unit is 10 units.
 
+### The shade row on a design page
+
+The swatches under **This design comes in** are the page's filter, not a
+legend. Picking one moves the drawing to that colourway, narrows the grounds
+below to the ones dyed in it, and points each of those rows at that shade's
+variant so the fabric page opens on the right colour. Picking it again — or
+**Show every shade** — clears it, and `?shade=Black` on the URL opens on it,
+so a colourway can be sent on WhatsApp the way a design can.
+
+It reads `variant.featured_image`, so **a shade only changes the picture if
+that variant has its own image assigned in the admin**. Shades sharing one
+photograph still filter the grounds correctly; they just do not change what
+is on screen.
+
 ## How a fabric is entered in Shopify
 
 Identical to the headless storefront — this theme adds no new conventions.

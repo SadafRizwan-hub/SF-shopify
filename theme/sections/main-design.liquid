@@ -52,7 +52,7 @@
   {%- else -%}
     <header class="head">
       <h1>{{ collection.title }}</h1>
-      <p class="meta">
+      <p class="meta" data-design-count>
         Design &middot; available on {{ collection.products_count }}
         {% if collection.products_count == 1 %}fabric{% else %}fabrics{% endif %}
       </p>
@@ -71,11 +71,15 @@
     <div class="split">
       <div class="visual">
         {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
-      {% render 'fabric-surface',
-          image: book_image,
-          alt: collection.title,
-          ratio: '4 / 3',
-          sizes: '(max-width: 900px) 100vw, 50vw' %}
+        {%- capture shown_badge -%}<span class="shown" data-design-shown hidden></span>{%- endcapture -%}
+        <div data-design-main data-image-id="{{ book_image.id }}">
+          {% render 'fabric-surface',
+            image: book_image,
+            alt: collection.title,
+            ratio: '4 / 3',
+            sizes: '(max-width: 900px) 100vw, 50vw',
+            overlay: shown_badge %}
+        </div>
         {%- if collection.description != blank -%}
           <div class="tagline rte">{{ collection.description }}</div>
         {%- endif -%}
@@ -83,15 +87,25 @@
 
       <div class="detail">
         {%- if shade_list.size > 0 -%}
+          {%- comment -%}
+            These were a legend — a row of colours with nothing behind them.
+            They are the page's filter now: picking one moves the drawing to
+            that colourway and narrows the grounds below to the ones that
+            actually come in it. Buttons, not spans, so the keyboard and a
+            screen reader get the same page the mouse does.
+          {%- endcomment -%}
           <section class="block">
-            <header><span class="label">This design comes in</span></header>
-            <div class="shadegrid" style="--cols: {{ section.settings.shade_columns }};">
+            <header>
+              <span class="label">This design comes in</span>
+              <button type="button" class="chosen linkish" data-shade-reset hidden>Show every shade</button>
+            </header>
+            <div class="shadegrid" style="--cols: {{ section.settings.shade_columns }};" data-shade-grid>
               {%- for value in shade_list -%}
                 {%- capture hex %}{% render 'shade-hex', name: value %}{% endcapture -%}
-                <span class="cell">
+                <button type="button" class="cell" data-shade="{{ value | escape }}" aria-pressed="false">
                   <span class="swatch" style="background: {{ hex | strip }};"></span>
                   <span class="name">{{ value }}</span>
-                </span>
+                </button>
               {%- endfor -%}
             </div>
           </section>
@@ -99,7 +113,7 @@
 
         <section class="block">
           <header><span class="label">On which fabric</span></header>
-          <div class="grounds">
+          <div class="grounds" data-grounds>
             {%- for product in collection.products -%}
               {%- liquid
                 assign stock = 'in stock'
@@ -108,8 +122,8 @@
                 endunless
                 assign width = product.metafields.custom.width.value | default: '—'
               -%}
-              <a class="ground" href="{{ product.url }}">
-                <span class="gthumb">
+              <a class="ground" href="{{ product.url }}" data-ground="{{ product.id }}" data-url="{{ product.url }}">
+                <span class="gthumb" data-ground-thumb data-image-id="{{ product.featured_image.id }}">
                   {% render 'fabric-surface', image: product.featured_image, alt: product.title, ratio: '1 / 1', sizes: '52px' %}
                 </span>
                 <span class="gtext">
@@ -120,6 +134,7 @@
               </a>
             {%- endfor -%}
           </div>
+          <p class="meta" data-grounds-empty hidden>No ground on this page is dyed in that shade.</p>
         </section>
 
         {%- comment -%}
@@ -169,6 +184,61 @@
         {%- endif -%}
       </div>
     </div>
+
+    {%- comment -%}
+      What each ground is dyed in, and which photograph belongs to which
+      shade of it. Emitted as a flat list per ground rather than a map keyed
+      by shade, so two variants of the same colour cannot collide into
+      duplicate JSON keys and take the whole payload — and with it the page —
+      down. The script picks the first match.
+    {%- endcomment -%}
+    <script type="application/json" data-design-json>
+      {
+        "hero": {% if book_image %}{{ book_image | image_url: width: 1400 | json }}{% else %}null{% endif %},
+        "heroId": {% if book_image %}{{ book_image.id }}{% else %}null{% endif %},
+        "grounds": [
+          {%- for product in collection.products -%}
+            {%- liquid
+              assign p_shade_i = -1
+              for option in product.options_with_values
+                assign key = option.name | strip | downcase
+                if shade_names contains key
+                  assign p_shade_i = forloop.index0
+                  break
+                endif
+              endfor
+            -%}
+            {
+              "id": {{ product.id }},
+              "url": {{ product.url | json }},
+              "image": {% if product.featured_image %}{{ product.featured_image | image_url: width: 1400 | json }}{% else %}null{% endif %},
+              "imageId": {% if product.featured_image %}{{ product.featured_image.id }}{% else %}null{% endif %},
+              "thumb": {% if product.featured_image %}{{ product.featured_image | image_url: width: 160 | json }}{% else %}null{% endif %},
+              "shades": [
+                {%- assign first_row = true -%}
+                {%- for variant in product.variants -%}
+                  {%- if p_shade_i < 0 -%}{%- continue -%}{%- endif -%}
+                  {%- assign shade_value = variant.options[p_shade_i] -%}
+                  {%- if shade_value == blank -%}{%- continue -%}{%- endif -%}
+                  {%- unless first_row %},{% endunless -%}
+                  {%- assign first_row = false -%}
+                  {
+                    "name": {{ shade_value | json }},
+                    "variant": {{ variant.id }},
+                    "available": {{ variant.available }},
+                    "image": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 1400 | json }}{% else %}null{% endif %},
+                    "imageId": {% if variant.featured_image %}{{ variant.featured_image.id }}{% else %}null{% endif %},
+                    "thumb": {% if variant.featured_image %}{{ variant.featured_image | image_url: width: 160 | json }}{% else %}null{% endif %}
+                  }
+                {%- endfor -%}
+              ]
+            }{% unless forloop.last %},{% endunless %}
+          {%- endfor -%}
+        ]
+      }
+    </script>
+
+    <script src="{{ 'design-shades.js' | asset_url }}" defer></script>
   {%- endif -%}
 </div>
 

@@ -31,6 +31,17 @@
   endif
 
   assign subtitle = hero.metafields.custom.subtitle.value | default: hero.description | strip_html | truncate: 90
+
+  # "New this week" was fixed text, so it said so whether the fabric went up
+  # yesterday or last year. It is now shown only while the lead product is
+  # actually inside the new window, and takes itself off when that passes.
+  capture hero_fresh
+    render 'is-new', product: hero
+  endcapture
+  assign eyebrow = section.settings.eyebrow_old
+  if hero_fresh == 'new'
+    assign eyebrow = section.settings.eyebrow
+  endif
 -%}
 <section class="hero">
   {%- if hero_image -%}
@@ -45,7 +56,7 @@
 
   <div class="shell copy">
     {%- if hero -%}
-      <span class="eyebrow">{{ section.settings.eyebrow }}</span>
+      {%- if eyebrow != blank -%}<span class="eyebrow">{{ eyebrow }}</span>{%- endif -%}
       <h1>{{ hero.title }},<br>{{ section.settings.heading_tail | default: 'cut to your metre' }}</h1>
       <p class="lede">
         {%- if subtitle != blank %}{{ subtitle }}. {% endif -%}
@@ -109,8 +120,15 @@
     {
       "type": "text",
       "id": "eyebrow",
-      "label": "Eyebrow",
+      "label": "Eyebrow while the fabric is new",
+      "info": "Shown only while the lead fabric is inside Theme settings → The counter → New for. It takes itself off after that.",
       "default": "New this week"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow_old",
+      "label": "Eyebrow once it is not new",
+      "info": "Leave empty to show nothing above the heading."
     },
     {
       "type": "text",

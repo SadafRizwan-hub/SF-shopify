@@ -1,0 +1,32 @@
+{%- comment -%}
+  Whether a product is still new, echoed as `new` or as nothing.
+
+  There is no tag to add and none to remember to take off. Shopify stamps
+  every product with created_at, so the counter's "new" is a fact about the
+  product, not a label someone has to maintain — a fabric entered today is
+  new, and the same fabric is not new a month later without anyone touching
+  it. The window is Theme settings → The counter → New for.
+
+  A window of 0 turns the whole idea off.
+
+  Usage: {%- capture fresh -%}{%- render 'is-new', product: product -%}{%- endcapture -%}
+         {%- if fresh == 'new' -%} … {%- endif -%}
+{%- endcomment -%}
+{%- liquid
+  assign days = settings.new_for_days | times: 1
+  assign fresh = ''
+
+  if days > 0 and product.created_at
+    assign now_s = 'now' | date: '%s' | times: 1
+    assign made_s = product.created_at | date: '%s' | times: 1
+    assign age = now_s | minus: made_s
+    assign window = days | times: 86400
+    # a created_at in the future is a clock disagreeing with itself, not a
+    # product that is extra new — treat it as new rather than as ancient
+    if age < window
+      assign fresh = 'new'
+    endif
+  endif
+
+  echo fresh
+-%}

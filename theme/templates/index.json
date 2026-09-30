@@ -7,22 +7,21 @@
         "heading_tail": "cut to your metre",
         "prefer_product_photo": true,
         "empty_heading": "Wholesale cloth,",
-        "empty_body": "Cut fresh off the than at the wholesale rate, to the length you ask for. The counter is open — the catalog goes up here as stock lands."
+        "empty_body": "Cut fresh off the than at the wholesale rate, to the length you ask for. The counter is open \u2014 the catalog goes up here as stock lands."
       }
     },
     "qualities": {
       "type": "quality-chips",
-      "settings": { "heading": "Shop by quality", "link_label": "See the full catalog" }
-    },
-    "by-the-metre": {
-      "type": "featured-fabrics",
-      "settings": { "heading": "By the metre", "count": 8, "columns": 4, "link_label": "See all" }
+      "settings": {
+        "heading": "Shop by quality",
+        "link_label": "See the full catalog"
+      }
     },
     "designs": {
       "type": "design-book-row",
       "settings": {
         "heading": "One design, many grounds",
-        "body": "The design book sits across qualities — pick the drawing first, then choose which cloth it should be printed on.",
+        "body": "The design book sits across qualities \u2014 pick the drawing first, then choose which cloth it should be printed on.",
         "count": 6,
         "link_label": "All designs"
       }
@@ -35,7 +34,7 @@
           "settings": {
             "eyebrow": "Wholesale rates on",
             "heading": "Slab pricing past 10 metres",
-            "body": "Cross the slab and the rate drops on the whole cut — no negotiation, the app shows it before you order."
+            "body": "Cross the slab and the rate drops on the whole cut \u2014 no negotiation, the app shows it before you order."
           }
         },
         "swatch": {
@@ -55,8 +54,52 @@
           }
         }
       },
-      "block_order": ["slabs", "swatch", "cut"]
+      "block_order": [
+        "slabs",
+        "swatch",
+        "cut"
+      ]
+    },
+    "new-arrivals": {
+      "type": "fabric-carousel",
+      "settings": {
+        "heading": "New this month",
+        "order": "new_only",
+        "count": 12,
+        "columns": 4,
+        "body": "Fresh off the than. A fabric leaves this shelf by itself once it is no longer new.",
+        "link_label": "See the full catalog"
+      }
+    },
+    "by-the-metre": {
+      "type": "fabric-carousel",
+      "settings": {
+        "heading": "By the metre",
+        "order": "newest",
+        "count": 12,
+        "columns": 4,
+        "link_label": "See all"
+      }
+    },
+    "on-sale": {
+      "type": "fabric-carousel",
+      "settings": {
+        "heading": "On sale",
+        "order": "sale",
+        "count": 12,
+        "columns": 4,
+        "body": "Cloth carrying a compare-at price. The shelf shows itself only while something is on it.",
+        "link_label": "See all offers"
+      }
     }
   },
-  "order": ["hero", "qualities", "by-the-metre", "designs", "promise"]
+  "order": [
+    "hero",
+    "qualities",
+    "new-arrivals",
+    "by-the-metre",
+    "on-sale",
+    "designs",
+    "promise"
+  ]
 }

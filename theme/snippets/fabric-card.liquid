@@ -163,8 +163,10 @@
   data-url="{{ product.url }}"
 >
   <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+    {%- capture fresh -%}{%- render 'is-new', product: product -%}{%- endcapture -%}
     {%- capture overlay -%}
       <span class="tag">{{ product.type | default: 'Uncategorised' }}</span>
+      {%- if fresh == 'new' -%}<span class="fresh">New</span>{%- endif -%}
       {%- if stock == 'low stock' -%}
         <span class="low">Low stock</span>
       {%- elsif stock == 'out of stock' -%}

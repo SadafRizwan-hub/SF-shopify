@@ -49,6 +49,17 @@
         "info": "The smallest cut a shopper can order when a fabric does not set its own. Overridden by the product metafield custom.min_cut, and by the variant metafield of the same name for a single shade. Leave blank or 0 for no minimum beyond one cut unit."
       },
       {
+        "type": "range",
+        "id": "new_for_days",
+        "label": "New for",
+        "unit": "d",
+        "min": 0,
+        "max": 90,
+        "step": 5,
+        "default": 30,
+        "info": "How long after a fabric is entered it still reads as new \u2014 on the card, on the hero and in a New arrivals carousel. It drops off by itself; there is no tag to remove. Set 0 to never mark anything new."
+      },
+      {
         "type": "text",
         "id": "design_collection_prefix",
         "label": "Design collection handle prefix",

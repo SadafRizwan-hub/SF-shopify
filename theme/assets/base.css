@@ -477,6 +477,18 @@ body.drawer-open { overflow: hidden; }
   letter-spacing: 0.3px;
   color: var(--ink);
 }
+/* the counter's "new", which is a fact about the product's age and takes
+   itself off — opposite corner to the quality tag so the two never collide */
+.card .fresh {
+  position: absolute;
+  top: 10px; right: 10px;
+  padding: 4px 11px;
+  border-radius: var(--r-pill);
+  background: var(--ink);
+  color: var(--ivory);
+  font-size: 10.5px;
+  letter-spacing: 0.4px;
+}
 .card .low {
   position: absolute;
   bottom: 10px; left: 10px;
@@ -612,6 +624,50 @@ body.drawer-open { overflow: hidden; }
 .head h2 { font-size: clamp(23px, 3vw, 30px); }
 .subline { margin: -10px 0 22px; color: var(--ink-70); font-size: 14px; max-width: 560px; }
 .types { display: flex; flex-wrap: wrap; gap: 9px; }
+
+/* --- carousels ---------------------------------------------------------- */
+/* A real scroller, not a slider: it swipes and trackpad-scrolls before any
+   script runs, and the arrows only drive the same scroll. */
+.carousel .head { align-items: center; }
+.carnav { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.carnav .linkish { margin-left: 6px; }
+.carbtn {
+  width: 34px; height: 34px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink); cursor: pointer;
+  transition: background 0.14s, box-shadow 0.14s, opacity 0.14s;
+}
+.carbtn:hover:not(:disabled) { background: var(--paper); box-shadow: inset 0 0 0 1px var(--line-strong); }
+.carbtn:disabled { opacity: 0.3; cursor: default; }
+.carbtn[hidden] { display: none; }
+
+.carrail {
+  display: flex; gap: 22px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  scroll-behavior: smooth;
+  /* room for the card's hover lift and focus ring, which a clipped
+     scroller would otherwise cut off */
+  padding: 4px 0 6px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.carrail::-webkit-scrollbar { display: none; }
+.carrail:focus-visible { outline: 2px solid var(--ink); outline-offset: 4px; border-radius: var(--r-sm); }
+.carcell {
+  flex: 0 0 calc((100% - (var(--cols) - 1) * 22px) / var(--cols));
+  scroll-snap-align: start;
+  min-width: 0;
+}
+@media (prefers-reduced-motion: reduce) { .carrail { scroll-behavior: auto; } }
+@media (max-width: 1050px) { .carcell { flex-basis: calc((100% - 2 * 22px) / 3); } }
+@media (max-width: 760px) {
+  .carrail { gap: 14px; }
+  .carcell { flex-basis: calc((100% - 14px) / 2); }
+}
+@media (max-width: 460px) { .carcell { flex-basis: 78%; } }
 
 .designrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 26px 22px; }
 .dcard { text-align: left; display: block; }

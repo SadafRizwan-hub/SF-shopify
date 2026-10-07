@@ -4,28 +4,16 @@
   nothing, so it isn't shown.
 {%- endcomment -%}
 {%- liquid
-  assign prefix = settings.design_collection_prefix | default: 'design-'
-  assign shown = 0
   assign limit = section.settings.count | default: 6
+
+  # design-* collections and Design option values alike — see
+  # snippets/design-cards.liquid. A design with no cloth under it opens onto
+  # nothing, so it is never a card.
+  capture cards
+    render 'design-cards', layout: 'row', cap: limit
+  endcapture
+  assign shown = cards | split: '<!--designs:' | last | split: '-->' | first | times: 1
 -%}
-{%- capture cards -%}
-  {%- for collection in collections -%}
-    {%- if shown >= limit -%}{%- break -%}{%- endif -%}
-    {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
-    {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
-    {%- assign shown = shown | plus: 1 -%}
-    <a class="dcard" href="{{ collection.url }}">
-      {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
-    {% render 'fabric-surface',
-        image: book_image,
-        alt: collection.title,
-        ratio: '4 / 3',
-        sizes: '(max-width: 700px) 50vw, 33vw' %}
-      <span class="dn">{{ collection.title }}</span>
-      <span class="meta">{{ collection.description | strip_html | truncate: 70 }}</span>
-    </a>
-  {%- endfor -%}
-{%- endcapture -%}
 
 {%- if shown > 0 -%}
   <section class="shell homeband">

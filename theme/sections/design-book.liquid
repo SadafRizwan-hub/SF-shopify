@@ -1,9 +1,11 @@
 {%- comment -%}
   The design book.
 
-  Every collection whose handle starts with the design prefix and has cloth
-  actually posted under it. A design with no product opens onto nothing, so it
-  is not a door.
+  Every design the shop has: each design-* collection with cloth under it, and
+  each Design option value on a product, whether or not anyone has made it a
+  collection. A new design shows here the moment a product carrying it is
+  saved. See snippets/design-cards.liquid. A design with no cloth under it
+  opens onto nothing, so it is not a door.
 
   Above the designs sits the counter's own taxonomy — see snippets/
   design-families.liquid. The family chips filter the book in the browser
@@ -11,13 +13,18 @@
   so a family can be sent on WhatsApp like anything else.
 {%- endcomment -%}
 {%- liquid
-  assign prefix = settings.design_collection_prefix | default: 'design-'
-  assign shown = 0
-
   capture family_rows
     render 'design-families'
   endcapture
   assign family_list = family_rows | strip | split: '||'
+
+  # Every design the shop has — design-* collections and Design option values
+  # alike; see snippets/design-cards.liquid. The snippet ends with a marker that
+  # carries the number of cards, so they are drawn once and counted for free.
+  capture cards
+    render 'design-cards', layout: 'book'
+  endcapture
+  assign shown = cards | split: '<!--designs:' | last | split: '-->' | first | times: 1
 -%}
 
 <div class="shell book">
@@ -27,29 +34,6 @@
       <p class="sub">{{ section.settings.body }}</p>
     {%- endif -%}
   </header>
-
-  {%- capture cards -%}
-    {%- for collection in collections -%}
-      {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
-      {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
-      {%- assign shown = shown | plus: 1 -%}
-      {%- capture design_families %}{% render 'design-of', collection: collection %}{% endcapture -%}
-      {%- assign book_image = collection.image | default: collection.products.first.featured_image -%}
-      <a class="card" href="{{ collection.url }}" data-design-card data-families="{{ design_families | strip }}">
-        {% render 'fabric-surface',
-          image: book_image,
-          alt: collection.title,
-          ratio: '4 / 3',
-          sizes: '(max-width: 700px) 50vw, 25vw' %}
-        <h3>{{ collection.title }}</h3>
-        {%- if collection.description != blank -%}
-          <p class="meta">{{ collection.description | strip_html | truncate: 70 }}</p>
-        {%- endif -%}
-        <p class="on">On {{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %}</p>
-      </a>
-    {%- endfor -%}
-  {%- endcapture -%}
-
   {%- if shown > 0 -%}
     {%- if family_list.size > 0 and section.settings.show_families -%}
       <nav class="families" aria-label="Design families">

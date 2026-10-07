@@ -1,0 +1,33 @@
+{%- comment -%}
+  One design, as a card. The one place a design card is drawn, so the design
+  book and the home page's row cannot drift apart.
+
+  `layout` is 'book' (the full page) or 'row' (the home page's shorter card).
+
+  Usage: {% render 'design-card', layout: 'book', title: t, desc: d, count: n,
+                                  url: u, image: img, families: f %}
+{%- endcomment -%}
+{%- if layout == 'row' -%}
+  <a class="dcard" href="{{ url }}">
+    {% render 'fabric-surface',
+      image: image,
+      alt: title,
+      ratio: '4 / 3',
+      sizes: '(max-width: 700px) 50vw, 33vw' %}
+    <span class="dn">{{ title }}</span>
+    <span class="meta">{{ desc | strip_html | truncate: 70 }}</span>
+  </a>
+{%- else -%}
+  <a class="card" href="{{ url }}" data-design-card data-families="{{ families | strip }}">
+    {% render 'fabric-surface',
+      image: image,
+      alt: title,
+      ratio: '4 / 3',
+      sizes: '(max-width: 700px) 50vw, 25vw' %}
+    <h3>{{ title }}</h3>
+    {%- if desc != blank -%}
+      <p class="meta">{{ desc | strip_html | truncate: 70 }}</p>
+    {%- endif -%}
+    <p class="on">On {{ count }} {% if count == 1 %}quality{% else %}qualities{% endif %}</p>
+  </a>
+{%- endif -%}

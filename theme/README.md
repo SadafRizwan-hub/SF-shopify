@@ -58,10 +58,23 @@ counter's own is built from two native pieces and needs no app:
 
 | The counter calls it | Shopify carries it as |
 |---|---|
-| **a design** — one drawing, e.g. *Floral Printed* | a **collection** whose handle starts with `design-` |
+| **a design** — one drawing, e.g. *Floral Printed* | a value of the product's **Design** option — and, to give it a page of its own, a **collection** whose handle starts with `design-` |
 | **a family** — the category it belongs to, e.g. *Florals* | the collection metafield **`custom.design_family`** |
 
-Collections are the right carrier for a design: a real URL, real product
+**A design exists the moment a product carrying it is saved.** The design book
+and the home page's design row list every Design option value on the shelf,
+with the count of products that carry it and a photograph taken from the first
+shade dyed in it that has one. Nothing needs creating for a new design.
+
+A collection is what you add to give a design **more**: a page of its own with
+its shades and grounds, a chosen image and tag line, and a family. Where a
+`design-*` collection and an option value share a handle — `Floral Printed` and
+`design-floral-printed` — they are one card, and the collection wins. A design
+with no collection sends the shopper to the catalog already narrowed to it
+(Shopify's own filter when Search & Discovery has one for the Design option,
+the rail's built-in button otherwise).
+
+Collections are the right carrier for a design page: a real URL, real product
 membership, pagination and native filtering all come free, and a product sits
 under a design simply by being in that collection.
 
@@ -72,14 +85,19 @@ under a design simply by being in that collection.
    *Single line text* — or *Single line text (list)* if you prefer picking
    several. Tick **Storefront API access** if the headless front should read it
    too.
-2. Make a collection per design, handle `design-floral-printed`, and add the
-   cloth it is printed on.
+2. *Optional, per design that deserves a page:* make a collection, handle
+   `design-floral-printed`, and add the cloth it is printed on.
 3. Fill `custom.design_family` on it — `Florals`, or `Florals, Block prints`
    for a design that belongs to more than one. A list metafield works as-is.
 4. Give the collection an image and a one-line description; the book uses both.
 
 That is the whole taxonomy. A design left unfiled still appears in the book —
-it just cannot be reached by family.
+it just cannot be reached by family. A design with no collection has no family
+at all, so it shows under **All** only.
+
+The book reads the first 50 products Liquid exposes outside a paginate, so on
+a larger catalog an option-only design carried only by products past the 50th
+is missed. A `design-*` collection has no such limit.
 
 ### What it drives
 
@@ -237,10 +255,11 @@ rows also override a built-in of the same name. An unlisted shade still works
    Until a collection is chosen, the hero and *By the metre* both read from
    the whole shelf, so a freshly imported theme shows real stock rather than
    an empty page.
-3. **Design collections.** Give each design collection a handle starting with
-   `design-` and assign it the **design** collection template. Collections
-   with no products are never shown — a design with nothing under it opens
-   onto nothing.
+3. **Design collections (optional).** A design needs no collection to appear
+   in the book. To give one a page of its own, make a collection with a handle
+   starting `design-` and assign it the **design** collection template.
+   Collections with no products are never shown — a design with nothing under
+   it opens onto nothing.
 4. **Filters.** The catalog always offers the counter's three facets —
    **Fabric** (product type), **Colour** (the Shade option) and **Design**
    (the Design option, or a `design-*` collection) — and serves each of them

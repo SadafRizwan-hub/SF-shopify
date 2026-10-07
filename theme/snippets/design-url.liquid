@@ -1,0 +1,20 @@
+{%- comment -%}
+  Where a design with no page of its own sends a shopper: the catalog, already
+  narrowed to that design.
+
+  Two mechanisms are in the one link on purpose. `filter.v.option.<name>` is
+  Shopify's own filter, applied on the server across the whole catalog when
+  Search & Discovery has a filter for that option. `#design=<handle>` is read by
+  catalog-filters.js, which preselects the same design in the rail's built-in
+  buttons when it does not. Whichever the store has, the shopper lands on the
+  design; a store with neither lands on the full catalog, which is the honest
+  worst case rather than a dead end.
+
+  Usage: {% render 'design-url', name: 'Ekdali', option: 'Design' %}
+{%- endcomment -%}
+{%- liquid
+  assign opt_param = option | default: 'Design' | downcase | url_encode
+  assign val_param = name | url_encode
+  assign key = name | handle
+  echo routes.all_products_collection_url | append: '?filter.v.option.' | append: opt_param | append: '=' | append: val_param | append: '#design=' | append: key
+-%}

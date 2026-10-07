@@ -1,0 +1,119 @@
+{%- comment -%}
+  Every design the shop has, as cards.
+
+  A design reaches the book two ways, and both count:
+
+    a design-* collection   curated — its own page, image, tag line and
+                            families. Listed first, in Shopify's order.
+    a Design option value   automatic — it exists the moment a product carrying
+                            it is saved, with nothing to create. Listed after.
+
+  The two are the same design when their handles agree: the option value
+  "Floral Printed" and the collection design-floral-printed are one card, and
+  the collection wins because it has more to say. A design with no cloth under
+  it is never a card — it would open onto nothing.
+
+  An option-only design takes its photograph from the first variant dyed in it
+  that has one, its count from the products that carry it, and sends the
+  shopper to the catalog narrowed to it (see design-url).
+
+  Ends with <!--designs:N--> so the caller can read how many cards there were
+  without drawing them twice; Liquid has no way to hand a number back out of a
+  snippet.
+
+  Usage: {% render 'design-cards', layout: 'book' %}
+         {% render 'design-cards', layout: 'row', cap: 6 %}
+{%- endcomment -%}
+{%- liquid
+  assign cap = cap | default: 0
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+  assign seen = '|'
+  assign emitted = 0
+-%}
+
+{%- comment -%} 1. curated: the design-* collections that have cloth {%- endcomment -%}
+{%- for collection in collections -%}
+  {%- if cap > 0 and emitted >= cap -%}{%- break -%}{%- endif -%}
+  {%- unless collection.handle contains prefix -%}{%- continue -%}{%- endunless -%}
+  {%- if collection.products_count == 0 -%}{%- continue -%}{%- endif -%}
+
+  {%- assign key = collection.handle | remove_first: prefix -%}
+  {%- assign seen = seen | append: key | append: '|' -%}
+  {%- assign emitted = emitted | plus: 1 -%}
+  {%- assign picture = collection.image | default: collection.products.first.featured_image -%}
+  {%- capture fams %}{% render 'design-of', collection: collection %}{% endcapture -%}
+  {% render 'design-card',
+    layout: layout,
+    title: collection.title,
+    desc: collection.description,
+    count: collection.products_count,
+    url: collection.url,
+    image: picture,
+    families: fams %}
+{%- endfor -%}
+
+{%- comment -%} 2. automatic: every Design option value not already a card {%- endcomment -%}
+{%- assign found = '' -%}
+{%- for product in collections.all.products -%}
+  {%- for option in product.options_with_values -%}
+    {%- assign okey = option.name | strip | downcase -%}
+    {%- unless design_names contains okey -%}{%- continue -%}{%- endunless -%}
+    {%- for value in option.values -%}
+      {%- assign dkey = value | handle -%}
+      {%- if dkey == blank -%}{%- continue -%}{%- endif -%}
+      {%- assign probe = '|' | append: dkey | append: '|' -%}
+      {%- if seen contains probe -%}{%- continue -%}{%- endif -%}
+      {%- assign seen = seen | append: dkey | append: '|' -%}
+      {%- assign found = found | append: dkey | append: '|' | append: value | append: '|' | append: option.name | append: '||' -%}
+    {%- endfor -%}
+  {%- endfor -%}
+{%- endfor -%}
+
+{%- assign rows = found | split: '||' -%}
+{%- for row in rows -%}
+  {%- if cap > 0 and emitted >= cap -%}{%- break -%}{%- endif -%}
+  {%- assign f = row | split: '|' -%}
+  {%- assign dname = f[1] -%}
+  {%- assign oname = f[2] -%}
+  {%- if dname == blank -%}{%- continue -%}{%- endif -%}
+
+  {%- assign carried = 0 -%}
+  {%- assign picture = nil -%}
+  {%- assign fallback = nil -%}
+  {%- for product in collections.all.products -%}
+    {%- assign has_it = false -%}
+    {%- for option in product.options_with_values -%}
+      {%- if option.name == oname and option.values contains dname -%}
+        {%- assign has_it = true -%}
+        {%- assign opt_i = option.position | minus: 1 -%}
+        {%- break -%}
+      {%- endif -%}
+    {%- endfor -%}
+    {%- unless has_it -%}{%- continue -%}{%- endunless -%}
+    {%- assign carried = carried | plus: 1 -%}
+    {%- if fallback == blank -%}{%- assign fallback = product.featured_image -%}{%- endif -%}
+    {%- if picture == blank -%}
+      {%- for variant in product.variants -%}
+        {%- if variant.options[opt_i] == dname and variant.featured_image -%}
+          {%- assign picture = variant.featured_image -%}
+          {%- break -%}
+        {%- endif -%}
+      {%- endfor -%}
+    {%- endif -%}
+  {%- endfor -%}
+  {%- if carried == 0 -%}{%- continue -%}{%- endif -%}
+  {%- if picture == blank -%}{%- assign picture = fallback -%}{%- endif -%}
+
+  {%- capture dest %}{% render 'design-url', name: dname, option: oname %}{% endcapture -%}
+  {%- assign emitted = emitted | plus: 1 -%}
+  {% render 'design-card',
+    layout: layout,
+    title: dname,
+    desc: '',
+    count: carried,
+    url: dest,
+    image: picture,
+    families: '' %}
+{%- endfor -%}
+<!--designs:{{ emitted }}-->

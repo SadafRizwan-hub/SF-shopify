@@ -166,6 +166,32 @@
     apply();
   });
 
+  /*
+   * #design=ekdali (also #shade=, #type=, #family=) opens the catalog already
+   * narrowed. It is how a design with no page of its own — one that exists only
+   * as a Design option value — hands a shopper on to its cloth. Only values the
+   * rail actually offers are taken, so a stale or hand-typed link narrows
+   * nothing rather than emptying the page.
+   */
+  function fromHash() {
+    var groups = { design: 'designs', shade: 'shades', type: 'type', family: 'families' };
+    window.location.hash.replace(/^#/, '').split('&').forEach(function (part) {
+      var kv = part.split('=');
+      var group = groups[kv[0]];
+      if (!group || !kv[1]) return;
+      var wanted;
+      try { wanted = decodeURIComponent(kv[1]).split(','); } catch (e) { return; }
+      var offered = [];
+      buttons.forEach(function (btn) {
+        if (btn.getAttribute('data-facet') === group) offered.push(btn.getAttribute('data-value'));
+      });
+      wanted.forEach(function (value) {
+        if (offered.indexOf(value) !== -1 && chosen[group].indexOf(value) === -1) chosen[group].push(value);
+      });
+    });
+  }
+
+  fromHash();
   paint();
   apply();
 })();

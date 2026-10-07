@@ -204,6 +204,14 @@
         {%- liquid
           assign active_book_handle = prefix | append: active_design | handle
           assign active_book = collections[active_book_handle]
+          # A design with no collection of its own still goes somewhere: the
+          # catalog narrowed to it. See snippets/design-url.liquid.
+          assign active_url = active_book.url
+          if active_url == blank
+            capture active_url
+              render 'design-url', name: active_design, option: design_option.name
+            endcapture
+          endif
           assign active_shades = 0
           for variant in product.variants
             if variant.options[design_i] == active_design
@@ -220,16 +228,11 @@
             {%- endcomment -%}
             <div class="designnow">
               <span class="label">Design</span>
-              {%- comment -%}
-                An anchor with no href is not a link, which is exactly right
-                for a design that has no book page behind it yet. The script
-                adds and removes the href as the design changes.
-              {%- endcomment -%}
               <a
                 class="designname"
                 data-design-chosen
                 data-design-link
-                {% if active_book != blank %}href="{{ active_book.url }}"{% endif %}
+                href="{{ active_url | strip }}"
               >{{ active_design }}</a>
               <p class="meta"><span data-design-shades>{{ active_shades }}</span> shades available</p>
             </div>
@@ -240,25 +243,41 @@
                   assign book_handle = prefix | append: value | handle
                   assign book = collections[book_handle]
                   assign shade_total = 0
+                  # the tile's picture: the design's own collection image when it
+                  # has one, else the first shade dyed in this design that has a
+                  # photograph, else the fabric's own — never a blank square
+                  assign tile_image = book.image
                   for variant in product.variants
                     if variant.options[design_i] == value
                       assign shade_total = shade_total | plus: 1
+                      if tile_image == blank and variant.featured_image
+                        assign tile_image = variant.featured_image
+                      endif
                     endif
                   endfor
+                  if tile_image == blank
+                    assign tile_image = product.featured_image
+                  endif
+                  assign tile_url = book.url
+                  if tile_url == blank
+                    capture tile_url
+                      render 'design-url', name: value, option: design_option.name
+                    endcapture
+                  endif
                 -%}
                 <button
                   type="button"
                   class="dtile{% if value == active_design %} on{% endif %}"
                   data-design-card="{{ value | escape }}"
                   data-design="{{ value | escape }}"
-                  data-design-url="{{ book.url }}"
+                  data-design-url="{{ tile_url | strip }}"
                   data-design-shades="{{ shade_total }}"
                   aria-pressed="{% if value == active_design %}true{% else %}false{% endif %}"
                   title="{{ book.title | default: value | escape }} &middot; {{ shade_total }} shades"
                 >
                   <span class="dthumb">
-                    {%- if book.image -%}
-                      {% render 'fabric-surface', image: book.image, alt: value, ratio: '1 / 1', sizes: '64px' %}
+                    {%- if tile_image -%}
+                      {% render 'fabric-surface', image: tile_image, alt: value, ratio: '1 / 1', sizes: '64px' %}
                     {%- else -%}
                       <span class="surface" style="aspect-ratio: 1 / 1;"><span class="blank"></span></span>
                     {%- endif -%}

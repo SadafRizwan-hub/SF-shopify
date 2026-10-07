@@ -23,7 +23,31 @@
     assign items = source.products
   endif
   assign hero = items.first
-  assign qualities = collections.all.products_count
+  # A quality is a product TYPE — Georgette, Chanderi, Cambric — not a product:
+  # two georgettes are one quality in two cloths. This counted products, so a
+  # shelf of seven fabrics in five types read "7 qualities". It counts the
+  # distinct types instead, the same way the Shop-by-quality chips build their
+  # list, so the lede and the chips can never disagree.
+  #
+  # Liquid hands over at most 50 products outside a paginate, so past that the
+  # count covers the first 50. A shelf with no types typed at all falls back to
+  # the product count rather than claiming "0 qualities".
+  assign type_seen = ','
+  assign qualities = 0
+  for p in collections.all.products
+    assign type_key = p.type | strip | downcase
+    if type_key == blank
+      continue
+    endif
+    assign type_probe = ',' | append: type_key | append: ','
+    unless type_seen contains type_probe
+      assign type_seen = type_seen | append: type_key | append: ','
+      assign qualities = qualities | plus: 1
+    endunless
+  endfor
+  if qualities == 0
+    assign qualities = collections.all.products_count
+  endif
 
   assign hero_image = section.settings.image
   if hero and hero.featured_image and section.settings.prefer_product_photo

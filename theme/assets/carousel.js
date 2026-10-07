@@ -9,7 +9,20 @@
 (function () {
   'use strict';
 
+  /*
+   * Each carousel section writes its own <script> tag, and a page with three
+   * of them runs this file three times. Left alone, every arrow was wired
+   * three times over and one press scrolled three pages, skipping two
+   * screenfuls of fabric. The file guards against itself, and each carousel
+   * guards against being wired twice.
+   */
+  if (window.__sfCarousel) return;
+  window.__sfCarousel = true;
+
   function wire(root) {
+    if (root.getAttribute('data-carousel-ready')) return;
+    root.setAttribute('data-carousel-ready', '1');
+
     var rail = root.querySelector('[data-carousel-rail]');
     if (!rail) return;
 

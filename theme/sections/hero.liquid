@@ -22,7 +22,19 @@
   if items.size == 0
     assign items = source.products
   endif
+  # Lead with the newest fabric that HAS a photograph. A product entered at the
+  # counter before its photographs are uploaded is the newest thing on the shelf
+  # and the worst thing to put on a banner: the picture is the banner. Only when
+  # nothing on the shelf has a photo does the lead fall back to the newest.
   assign hero = items.first
+  if section.settings.prefer_product_photo
+    for candidate in items
+      if candidate.featured_image
+        assign hero = candidate
+        break
+      endif
+    endfor
+  endif
   # A quality is a product TYPE — Georgette, Chanderi, Cambric — not a product:
   # two georgettes are one quality in two cloths. This counted products, so a
   # shelf of seven fabrics in five types read "7 qualities". It counts the
@@ -67,7 +79,7 @@
     assign eyebrow = section.settings.eyebrow
   endif
 -%}
-<section class="hero">
+<section class="hero{% unless hero_image %} bare{% endunless %}">
   {%- if hero_image -%}
     {% render 'responsive-img',
       image: hero_image,

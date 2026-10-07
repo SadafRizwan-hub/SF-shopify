@@ -1,0 +1,144 @@
+{%- comment -%}
+  The homepage's shelves of fabric, each one a row that scrolls sideways.
+
+  One section holding up to four SHELVES as blocks. What each shelf shows —
+  new arrivals, everything, what is on sale — is that block's own setting, so
+  a second or third shelf costs settings rather than code.
+
+  It is blocks rather than the section repeated because Shopify caps how many
+  times a section may be added at two, which cannot say "up to four"; a block
+  cap can. A fresh section starts with two shelves.
+
+  Two of the sources empty themselves: "New arrivals only" holds a fabric only
+  while it is inside the new window, and "On sale only" only while it carries a
+  compare-at price. A shelf that comes up empty is not rendered at all —
+  heading, arrows and all — because a shelf with nothing on it is worse than
+  no shelf.
+{%- endcomment -%}
+
+{%- for block in section.blocks -%}
+  {%- liquid
+    assign source = collections[block.settings.collection]
+    unless source.products.size > 0
+      assign source = collections.all
+    endunless
+
+    assign count = block.settings.count | default: 12
+    assign mode = block.settings.order | default: 'newest'
+
+    # Liquid hands over at most 50 products outside a paginate, so on a big
+    # catalog the sort below reorders the first 50, not the shop. Past that,
+    # point the shelf at a collection Shopify itself sorts the right way.
+    assign items = source.products
+    if mode == 'newest' or mode == 'new_only'
+      assign items = items | sort: 'created_at' | reverse
+    endif
+    if items.size == 0
+      assign items = source.products
+    endif
+  -%}
+
+  {%- assign shown = 0 -%}
+  {%- capture cells -%}
+    {%- for product in items -%}
+      {%- if shown >= count -%}{%- break -%}{%- endif -%}
+
+      {%- if mode == 'new_only' -%}
+        {%- capture fresh -%}{%- render 'is-new', product: product -%}{%- endcapture -%}
+        {%- unless fresh == 'new' -%}{%- continue -%}{%- endunless -%}
+      {%- elsif mode == 'sale' -%}
+        {%- unless product.compare_at_price > product.price -%}{%- continue -%}{%- endunless -%}
+      {%- endif -%}
+
+      {%- assign shown = shown | plus: 1 -%}
+      <div class="carcell">{% render 'fabric-card', product: product %}</div>
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- if shown > 0 -%}
+    <section class="shell homeband carousel" data-carousel {{ block.shopify_attributes }}>
+      <div class="head">
+        <h2>{{ block.settings.heading }}</h2>
+        <div class="carnav">
+          {%- comment -%}
+            The arrows are hidden until the script has measured that the rail
+            actually overflows — three fabrics on a wide screen need no
+            arrows, and a control that cannot do anything should not be on the
+            page.
+          {%- endcomment -%}
+          <button class="carbtn" type="button" data-car="-1" aria-label="Scroll back" hidden>
+            {% render 'icon', name: 'back', size: 14 %}
+          </button>
+          <button class="carbtn" type="button" data-car="1" aria-label="Scroll forward" hidden>
+            {% render 'icon', name: 'forward', size: 14 %}
+          </button>
+          {%- if block.settings.link_url != blank -%}
+            <a class="linkish" href="{{ block.settings.link_url }}">{{ block.settings.link_label }}</a>
+          {%- endif -%}
+        </div>
+      </div>
+
+      {%- if block.settings.body != blank -%}
+        <p class="subline">{{ block.settings.body }}</p>
+      {%- endif -%}
+
+      {%- comment -%}
+        A real scroller, not a slider: it is swipeable on a phone and
+        scrollable with a trackpad before any JavaScript runs, and the arrows
+        only drive the same scroll. Nothing here is hidden from a shopper whose
+        script never loads.
+      {%- endcomment -%}
+      <div class="carrail" style="--cols: {{ section.settings.columns }};" data-carousel-rail tabindex="0">
+        {{ cells }}
+      </div>
+    </section>
+  {%- endif -%}
+{%- endfor -%}
+
+<script src="{{ 'carousel.js' | asset_url }}" defer></script>
+
+{% schema %}
+{
+  "name": "Fabric shelves",
+  "max_blocks": 4,
+  "settings": [
+    { "type": "range", "id": "columns", "label": "Cards in view", "min": 2, "max": 6, "step": 1, "default": 4 }
+  ],
+  "blocks": [
+    {
+      "type": "shelf",
+      "name": "Shelf",
+      "settings": [
+        { "type": "text", "id": "heading", "label": "Heading", "default": "New arrivals" },
+        { "type": "textarea", "id": "body", "label": "Line under the heading" },
+        {
+          "type": "select",
+          "id": "order",
+          "label": "Show",
+          "default": "newest",
+          "options": [
+            { "value": "new_only", "label": "New arrivals only (empties itself)" },
+            { "value": "newest", "label": "Everything, newest first" },
+            { "value": "sale", "label": "On sale only (empties itself)" },
+            { "value": "collection", "label": "The collection's own order" }
+          ],
+          "info": "The two that empty themselves hide the whole shelf when nothing qualifies. New arrivals uses Theme settings > The counter > New for."
+        },
+        { "type": "collection", "id": "collection", "label": "From this collection", "info": "Leave empty to read the whole catalog." },
+        { "type": "range", "id": "count", "label": "How many at most", "min": 4, "max": 24, "step": 2, "default": 12 },
+        { "type": "url", "id": "link_url", "label": "Link" },
+        { "type": "text", "id": "link_label", "label": "Link label", "default": "See all" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Fabric shelves",
+      "blocks": [
+        { "type": "shelf", "settings": { "heading": "New this month", "order": "new_only" } },
+        { "type": "shelf", "settings": { "heading": "By the metre", "order": "newest" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

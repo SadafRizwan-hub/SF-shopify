@@ -252,7 +252,7 @@ rows also override a built-in of the same name. An unlisted shade still works
    header's Catalog / Designs / The shop / Shortlist links somewhere else
    (Theme editor → Header), or set the two footer columns to specific menus.
    An unset footer column falls back to the store's own footer menu.
-   Until a collection is chosen, the hero and *By the metre* both read from
+   Until a collection is chosen, the hero and the shelves both read from
    the whole shelf, so a freshly imported theme shows real stock rather than
    an empty page.
 3. **Design collections (optional).** A design needs no collection to appear
@@ -303,6 +303,32 @@ The same three the headless storefront has, for the same reasons.
    prices shipping from its own rules. There is no payment form in this theme
    by design.
 
+## The home page's shelves, and what "new" means
+
+**Fabric shelves** is one section holding up to **four shelves** as blocks — a
+row of cards that scrolls sideways, with arrows that appear only when something
+is off-screen. A fresh section starts with two. Each shelf chooses what it shows:
+
+| Show | Behaviour |
+|---|---|
+| New arrivals only | a fabric only while it is inside the new window — empties itself |
+| Everything, newest first | the whole shelf, newest at the left |
+| On sale only | only fabrics with a compare-at price — empties itself |
+| The collection's own order | Shopify's sort for the chosen collection |
+
+A shelf with nothing to show is not drawn at all, heading included.
+
+**New** is a fact about the product, not a label to maintain. Shopify stamps every
+product with the date it was created, and **Theme settings → The counter → New
+for** (default 30 days) is how long that counts. The *New* badge on a card, the
+hero's eyebrow and the *New arrivals only* shelf all read it, and all let go of a
+fabric on their own. There is no tag to add or take off. Shopify caches pages, so
+a badge can outlast its window by as long as the cache does.
+
+The section is blocks, not the same section added four times, because Shopify
+allows a section's `limit` to be 2 at most — a theme that sets it higher is
+rejected and, in practice, the page that uses it stops loading.
+
 ## Headless compatibility
 
 This theme is built to sit *beside* a headless front, not instead of it.
@@ -333,7 +359,7 @@ This theme is built to sit *beside* a headless front, not instead of it.
 
 ## What the home page shows
 
-The hero and *By the metre* read **newest first** by default, so a quality
+The hero and the shelves read **newest first** by default, so a quality
 entered at the counter today is the first thing on the page. Both have an
 **Order** setting if you would rather keep a collection's own order.
 
@@ -388,7 +414,7 @@ assets/theme.js            shortlist, toast, money, the filter sheet
 assets/fabric-form.js      design / shade / tier / metres on the fabric page
 sections/
   header, footer, mobile-tabs, whatsapp     the chrome, as section groups
-  hero, quality-chips, featured-fabrics,
+  hero, quality-chips, fabric-shelves,
   design-book-row, counter-promise          the home page
   main-product + related-fabrics            the fabric page
   main-collection + filter-panel snippet    the catalog

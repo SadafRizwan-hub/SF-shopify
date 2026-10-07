@@ -60,45 +60,53 @@
         "cut"
       ]
     },
-    "new-arrivals": {
-      "type": "fabric-carousel",
+    "shelves": {
+      "type": "fabric-shelves",
       "settings": {
-        "heading": "New this month",
-        "order": "new_only",
-        "count": 12,
-        "columns": 4,
-        "body": "Fresh off the than. A fabric leaves this shelf by itself once it is no longer new.",
-        "link_label": "See the full catalog"
-      }
-    },
-    "by-the-metre": {
-      "type": "fabric-carousel",
-      "settings": {
-        "heading": "By the metre",
-        "order": "newest",
-        "count": 12,
-        "columns": 4,
-        "link_label": "See all"
-      }
-    },
-    "on-sale": {
-      "type": "fabric-carousel",
-      "settings": {
-        "heading": "On sale",
-        "order": "sale",
-        "count": 12,
-        "columns": 4,
-        "body": "Cloth carrying a compare-at price. The shelf shows itself only while something is on it.",
-        "link_label": "See all offers"
-      }
+        "columns": 4
+      },
+      "blocks": {
+        "new": {
+          "type": "shelf",
+          "settings": {
+            "heading": "New this month",
+            "order": "new_only",
+            "count": 12,
+            "body": "Fresh off the than. A fabric leaves this shelf by itself once it is no longer new.",
+            "link_label": "See the full catalog"
+          }
+        },
+        "metre": {
+          "type": "shelf",
+          "settings": {
+            "heading": "By the metre",
+            "order": "newest",
+            "count": 12,
+            "link_label": "See all"
+          }
+        },
+        "sale": {
+          "type": "shelf",
+          "settings": {
+            "heading": "On sale",
+            "order": "sale",
+            "count": 12,
+            "body": "Cloth carrying a compare-at price. The shelf shows itself only while something is on it.",
+            "link_label": "See all offers"
+          }
+        }
+      },
+      "block_order": [
+        "new",
+        "metre",
+        "sale"
+      ]
     }
   },
   "order": [
     "hero",
     "qualities",
-    "new-arrivals",
-    "by-the-metre",
-    "on-sale",
+    "shelves",
     "designs",
     "promise"
   ]

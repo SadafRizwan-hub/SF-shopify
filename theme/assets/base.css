@@ -566,6 +566,9 @@ body.drawer-open { overflow: hidden; }
   gap: 14px 8px;
 }
 .shadegrid .cell { display: flex; flex-direction: column; align-items: center; gap: 7px; padding: 0; }
+/* a shade the chosen design is not dyed in: the flex above would otherwise
+   beat the browser's own [hidden] and leave it on the row, struck through */
+.shadegrid .cell[hidden] { display: none; }
 .shadegrid .swatch {
   position: relative;
   width: 100%;

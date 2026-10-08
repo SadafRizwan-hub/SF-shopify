@@ -10,6 +10,8 @@
 
   Usage: {% render 'shade-dots', values: 'Indigo,Rust', max: 4 %}
          {% render 'shade-dots', values: v, max: 4, images: map, active: 'rust' %}
+
+  Pass `product` and each dot takes the swatch colour picked in the admin.
 {%- endcomment -%}
 {%- liquid
   assign max = max | default: 4
@@ -23,7 +25,7 @@
         assign name = value | strip
         assign slug = name | handle
         capture hex
-          render 'shade-hex', name: name
+          render 'shade-hex', name: name, product: product
         endcapture
         assign probe = '"' | append: slug | append: '"'
         assign pickable = false

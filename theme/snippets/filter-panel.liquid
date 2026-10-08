@@ -80,7 +80,7 @@
         {%- if is_colour -%}
           <div class="shades">
             {%- for value in filter.values -%}
-              {%- capture hex %}{% render 'shade-hex', name: value.label %}{% endcapture -%}
+              {%- capture hex %}{% render 'shade-hex', name: value.label, swatch: value.swatch %}{% endcapture -%}
               <a class="shade{% if value.active %} on{% endif %}"
                  href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}">
                 <span class="ring" style="background: {{ hex | strip }};"></span>
@@ -165,7 +165,7 @@
             assign probe = '|' | append: slug | append: '|'
             assign seen = '|' | append: shades | append: '|'
             unless seen contains probe
-              assign shades = shades | append: slug | append: '|' | append: value | append: '||'
+              assign shades = shades | append: slug | append: '|' | append: value | append: '|' | append: value.swatch.color | append: '||'
             endunless
           endfor
         endfor
@@ -181,7 +181,7 @@
         <div class="shades">
           {%- for row in shade_rows -%}
             {%- assign parts = row | split: '|' -%}
-            {%- capture hex %}{% render 'shade-hex', name: parts[1] %}{% endcapture -%}
+            {%- capture hex %}{% if parts[2] != blank %}{{ parts[2] }}{% else %}{% render 'shade-hex', name: parts[1] %}{% endif %}{% endcapture -%}
             <button type="button" class="shade" data-facet="shades" data-value="{{ parts[0] }}">
               <span class="ring" style="background: {{ hex | strip }};"></span>
               <span class="nm">{{ parts[1] }}</span>

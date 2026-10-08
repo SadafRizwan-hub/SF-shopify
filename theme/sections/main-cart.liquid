@@ -122,7 +122,7 @@
                 <h3><a href="{{ line.url }}">{{ line.product.title }}</a></h3>
                 <p class="meta">
                   {%- if shade != blank -%}
-                    {%- capture hex %}{% render 'shade-hex', name: shade %}{% endcapture -%}
+                    {%- capture hex %}{% render 'shade-hex', name: shade, product: line.product %}{% endcapture -%}
                     <span class="sw" style="background: {{ hex | strip }};"></span>{{ shade }}
                   {%- endif -%}
                   {%- if design != blank %} &middot; {{ design }}{% endif -%}

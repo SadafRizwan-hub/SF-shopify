@@ -1,24 +1,58 @@
 {%- comment -%}
   Usage: {% render 'shade-hex', name: value %}
-  Echoes the hex for a shade name. An unlisted shade is not an error — it
-  falls back to the neutral swatch so the shopper still reads the name.
+         {% render 'shade-hex', name: value, product: product %}
+         {% render 'shade-hex', name: value, swatch: filter_value.swatch %}
+
+  Echoes the colour for a shade.
+
+  The colour picked for that value in the admin wins: a Color option linked
+  to Shopify's colour swatches carries the counter's own swatch, and the shop
+  should show that rather than the theme's guess from the name. Pass the
+  swatch when the caller already holds it, or the product to look it up
+  there. Without either, or for a value with no swatch, the name is looked up
+  in the shade table. An unlisted shade is not an error — it falls back to the
+  neutral swatch so the shopper still reads the name.
 {%- endcomment -%}
 {%- liquid
-  capture table
-    render 'shade-table'
-  endcapture
+  assign found = ''
+  if swatch.color != blank
+    assign found = swatch.color
+  endif
 
-  assign wanted = name | handle
-  assign found = settings.unknown_shade
-
-  assign pairs = table | split: ','
-  for pair in pairs
-    assign kv = pair | strip | split: ':'
-    if kv[0] == wanted
-      assign found = kv[1]
+  if found == blank and product != blank
+    assign shade_axis = 'shade,shades,colour,colours,color,colors' | split: ','
+    for option in product.options_with_values
+      assign okey = option.name | strip | downcase
+      unless shade_axis contains okey
+        continue
+      endunless
+      for value in option.values
+        if value.name == name and value.swatch.color != blank
+          assign found = value.swatch.color
+          break
+        endif
+      endfor
       break
-    endif
-  endfor
+    endfor
+  endif
+
+  if found == blank
+    capture table
+      render 'shade-table'
+    endcapture
+
+    assign wanted = name | handle
+    assign found = settings.unknown_shade
+
+    assign pairs = table | split: ','
+    for pair in pairs
+      assign kv = pair | strip | split: ':'
+      if kv[0] == wanted
+        assign found = kv[1]
+        break
+      endif
+    endfor
+  endif
 
   echo found
 -%}

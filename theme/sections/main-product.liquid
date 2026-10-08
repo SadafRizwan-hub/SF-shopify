@@ -173,7 +173,7 @@
                   endif
                 endfor
                 capture hex
-                  render 'shade-hex', name: value
+                  render 'shade-hex', name: value, swatch: value.swatch
                 endcapture
               -%}
               <button

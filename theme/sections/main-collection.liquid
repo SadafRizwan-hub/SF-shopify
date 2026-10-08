@@ -107,7 +107,7 @@
                 {%- for value in filter.active_values -%}
                   <a class="chip pill" href="{{ value.url_to_remove }}">
                     {%- if shade_names contains key -%}
-                      {%- capture hex %}{% render 'shade-hex', name: value.label %}{% endcapture -%}
+                      {%- capture hex %}{% render 'shade-hex', name: value.label, swatch: value.swatch %}{% endcapture -%}
                       <i style="background: {{ hex | strip }};"></i>
                     {%- endif -%}
                     {{ value.label }}

@@ -20,6 +20,8 @@
   assign book_url = section.settings.book_url | default: pages['design-book'].url | default: routes.collections_url
 
   assign shades = ''
+  # the admin's swatch colour per shade, where the option carries one
+  assign swatches = ''
   for product in collection.products
     for option in product.options_with_values
       assign key = option.name | strip | downcase
@@ -32,6 +34,12 @@
         unless haystack contains probe
           assign shades = shades | append: value | append: '|'
         endunless
+        if value.swatch.color != blank
+          assign skey = '|' | append: value | append: '='
+          unless swatches contains skey
+            assign swatches = swatches | append: skey | append: value.swatch.color
+          endunless
+        endif
       endfor
     endfor
   endfor
@@ -101,7 +109,14 @@
             </header>
             <div class="shadegrid" style="--cols: {{ section.settings.shade_columns }};" data-shade-grid>
               {%- for value in shade_list -%}
-                {%- capture hex %}{% render 'shade-hex', name: value %}{% endcapture -%}
+                {%- liquid
+                  assign skey = '|' | append: value | append: '='
+                  assign own = ''
+                  if swatches contains skey
+                    assign own = swatches | split: skey | last | split: '|' | first
+                  endif
+                -%}
+                {%- capture hex %}{% if own != blank %}{{ own }}{% else %}{% render 'shade-hex', name: value %}{% endif %}{% endcapture -%}
                 <button type="button" class="cell" data-shade="{{ value | escape }}" aria-pressed="false">
                   <span class="swatch" style="background: {{ hex | strip }};"></span>
                   <span class="name">{{ value }}</span>

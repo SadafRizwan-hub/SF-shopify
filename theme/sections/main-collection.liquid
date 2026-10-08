@@ -11,6 +11,20 @@
       assign active_count = filter.active_values.size | plus: active_count
     endfor
 
+    # the designs a native Design filter has applied: a fabric printed in
+    # several designs then shows only the cards for the ones asked for
+    assign design_axis = 'design,designs,pattern,patterns' | split: ','
+    assign active_designs = ''
+    for filter in collection.filters
+      assign fkey = filter.label | strip | downcase
+      unless design_axis contains fkey
+        continue
+      endunless
+      for value in filter.active_values
+        assign active_designs = active_designs | append: '|' | append: value.label | append: '|'
+      endfor
+    endfor
+
     # the colours a native filter currently has applied, so each card can show
     # that shade's own photograph rather than the product's default
     assign shade_axis = 'shade,shades,colour,colours,color,colors' | split: ','
@@ -105,15 +119,50 @@
             </div>
           {%- endif -%}
 
+          {%- comment -%}
+            One card per design. A fabric printed in Ekdali and Satbundi is two
+            cloths to the shopper, so it is two cards, each filtering, pricing
+            and opening as its own design. A fabric with one design, or none,
+            is one card as before.
+          {%- endcomment -%}
+          {%- liquid
+            assign card_count = 0
+            capture cards
+              for product in collection.products
+                assign design_values = ''
+                for option in product.options_with_values
+                  assign okey = option.name | strip | downcase
+                  if design_axis contains okey
+                    assign design_values = option.values
+                    break
+                  endif
+                endfor
+                if design_values.size > 1
+                  for value in design_values
+                    if active_designs != blank
+                      assign probe = '|' | append: value | append: '|'
+                      unless active_designs contains probe
+                        continue
+                      endunless
+                    endif
+                    assign card_count = card_count | plus: 1
+                    render 'fabric-card', product: product, shade_filter: active_shades, design: value
+                  endfor
+                else
+                  assign card_count = card_count | plus: 1
+                  render 'fabric-card', product: product, shade_filter: active_shades
+                endif
+              endfor
+            endcapture
+          -%}
+
           <p class="count meta">
-            Showing <span data-shown>{{ collection.products.size }}</span> of {{ collection.all_products_count }}
+            Showing <span data-shown>{{ card_count }}</span> of {% if paginate.pages > 1 %}{{ collection.all_products_count }}{% else %}{{ card_count }}{% endif %}
           </p>
 
           {%- if collection.products.size > 0 -%}
             <div class="grid" style="--cols: {{ section.settings.columns }};">
-              {%- for product in collection.products -%}
-                {% render 'fabric-card', product: product, shade_filter: active_shades %}
-              {%- endfor -%}
+              {{- cards -}}
             </div>
             {%- comment -%}
               The same words as the server-rendered empty state below, for when

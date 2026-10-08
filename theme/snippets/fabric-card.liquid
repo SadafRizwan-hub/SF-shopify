@@ -3,15 +3,58 @@
   "what a product looks like" is decided once. A card exists only because the
   admin posted that product — there are no filler cards.
 
+  Pass `design` — one value of the product's Design option — and the card is
+  that design only: its shades, its photograph, its rate, its stock, and a
+  link that opens the fabric with that design chosen. The catalog uses it to
+  show a fabric printed in two designs as two cards, because to the shopper
+  Ekdali and Satbundi are two cloths, not one.
+
   Usage: {% render 'fabric-card', product: product %}
+         {% render 'fabric-card', product: product, design: 'Ekdali' %}
 {%- endcomment -%}
 {%- liquid
   assign unit = settings.cut_unit_metres | times: 1.0
   assign factor = 1 | divided_by: unit
 
+  # which option position holds the design, when the card is one design
+  assign one_design = false
+  assign design_i = -1
+  if design != blank
+    assign design_axis = 'design,designs,pattern,patterns' | split: ','
+    for option in product.options_with_values
+      assign okey = option.name | strip | downcase
+      if design_axis contains okey
+        assign design_i = forloop.index0
+        break
+      endif
+    endfor
+  endif
+  if design_i >= 0
+    assign one_design = true
+  endif
+
   assign metres = 0
   assign tracked = false
+  assign design_available = false
+  assign design_price = nil
+  assign design_compare = nil
+  assign design_variant = nil
   for variant in product.variants
+    if one_design
+      if variant.options[design_i] != design
+        continue
+      endif
+      if variant.available
+        assign design_available = true
+        unless design_variant
+          assign design_variant = variant
+        endunless
+      endif
+      unless design_price and variant.price >= design_price
+        assign design_price = variant.price
+        assign design_compare = variant.compare_at_price
+      endunless
+    endif
     if variant.inventory_management != blank
       assign tracked = true
       if variant.inventory_quantity > 0
@@ -21,14 +64,38 @@
   endfor
 
   assign stock = 'in stock'
-  if product.available == false
+  assign card_available = product.available
+  if one_design
+    assign card_available = design_available
+  endif
+  if card_available == false
     assign stock = 'out of stock'
   elsif tracked and metres > 0 and metres <= settings.low_stock_metres
     assign stock = 'low stock'
   endif
 
-  assign rate = product.price | times: factor | round
-  assign mrp = product.compare_at_price | times: factor | round
+  assign price = product.price
+  assign compare = product.compare_at_price
+  if one_design and design_price
+    assign price = design_price
+    assign compare = design_compare
+  endif
+  assign rate = price | times: factor | round
+  assign mrp = compare | times: factor | round
+
+  # where the card opens: the fabric, with this design already chosen
+  assign card_url = product.url
+  if one_design
+    for variant in product.variants
+      if variant.options[design_i] == design
+        unless design_variant
+          assign design_variant = variant
+        endunless
+        break
+      endif
+    endfor
+    assign card_url = product.url | append: '?variant=' | append: design_variant.id
+  endif
 
   assign subtitle = product.metafields.custom.subtitle.value | default: product.description | strip_html | truncate: 90
 
@@ -55,7 +122,42 @@
   endfor
   assign shade_i = shade_pos | minus: 1
 
+  # a one-design card lists only the shades that design is dyed in, and
+  # leads with that design's photograph, a sellable shade's first
   assign card_image = product.featured_image
+  if one_design
+    if shade_pos > 0
+      assign kept = ''
+      assign all_shades = shade_values | strip | split: ','
+      for name in all_shades
+        for variant in product.variants
+          if variant.options[design_i] == design and variant.options[shade_i] == name
+            assign kept = kept | append: name | append: ','
+            break
+          endif
+        endfor
+      endfor
+      assign shade_values = kept | split: ',' | join: ','
+    endif
+    assign design_image = nil
+    for pass in (1..2)
+      for variant in product.variants
+        if pass == 1 and variant.available == false
+          continue
+        endif
+        if variant.options[design_i] == design and variant.featured_image != blank
+          assign design_image = variant.featured_image
+          break
+        endif
+      endfor
+      if design_image
+        break
+      endif
+    endfor
+    if design_image
+      assign card_image = design_image
+    endif
+  endif
   assign card_shade = ''
   assign shade_images = ''
   assign shade_variants = ''
@@ -68,6 +170,9 @@
     for pass in (1..2)
       for variant in product.variants
         if pass == 1 and variant.available == false
+          continue
+        endif
+        if one_design and variant.options[design_i] != design
           continue
         endif
         assign vshade = variant.options[shade_i] | handle
@@ -121,14 +226,22 @@
   assign shade_keys = ''
   assign shade_list = shade_values | strip | split: ','
   for value in shade_list
-    assign shade_keys = shade_keys | append: ' ' | append: value | strip | handle
+    # handle the value on its own: filters run left to right, so handling
+    # after the append would fold every key so far into one
+    assign vkey = value | strip | handle
+    assign shade_keys = shade_keys | append: ' ' | append: vkey
   endfor
 
   assign design_keys = ''
   assign design_list = design_values | strip | split: ','
+  if one_design
+    assign design_list = design | split: '|'
+  endif
   for value in design_list
-    assign design_keys = design_keys | append: ' ' | append: value | strip | handle
+    assign vkey = value | strip | handle
+    assign design_keys = design_keys | append: ' ' | append: vkey
   endfor
+  assign design_slug = design | handle
 
   # a design is also a design-* collection the product sits in
   assign design_prefix = settings.design_collection_prefix | default: 'design-'
@@ -136,6 +249,11 @@
   for collection in product.collections
     if collection.handle contains design_prefix
       assign slug = collection.handle | remove_first: design_prefix
+      # a one-design card belongs to that design's collection only — the
+      # product sits in its other designs' collections too
+      if one_design and slug != design_slug
+        continue
+      endif
       assign design_keys = design_keys | append: ' ' | append: slug
       # and the families that design is filed under, so the catalog can be
       # browsed by category and not only by individual drawing
@@ -161,8 +279,9 @@
   data-shade-images='{ {{- shade_images | escape -}} }'
   data-shade-variants='{ {{- shade_variants | escape -}} }'
   data-url="{{ product.url }}"
+  {%- if one_design %} data-card-design="{{ design_slug }}"{% endif %}
 >
-  <a class="press" href="{{ product.url }}" aria-label="{{ product.title | escape }}">
+  <a class="press" href="{{ card_url }}" aria-label="{{ product.title | escape }}{% if one_design %} – {{ design | escape }}{% endif %}">
     {%- capture fresh -%}{%- render 'is-new', product: product -%}{%- endcapture -%}
     {%- capture overlay -%}
       <span class="tag">{{ product.type | default: 'Uncategorised' }}</span>
@@ -191,12 +310,13 @@
     {% render 'icon', name: 'heart', size: 15 %}
   </button>
 
-  <a class="body" href="{{ product.url }}">
+  <a class="body" href="{{ card_url }}">
     <h3>{{ product.title }}</h3>
+    {%- if one_design -%}<p class="designline">{{ design }}</p>{%- endif -%}
     {%- if subtitle != blank -%}<p class="meta">{{ subtitle }}</p>{%- endif -%}
     <p class="rate">
       {{ rate | money }}<span class="per">/m</span>
-      {%- if product.compare_at_price > product.price -%}
+      {%- if compare > price -%}
         <span class="was">{{ mrp | money }}</span>
       {%- endif -%}
     </p>

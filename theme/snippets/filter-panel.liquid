@@ -165,7 +165,11 @@
             assign probe = '|' | append: slug | append: '|'
             assign seen = '|' | append: shades | append: '|'
             unless seen contains probe
-              assign shades = shades | append: slug | append: '|' | append: value | append: '|' | append: value.swatch.color | append: '||'
+              # the admin's swatch colour, or '-' for none: an empty last
+              # field would end the row in '|', run into the '||' between
+              # rows and shift every row after it by one field
+              assign own = value.swatch.color | default: '-'
+              assign shades = shades | append: slug | append: '|' | append: value | append: '|' | append: own | append: '||'
             endunless
           endfor
         endfor
@@ -181,7 +185,7 @@
         <div class="shades">
           {%- for row in shade_rows -%}
             {%- assign parts = row | split: '|' -%}
-            {%- capture hex %}{% if parts[2] != blank %}{{ parts[2] }}{% else %}{% render 'shade-hex', name: parts[1] %}{% endif %}{% endcapture -%}
+            {%- capture hex %}{% if parts[2] != blank and parts[2] != '-' %}{{ parts[2] }}{% else %}{% render 'shade-hex', name: parts[1] %}{% endif %}{% endcapture -%}
             <button type="button" class="shade" data-facet="shades" data-value="{{ parts[0] }}">
               <span class="ring" style="background: {{ hex | strip }};"></span>
               <span class="nm">{{ parts[1] }}</span>

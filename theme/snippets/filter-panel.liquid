@@ -92,16 +92,9 @@
         {%- elsif is_design -%}
           <div class="designs-facet">
             {%- for value in filter.values -%}
-              {%- assign book_slug = value.label | handle -%}
-              {%- assign book_handle = prefix | append: book_slug -%}
-              {%- assign book = collections[book_handle] -%}
               <a class="designpick{% if value.active %} on{% endif %}"
                  href="{% if value.active %}{{ value.url_to_remove }}{% else %}{{ value.url_to_add }}{% endif %}">
-                <span class="thumb">
-                  {%- if book.image -%}
-                    <img src="{{ book.image | image_url: width: 160 }}" alt="{{ value.label | escape }}" loading="lazy" width="80" height="80">
-                  {%- endif -%}
-                </span>
+                <span class="thumb">{% render 'design-thumb', name: value.label, products: collection.products %}</span>
                 <span class="nm">{{ value.label }}</span>
               </a>
             {%- endfor -%}
@@ -240,14 +233,8 @@
         <div class="designs-facet">
           {%- for row in design_rows -%}
             {%- assign parts = row | split: '|' -%}
-            {%- assign book_handle = prefix | append: parts[0] -%}
-            {%- assign book = collections[book_handle] -%}
             <button type="button" class="designpick" data-facet="designs" data-value="{{ parts[0] }}">
-              <span class="thumb">
-                {%- if book.image -%}
-                  <img src="{{ book.image | image_url: width: 160 }}" alt="{{ parts[1] | escape }}" loading="lazy" width="80" height="80">
-                {%- endif -%}
-              </span>
+              <span class="thumb">{% render 'design-thumb', name: parts[1], key: parts[0], products: collection.products %}</span>
               <span class="nm">{{ parts[1] }}</span>
             </button>
           {%- endfor -%}

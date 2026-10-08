@@ -1,0 +1,61 @@
+{%- comment -%}
+  The picture for one design in the filter rail.
+
+  Same order as the fabric page's design tiles: the design's own collection
+  image when it has one, else the first shade dyed in this design that has a
+  photograph, else a fabric carrying the design, else the first fabric in its
+  collection. A design that is only a Design option value has no collection,
+  so it must not lean on one — that is what left the rail with broken and
+  empty squares while the fabric page showed the cloth.
+
+  Every check uses `blank` and the picture goes through responsive-img, as on
+  the fabric page, rather than testing `book.image` for truth and handing it
+  straight to image_url.
+
+  `key` is the design's handle when the caller already has it (a design-*
+  collection whose title does not handle to its own handle); else it is
+  derived from the name.
+
+  Usage: {% render 'design-thumb', name: 'Ekdali', products: collection.products %}
+{%- endcomment -%}
+{%- liquid
+  assign prefix = settings.design_collection_prefix | default: 'design-'
+  assign design_names = 'design,designs,pattern,patterns' | split: ','
+  assign key = key | default: name | handle
+  assign book_handle = prefix | append: key
+  assign book = collections[book_handle]
+
+  assign picture = book.image
+  if picture == blank
+    for product in products
+      for option in product.options_with_values
+        assign okey = option.name | strip | downcase
+        unless design_names contains okey and option.values contains name
+          continue
+        endunless
+        assign opt_i = option.position | minus: 1
+        unless fallback
+          assign fallback = product.featured_image
+        endunless
+        for variant in product.variants
+          if variant.options[opt_i] == name and variant.featured_image != blank
+            assign picture = variant.featured_image
+            break
+          endif
+        endfor
+      endfor
+      if picture != blank
+        break
+      endif
+    endfor
+  endif
+  if picture == blank
+    assign picture = fallback
+  endif
+  if picture == blank
+    assign picture = book.products.first.featured_image
+  endif
+-%}
+{%- if picture != blank -%}
+  {% render 'responsive-img', image: picture, alt: name, sizes: '80px' %}
+{%- endif -%}

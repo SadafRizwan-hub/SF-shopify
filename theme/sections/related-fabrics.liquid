@@ -1,37 +1,206 @@
 {%- comment -%}
-  Shopify's own recommendations, so "goes with this" is the store's data and
-  not a guess made in Liquid. Renders nothing when there is nothing to show.
+  "Goes with this".
+
+  The counter's rule first, Shopify's guess second. On Malai Chanderi
+  Embroidery the cloth worth showing is Malai Chanderi Plain — the same ground
+  in its other finish — and Shopify's recommendations, which lean on sales and
+  English descriptions, cannot be relied on to know that. So the list is built
+  here, in this order, and never repeats a fabric:
+
+    1. same fabric type, sharing a word of the name   Malai Chanderi Plain
+    2. same fabric type                               any other Chanderi
+    3. Shopify's own recommendations                  fetched after load
+    4. same design (a shared design-* collection)
+    5. the newest fabrics                             so the band is never empty
+
+  1, 2, 4 and 5 are drawn with the page, so it works without JavaScript; the
+  script asks Shopify for 3 and slots its picks in after 2, then cuts the list
+  back to the count. Out-of-stock fabrics and this fabric itself are skipped.
+  Candidates are the first 50 products Liquid exposes outside a paginate.
+
+  The same section answers Shopify's recommendations request
+  (routes.product_recommendations_url), where only `recommendations` is
+  available; that branch draws Shopify's cards and nothing else.
 {%- endcomment -%}
-<div
-  class="shell related"
-  data-recommendations
-  data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit={{ section.settings.count }}"
->
-  {%- if recommendations.performed and recommendations.products_count > 0 -%}
+{%- assign count = section.settings.count -%}
+
+{%- if recommendations.performed -%}
+  <div data-recommended>
+    {%- for item in recommendations.products -%}
+      <div class="pick" data-handle="{{ item.handle }}">{% render 'fabric-card', product: item %}</div>
+    {%- endfor -%}
+  </div>
+{%- else -%}
+  {%- liquid
+    assign here = product.handle
+    assign here_type = product.type | strip | downcase
+
+    # words that say nothing about which cloth it is
+    assign generic = '|print|printed|prints|plain|fabric|fabrics|cloth|embroidery|embroidered|work|design|designs|with|and|the|for|pure|fine|soft|new|'
+
+    # the words of this fabric's name that could name its ground: Malai, Jyothi
+    assign type_words = here_type | split: ' '
+    assign own_words = ''
+    assign raw_words = product.title | downcase | replace: '—', ' ' | replace: '-', ' ' | replace: ',', ' ' | split: ' '
+    for word in raw_words
+      assign w = word | strip
+      if w.size < 3
+        continue
+      endif
+      assign probe = '|' | append: w | append: '|'
+      if generic contains probe or type_words contains w
+        continue
+      endif
+      assign own_words = own_words | append: w | append: '|'
+    endfor
+    assign own_words = own_words | split: '|'
+
+    # this fabric's design collections
+    assign prefix = settings.design_collection_prefix | default: 'design-'
+    assign own_designs = '|'
+    for c in product.collections
+      if c.handle contains prefix
+        assign own_designs = own_designs | append: c.handle | append: '|'
+      endif
+    endfor
+
+    assign b1 = '|'
+    assign b2 = '|'
+    assign b4 = '|'
+    assign b5 = '|'
+    for item in collections.all.products
+      if item.handle == here or item.available == false
+        continue
+      endif
+      assign key = '|' | append: item.handle | append: '|'
+      assign item_type = item.type | strip | downcase
+
+      if here_type != blank and item_type == here_type
+        assign shared = false
+        assign item_title = item.title | downcase | replace: '—', ' ' | replace: '-', ' ' | replace: ',', ' '
+        assign padded = ' ' | append: item_title | append: ' '
+        for w in own_words
+          assign needle = ' ' | append: w | append: ' '
+          if padded contains needle
+            assign shared = true
+            break
+          endif
+        endfor
+        if shared
+          assign b1 = b1 | append: item.handle | append: '|'
+        else
+          assign b2 = b2 | append: item.handle | append: '|'
+        endif
+        continue
+      endif
+
+      assign same_design = false
+      for c in item.collections
+        assign probe = '|' | append: c.handle | append: '|'
+        if c.handle contains prefix and own_designs contains probe
+          assign same_design = true
+          break
+        endif
+      endfor
+      if same_design
+        assign b4 = b4 | append: item.handle | append: '|'
+      else
+        assign b5 = b5 | append: item.handle | append: '|'
+      endif
+    endfor
+
+    # newest first inside every group
+    assign pool = collections.all.products | sort: 'created_at' | reverse
+    assign total = 0
+    assign top_n = 0
+    assign reserve_n = 0
+  -%}
+
+  {%- if b1 != '|' or b2 != '|' or b4 != '|' or b5 != '|' -%}
+  <div class="shell related" data-related data-count="{{ count }}"
+       data-url="{{ routes.product_recommendations_url }}?section_id={{ section.id }}&product_id={{ product.id }}&limit=10">
     <h2>{{ section.settings.heading }}</h2>
-    <div class="grid" style="--cols: {{ section.settings.columns }};">
-      {%- for product in recommendations.products -%}
-        {% render 'fabric-card', product: product %}
+    <div class="grid" style="--cols: {{ section.settings.columns }};" data-related-grid>
+      {%- for bucket in (1..4) -%}
+        {%- liquid
+          case bucket
+            when 1
+              assign list = b1
+              assign tier = 'top'
+            when 2
+              assign list = b2
+              assign tier = 'top'
+            when 3
+              assign list = b4
+              assign tier = 'reserve'
+            else
+              assign list = b5
+              assign tier = 'reserve'
+          endcase
+        -%}
+        {%- for item in pool -%}
+          {%- assign key = '|' | append: item.handle | append: '|' -%}
+          {%- unless list contains key -%}{%- continue -%}{%- endunless -%}
+          {%- comment -%}
+            At most `count` of the top tiers, and `count` reserves after them,
+            hidden past the count: the script falls back on those when
+            Shopify's picks are fewer than the gap.
+          {%- endcomment -%}
+          {%- if tier == 'top' -%}
+            {%- if top_n >= count -%}{%- continue -%}{%- endif -%}
+            {%- assign top_n = top_n | plus: 1 -%}
+          {%- else -%}
+            {%- if reserve_n >= count -%}{%- continue -%}{%- endif -%}
+            {%- assign reserve_n = reserve_n | plus: 1 -%}
+          {%- endif -%}
+          {%- assign total = total | plus: 1 -%}
+          <div class="pick" data-handle="{{ item.handle }}" data-tier="{{ tier }}"{% if total > count %} hidden{% endif %}>
+            {%- render 'fabric-card', product: item -%}
+          </div>
+        {%- endfor -%}
       {%- endfor -%}
     </div>
+  </div>
   {%- endif -%}
-</div>
 
-<script>
-  (function () {
-    var host = document.querySelector('[data-recommendations]');
-    if (!host || host.querySelector('.grid')) return;
-    fetch(host.dataset.url)
-      .then(function (response) { return response.text(); })
-      .then(function (html) {
-        var fresh = new DOMParser().parseFromString(html, 'text/html').querySelector('[data-recommendations]');
-        if (fresh) host.innerHTML = fresh.innerHTML;
-      })
-      .catch(function () {
-        /* recommendations are a nicety — a failed fetch leaves the page whole */
-      });
-  })();
-</script>
+  <script>
+    (function () {
+      var host = document.querySelector('[data-related]');
+      if (!host || !window.fetch) return;
+      var grid = host.querySelector('[data-related-grid]');
+      var count = parseInt(host.getAttribute('data-count'), 10) || 4;
+
+      fetch(host.getAttribute('data-url'))
+        .then(function (response) { return response.text(); })
+        .then(function (html) {
+          var doc = new DOMParser().parseFromString(html, 'text/html');
+          var shopify = [].slice.call(doc.querySelectorAll('[data-recommended] .pick'));
+          var picks = [].slice.call(grid.children);
+          var top = picks.filter(function (el) { return el.getAttribute('data-tier') === 'top'; });
+          var reserve = picks.filter(function (el) { return el.getAttribute('data-tier') !== 'top'; });
+
+          /* the counter's rule, then Shopify, then the reserves — once each */
+          var seen = {};
+          var order = [];
+          top.concat(shopify, reserve).forEach(function (el) {
+            var handle = el.getAttribute('data-handle');
+            if (!handle || seen[handle]) return;
+            seen[handle] = true;
+            order.push(el);
+          });
+
+          grid.innerHTML = '';
+          order.slice(0, count).forEach(function (el) {
+            el.hidden = false;
+            grid.appendChild(document.importNode(el, true));
+          });
+        })
+        .catch(function () {
+          /* Shopify's picks are a nicety — the page already holds the rest */
+        });
+    })();
+  </script>
+{%- endif -%}
 
 {% schema %}
 {

@@ -99,25 +99,32 @@
         </aside>
 
         <section class="results">
-          {%- if active_count > 0 -%}
-            <div class="pills">
-              {%- assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ',' -%}
-              {%- for filter in collection.filters -%}
-                {%- assign key = filter.label | strip | downcase -%}
-                {%- for value in filter.active_values -%}
-                  <a class="chip pill" href="{{ value.url_to_remove }}">
-                    {%- if shade_names contains key -%}
-                      {%- capture hex %}{% render 'shade-hex', name: value.label, swatch: value.swatch %}{% endcapture -%}
-                      <i style="background: {{ hex | strip }};"></i>
-                    {%- endif -%}
-                    {{ value.label }}
-                    {% render 'icon', name: 'close', size: 9 %}
-                  </a>
-                {%- endfor -%}
+          {%- comment -%}
+            Every active filter as a pill with a ×, so each can be removed on
+            its own. Native filters are links Shopify resolves; the theme's own
+            facets and the "quality first" order add their pills from
+            catalog-filters.js into [data-theme-pills]. The row hides while
+            nothing is applied.
+          {%- endcomment -%}
+          <template data-pill-close>{% render 'icon', name: 'close', size: 9 %}</template>
+          <div class="pills" data-facet-pills{% if active_count == 0 %} hidden{% endif %}>
+            {%- assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ',' -%}
+            {%- for filter in collection.filters -%}
+              {%- assign key = filter.label | strip | downcase -%}
+              {%- for value in filter.active_values -%}
+                <a class="chip pill" href="{{ value.url_to_remove }}" aria-label="Remove {{ value.label | escape }}">
+                  {%- if shade_names contains key -%}
+                    {%- capture hex %}{% render 'shade-hex', name: value.label, swatch: value.swatch %}{% endcapture -%}
+                    <i style="background: {{ hex | strip }};"></i>
+                  {%- endif -%}
+                  {{ value.label }}
+                  {% render 'icon', name: 'close', size: 9 %}
+                </a>
               {%- endfor -%}
-              <a class="linkish clear" href="{{ collection.url }}" data-facet-reset>Clear</a>
-            </div>
-          {%- endif -%}
+            {%- endfor -%}
+            <span class="themepills" data-theme-pills></span>
+            <a class="linkish clear" href="{{ collection.url }}" data-facet-reset>Clear all</a>
+          </div>
 
           {%- comment -%}
             One card per design. A fabric printed in Ekdali and Satbundi is two

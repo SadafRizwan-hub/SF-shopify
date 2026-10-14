@@ -54,6 +54,9 @@
       <section>
         <header>
           <span class="label">{{ filter.label }}</span>
+          {%- if filter.min_value.value != blank or filter.max_value.value != blank -%}
+            <a class="linkish clearfacet" href="{{ filter.url_to_remove }}">Clear</a>
+          {%- endif -%}
         </header>
         <form method="get" class="range">
           {%- for other in collection.filters -%}
@@ -75,6 +78,9 @@
           <span class="meta">
             {%- if filter.active_values.size > 0 -%}{{ filter.active_values.size }} selected{%- else -%}none{%- endif -%}
           </span>
+          {%- if filter.active_values.size > 0 -%}
+            <a class="linkish clearfacet" href="{{ filter.url_to_remove }}">Clear</a>
+          {%- endif -%}
         </header>
 
         {%- if is_colour -%}
@@ -140,6 +146,7 @@
         <header>
           <span class="label">Fabric</span>
           <span class="meta" data-facet-count="type">none</span>
+          <button type="button" class="linkish clearfacet" data-facet-clear="type" hidden>Clear</button>
         </header>
         <div class="chips">
           {%- for row in type_rows -%}
@@ -181,6 +188,7 @@
         <header>
           <span class="label">Colour</span>
           <span class="meta" data-facet-count="shades">tap to add</span>
+          <button type="button" class="linkish clearfacet" data-facet-clear="shades" hidden>Clear</button>
         </header>
         <div class="shades">
           {%- for row in shade_rows -%}
@@ -233,6 +241,7 @@
         <header>
           <span class="label">Design / Pattern</span>
           <span class="meta" data-facet-count="designs">none selected</span>
+          <button type="button" class="linkish clearfacet" data-facet-clear="designs" hidden>Clear</button>
         </header>
         <div class="designs-facet">
           {%- for row in design_rows -%}
@@ -286,6 +295,7 @@
       <header>
         <span class="label">Design family</span>
         <span class="meta" data-facet-count="families">none</span>
+          <button type="button" class="linkish clearfacet" data-facet-clear="families" hidden>Clear</button>
       </header>
       <div class="chips">
         {%- for row in fam_rows -%}

@@ -10,7 +10,7 @@
     "related": {
       "type": "related-fabrics",
       "settings": {
-        "heading": "Goes with this",
+        "heading": "You may also like",
         "count": 4,
         "columns": 4
       }

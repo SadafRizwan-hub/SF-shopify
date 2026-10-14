@@ -10,13 +10,26 @@
  *
  * The rail is rendered twice (the desktop column and the phone sheet), so
  * every toggle is applied to both copies by value rather than by element.
+ *
+ * Every selection can be taken back on its own: each group's Clear, and a
+ * pill with a × above the grid for each value. It also carries the "quality
+ * first" order the homepage's Shop by quality chips ask for with #first=.
  */
 (function () {
   'use strict';
 
   var grid = document.querySelector('.results .grid') || document.querySelector('.grid');
   var buttons = document.querySelectorAll('[data-facet][data-value]');
-  if (!grid || !buttons.length) return;
+  if (!grid) return;
+
+  var pillRow = document.querySelector('[data-facet-pills]');
+  var pillHost = document.querySelector('[data-theme-pills]');
+  var closeIcon = document.querySelector('template[data-pill-close]');
+  var nativePills = pillRow ? pillRow.querySelectorAll('a.pill').length : 0;
+
+  /* the grid as the server ordered it, so a lifted quality can be put back */
+  var original = [].slice.call(grid.children);
+  var first = null;
 
   /* group -> Set of selected handles */
   var chosen = { type: [], shades: [], designs: [], families: [] };
@@ -124,6 +137,83 @@
 
     var empty = document.querySelector('[data-facet-empty]');
     if (empty) empty.hidden = shown !== 0 || cards.length === 0;
+
+    document.querySelectorAll('[data-facet-clear]').forEach(function (btn) {
+      var group = btn.getAttribute('data-facet-clear');
+      btn.hidden = !(chosen[group] && chosen[group].length);
+    });
+
+    pills();
+  }
+
+  /*
+   * "Georgette first": that quality's cards, in the server's newest-first
+   * order, then every other card in the same order. Nothing is hidden — the
+   * filters still decide that.
+   */
+  function order() {
+    var lifted = [];
+    var rest = [];
+    original.forEach(function (el) {
+      var type = el.getAttribute('data-type');
+      if (first && type === first) lifted.push(el);
+      else rest.push(el);
+    });
+    if (first && !lifted.length) first = null;
+    lifted.concat(rest).forEach(function (el) { grid.appendChild(el); });
+  }
+
+  function labelOf(group, value) {
+    var btn = document.querySelector('[data-facet="' + group + '"][data-value="' + value + '"]');
+    if (!btn) return { text: value, colour: null };
+    var nm = btn.querySelector('.nm');
+    var ring = btn.querySelector('.ring');
+    return {
+      text: (nm ? nm.textContent : btn.textContent).trim(),
+      colour: ring ? ring.style.background : null
+    };
+  }
+
+  function pill(text, colour, attrs) {
+    var el = document.createElement('button');
+    el.type = 'button';
+    el.className = 'chip pill';
+    Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+    el.setAttribute('aria-label', 'Remove ' + text);
+    if (colour) {
+      var dot = document.createElement('i');
+      dot.style.background = colour;
+      el.appendChild(dot);
+    }
+    el.appendChild(document.createTextNode(text + ' '));
+    if (closeIcon) el.appendChild(closeIcon.content.cloneNode(true));
+    return el;
+  }
+
+  function pills() {
+    if (!pillHost) return;
+    pillHost.innerHTML = '';
+    var count = 0;
+
+    if (first) {
+      var sample = grid.querySelector('[data-type="' + first + '"] .tag');
+      var name = sample ? sample.textContent.trim() : first;
+      pillHost.appendChild(pill(name + ' first', null, { 'data-pill-first': '' }));
+      count += 1;
+    }
+
+    Object.keys(chosen).forEach(function (group) {
+      chosen[group].forEach(function (value) {
+        var label = labelOf(group, value);
+        pillHost.appendChild(pill(label.text, label.colour, {
+          'data-pill-group': group,
+          'data-pill-value': value
+        }));
+        count += 1;
+      });
+    });
+
+    if (pillRow) pillRow.hidden = count === 0 && nativePills === 0;
   }
 
   function paint() {
@@ -138,8 +228,9 @@
   document.addEventListener('click', function (event) {
     var reset = event.target.closest('[data-facet-reset]');
     if (reset) {
-      var any = chosen.type.length || chosen.shades.length || chosen.designs.length || chosen.families.length;
+      var any = chosen.type.length || chosen.shades.length || chosen.designs.length || chosen.families.length || first;
       if (any) {
+        if (first) { first = null; dropHash('first'); order(); }
         /* a native filter is in the URL too, so only swallow the click when
            this page's selection is the only thing that needs clearing */
         if (window.location.search.indexOf('filter.') === -1) event.preventDefault();
@@ -147,6 +238,35 @@
         paint();
         apply();
       }
+      return;
+    }
+
+    var clear = event.target.closest('[data-facet-clear]');
+    if (clear) {
+      event.preventDefault();
+      chosen[clear.getAttribute('data-facet-clear')] = [];
+      paint();
+      apply();
+      return;
+    }
+
+    var off = event.target.closest('[data-pill-group]');
+    if (off) {
+      event.preventDefault();
+      var list = chosen[off.getAttribute('data-pill-group')] || [];
+      var at = list.indexOf(off.getAttribute('data-pill-value'));
+      if (at !== -1) list.splice(at, 1);
+      paint();
+      apply();
+      return;
+    }
+
+    if (event.target.closest('[data-pill-first]')) {
+      event.preventDefault();
+      first = null;
+      dropHash('first');
+      order();
+      apply();
       return;
     }
 
@@ -177,6 +297,10 @@
     var groups = { design: 'designs', shade: 'shades', type: 'type', family: 'families' };
     window.location.hash.replace(/^#/, '').split('&').forEach(function (part) {
       var kv = part.split('=');
+      if (kv[0] === 'first' && kv[1]) {
+        try { first = decodeURIComponent(kv[1]); } catch (e) { first = null; }
+        return;
+      }
       var group = groups[kv[0]];
       if (!group || !kv[1]) return;
       var wanted;
@@ -191,7 +315,17 @@
     });
   }
 
+  /* take one key out of the hash without adding a history entry */
+  function dropHash(key) {
+    if (!window.history || !window.history.replaceState) return;
+    var kept = window.location.hash.replace(/^#/, '').split('&').filter(function (part) {
+      return part && part.split('=')[0] !== key;
+    });
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + (kept.length ? '#' + kept.join('&') : ''));
+  }
+
   fromHash();
+  order();
   paint();
   apply();
 })();

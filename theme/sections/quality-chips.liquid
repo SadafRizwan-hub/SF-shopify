@@ -1,55 +1,238 @@
 {%- comment -%}
-  A shortcut into the catalog by product type. A type with nothing posted
-  under it would open an empty grid, so it isn't offered — the chips are built
-  from the types actually on the shelf, never from a fixed list that can drift.
+  Shop by quality: a row of photo tiles, one per quality, each a fabric
+  photograph under a soft veil with the quality's name across it.
+
+  Two ways to fill it:
+
+    automatic   no tiles added — one tile per product type on the shelf, each
+                showing the newest fabric of that type that has a photograph.
+                A type with nothing posted under it is never offered.
+    your own    Customize → Shop by quality → Add tile. Each tile names a
+                quality and may carry its own photograph and link; a tile with
+                no photograph borrows the newest fabric of that quality's, and
+                a tile whose quality has no photograph anywhere is skipped.
+
+  A tile opens the catalog newest first with that quality lifted to the top
+  (#first=, read by catalog-filters.js) unless it has a link of its own.
+
+  The row is a native snap scroller: it swipes on a phone and scrolls with a
+  trackpad before the script below runs. The arrows appear only once the
+  script has measured that something is actually off screen.
+
+  The styles live in this file, in its stylesheet tag at the foot, so the
+  section is one file to copy into a theme.
 {%- endcomment -%}
 {%- liquid
   assign source = collections[section.settings.collection] | default: collections.all
+  assign catalog = source.url | default: routes.all_products_collection_url
+  assign newest = source.products | sort: 'created_at' | reverse
+  assign tiles = section.blocks | where: 'type', 'tile'
+
+  # automatic: every product type on the shelf, in the order first met
   assign types = ''
-  for product in source.products
-    assign key = product.type | strip
-    if key == blank
-      continue
-    endif
-    assign probe = ',' | append: key | append: ','
-    assign haystack = ',' | append: types | append: ','
-    unless haystack contains probe
-      assign types = types | append: key | append: ','
-    endunless
-  endfor
+  if tiles.size == 0
+    for product in newest
+      assign key = product.type | strip
+      if key == blank
+        continue
+      endif
+      assign probe = ',' | append: key | append: ','
+      assign haystack = ',' | append: types | append: ','
+      unless haystack contains probe
+        assign types = types | append: key | append: ','
+      endunless
+    endfor
+  endif
   assign type_list = types | split: ','
+  assign count = tiles.size | plus: type_list.size
 -%}
-{%- if type_list.size > 0 -%}
-  <section class="shell homeband">
-    <div class="head">
-      <h2>{{ section.settings.heading }}</h2>
-      {%- if section.settings.link_url != blank -%}
-        <a class="linkish" href="{{ section.settings.link_url }}">{{ section.settings.link_label }}</a>
-      {%- endif -%}
+{%- if count > 0 -%}
+  <section class="qualities" data-qualities>
+    <div class="shell">
+      <div class="qualities-head">
+        <h2>{{ section.settings.heading }}</h2>
+        {%- if section.settings.link_url != blank -%}
+          <a class="linkish" href="{{ section.settings.link_url }}">{{ section.settings.link_label }}</a>
+        {%- endif -%}
+      </div>
     </div>
-    <div class="types">
-      {%- for type in type_list -%}
-        {%- comment -%}
-          The catalog, newest first, with this quality lifted to the top: its
-          fabrics new to old, then everything else new to old. Nothing is
-          filtered away — the shopper asked where to start, not what to hide.
-          #first= is read by catalog-filters.js; it ignores a quality the page
-          does not carry.
-        {%- endcomment -%}
-        <a class="chip" href="{{ source.url | default: routes.all_products_collection_url }}?sort_by=created-descending#first={{ type | handle }}">{{ type }}</a>
-      {%- endfor -%}
+
+    <div class="qualities-wrap">
+      <div class="qualities-row" data-qualities-row>
+        {%- if tiles.size > 0 -%}
+          {%- for block in tiles -%}
+            {%- liquid
+              assign name = block.settings.quality | strip
+              assign wanted = name | downcase
+              assign picture = block.settings.image
+              if picture == blank and name != blank
+                for product in newest
+                  assign ptype = product.type | strip | downcase
+                  if ptype == wanted and product.featured_image
+                    assign picture = product.featured_image
+                    break
+                  endif
+                endfor
+              endif
+              if picture == blank
+                continue
+              endif
+              assign href = block.settings.link
+              if href == blank
+                # handle the quality on its own: filters run left to right, so
+                # a handle at the end would mangle the whole URL
+                assign first = wanted | handle
+                assign href = catalog | append: '?sort_by=created-descending#first=' | append: first
+              endif
+            -%}
+            <a class="quality" href="{{ href }}" {{ block.shopify_attributes }}>
+              {% render 'responsive-img', image: picture, alt: name, sizes: '(max-width: 700px) 70vw, 25vw' %}
+              <span class="quality-name">{{ block.settings.label | default: name }}</span>
+            </a>
+          {%- endfor -%}
+        {%- else -%}
+          {%- for type in type_list -%}
+            {%- liquid
+              assign wanted = type | downcase
+              assign picture = nil
+              for product in newest
+                assign ptype = product.type | strip | downcase
+                if ptype == wanted and product.featured_image
+                  assign picture = product.featured_image
+                  break
+                endif
+              endfor
+            -%}
+            {%- comment -%}
+              The catalog, newest first, with this quality lifted to the top: its
+              fabrics new to old, then everything else new to old. Nothing is
+              filtered away — the shopper asked where to start, not what to hide.
+            {%- endcomment -%}
+            <a class="quality{% unless picture %} bare{% endunless %}" href="{{ catalog }}?sort_by=created-descending#first={{ type | handle }}">
+              {%- if picture -%}
+                {% render 'responsive-img', image: picture, alt: type, sizes: '(max-width: 700px) 70vw, 25vw' %}
+              {%- endif -%}
+              <span class="quality-name">{{ type }}</span>
+            </a>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+      <button type="button" class="quality-arrow prev" data-qualities-prev aria-label="Scroll back" hidden>{% render 'icon', name: 'back', size: 16 %}</button>
+      <button type="button" class="quality-arrow next" data-qualities-next aria-label="Scroll on" hidden>{% render 'icon', name: 'forward', size: 16 %}</button>
     </div>
   </section>
+
+  <script>
+    (function () {
+      /* wire each row once, however many times this tag runs */
+      document.querySelectorAll('[data-qualities]:not([data-wired])').forEach(function (host) {
+        host.setAttribute('data-wired', '');
+        var row = host.querySelector('[data-qualities-row]');
+        var prev = host.querySelector('[data-qualities-prev]');
+        var next = host.querySelector('[data-qualities-next]');
+        if (!row || !prev || !next) return;
+        function step() { return Math.max(row.clientWidth * 0.8, 200); }
+        function update() {
+          var max = row.scrollWidth - row.clientWidth - 2;
+          prev.hidden = row.scrollLeft <= 2;
+          next.hidden = row.scrollLeft >= max;
+        }
+        prev.addEventListener('click', function () { row.scrollBy({ left: -step(), behavior: 'smooth' }); });
+        next.addEventListener('click', function () { row.scrollBy({ left: step(), behavior: 'smooth' }); });
+        row.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+      });
+    })();
+  </script>
 {%- endif -%}
+
+{% stylesheet %}
+  .qualities { padding: 60px 0 10px; }
+  .qualities-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 34px; text-align: center; }
+  .qualities-head h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 4vw, 52px); line-height: 1.1; margin: 0; }
+
+  .qualities-wrap { position: relative; }
+  /* the first tile lines up with the page shell; the snap padding must match
+     the side padding, or the browser snaps the row in by the difference */
+  .qualities-row {
+    --qpad: max(20px, calc((100vw - var(--shell, 1240px)) / 2 + 20px));
+    display: flex; gap: 24px;
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--qpad);
+    padding: 0 var(--qpad) 6px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .qualities-row::-webkit-scrollbar { display: none; }
+
+  .quality {
+    position: relative; flex: 0 0 calc((min(100vw, var(--shell, 1240px)) - 40px - 3 * 24px) / 4);
+    aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden;
+    scroll-snap-align: start; background: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .quality img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+  .quality::after { content: ''; position: absolute; inset: 0; background: rgba(20, 17, 15, 0.34); transition: background 0.25s; }
+  .quality:hover img { transform: scale(1.04); }
+  .quality:hover::after { background: rgba(20, 17, 15, 0.46); }
+  .quality-name {
+    position: relative; z-index: 1; padding: 0 14px; text-align: center;
+    font-family: var(--serif); font-size: clamp(26px, 2.6vw, 40px); line-height: 1.1; color: #fffdf8;
+    text-shadow: 0 2px 18px rgba(20, 17, 15, 0.35);
+  }
+
+  .quality-arrow {
+    position: absolute; top: 50%; transform: translateY(-50%); z-index: 2;
+    width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center;
+    background: rgba(255, 253, 248, 0.92); color: var(--ink);
+    box-shadow: 0 2px 12px rgba(20, 17, 15, 0.18);
+  }
+  .quality-arrow[hidden] { display: none; }
+  .quality-arrow.prev { left: 14px; }
+  .quality-arrow.next { right: 14px; }
+
+  @media (max-width: 1050px) {
+    .quality { flex-basis: calc((100vw - 40px - 2 * 20px) / 2.6); }
+    .qualities-row { gap: 20px; }
+  }
+  @media (max-width: 700px) {
+    .qualities { padding-top: 44px; }
+    .qualities-head { margin-bottom: 24px; }
+    .qualities-row { --qpad: 16px; gap: 14px; }
+    .quality { flex-basis: 64vw; }
+    .quality-arrow { display: none; }
+  }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "Shop by quality",
+  "max_blocks": 12,
   "settings": [
     { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by quality" },
-    { "type": "collection", "id": "collection", "label": "Read types from" },
-    { "type": "url", "id": "link_url", "label": "Link" },
-    { "type": "text", "id": "link_label", "label": "Link label", "default": "See the full catalog" }
+    {
+      "type": "paragraph",
+      "content": "With no tiles added, there is one tile per product type, each showing your newest fabric of that type. Add tiles to choose the qualities, their order and their photos yourself."
+    },
+    { "type": "collection", "id": "collection", "label": "Read fabrics from", "info": "Leave empty to use the whole catalog." },
+    { "type": "url", "id": "link_url", "label": "Link under the heading (optional)" },
+    { "type": "text", "id": "link_label", "label": "Link text", "default": "See the full catalog" }
+  ],
+  "blocks": [
+    {
+      "type": "tile",
+      "name": "Tile",
+      "settings": [
+        {
+          "type": "text",
+          "id": "quality",
+          "label": "Quality",
+          "info": "The product type, exactly as on your products, e.g. Chanderi."
+        },
+        { "type": "text", "id": "label", "label": "Name on the tile", "info": "Leave empty to show the quality." },
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Leave empty to use the newest fabric of this quality." },
+        { "type": "url", "id": "link", "label": "Link", "info": "Leave empty to open the catalog with this quality first." }
+      ]
+    }
   ],
   "presets": [{ "name": "Shop by quality" }]
 }

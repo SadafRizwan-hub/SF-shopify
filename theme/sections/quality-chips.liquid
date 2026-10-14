@@ -153,11 +153,14 @@
   .qualities-head h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 4vw, 52px); line-height: 1.1; margin: 0; }
 
   .qualities-wrap { position: relative; }
-  /* the first tile lines up with the page shell; the snap padding must match
-     the side padding, or the browser snaps the row in by the difference */
+  /* full width: a small gutter, not the page shell, so the row starts near
+     the screen edge on wide monitors instead of after a band of white. The
+     snap padding must match the side padding, or the browser snaps the row in
+     by the difference on load. */
   .qualities-row {
-    --qpad: max(20px, calc((100vw - var(--shell, 1240px)) / 2 + 20px));
-    display: flex; gap: 24px;
+    --qpad: 24px;
+    --qgap: 20px;
+    display: flex; gap: var(--qgap);
     overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--qpad);
     padding: 0 var(--qpad) 6px;
     scrollbar-width: none; overscroll-behavior-x: contain;
@@ -165,7 +168,8 @@
   .qualities-row::-webkit-scrollbar { display: none; }
 
   .quality {
-    position: relative; flex: 0 0 calc((min(100vw, var(--shell, 1240px)) - 40px - 3 * 24px) / 4);
+    /* about four and a half tiles across the screen, whatever its width */
+    position: relative; flex: 0 0 calc((100vw - 2 * var(--qpad) - 4 * var(--qgap)) / 4.4);
     aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden;
     scroll-snap-align: start; background: var(--ink);
     display: flex; align-items: center; justify-content: center;
@@ -187,17 +191,16 @@
     box-shadow: 0 2px 12px rgba(20, 17, 15, 0.18);
   }
   .quality-arrow[hidden] { display: none; }
-  .quality-arrow.prev { left: 14px; }
-  .quality-arrow.next { right: 14px; }
+  .quality-arrow.prev { left: 36px; }
+  .quality-arrow.next { right: 36px; }
 
   @media (max-width: 1050px) {
-    .quality { flex-basis: calc((100vw - 40px - 2 * 20px) / 2.6); }
-    .qualities-row { gap: 20px; }
+    .quality { flex-basis: calc((100vw - 2 * var(--qpad) - 2 * var(--qgap)) / 2.6); }
   }
   @media (max-width: 700px) {
     .qualities { padding-top: 44px; }
     .qualities-head { margin-bottom: 24px; }
-    .qualities-row { --qpad: 16px; gap: 14px; }
+    .qualities-row { --qpad: 16px; --qgap: 14px; }
     .quality { flex-basis: 64vw; }
     .quality-arrow { display: none; }
   }
@@ -208,7 +211,7 @@
   "name": "Shop by quality",
   "max_blocks": 12,
   "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop by quality" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Shop By Quality" },
     {
       "type": "paragraph",
       "content": "With no tiles added, there is one tile per product type, each showing your newest fabric of that type. Add tiles to choose the qualities, their order and their photos yourself."

@@ -1,0 +1,153 @@
+{%- comment -%}
+  "Why shop with us": a row of the shop's promises, each a line-drawn icon
+  with a leaf sprig, a title, two short lines and a link, under a small-caps
+  line flanked by rules and a lotus.
+
+  Every column is a block (Customize → Why shop with us → Add promise), so the
+  counter writes its own promises and policies — the defaults are an example to
+  edit, not a claim the theme makes for the shop. A column can use a drawn icon
+  or an uploaded one; a column with no link simply has no link line.
+
+  Five across on a wide screen with a leaf on the rule between each; three
+  across on a tablet and two on a phone, without the rules.
+{%- endcomment -%}
+{%- assign items = section.blocks | where: 'type', 'promise' -%}
+{%- if items.size > 0 -%}
+  <section class="whyband whyband--{{ section.settings.background }}" style="--why-cols: {{ items.size }};">
+    <div class="shell">
+      {%- if section.settings.eyebrow != blank -%}
+        <div class="why-head">
+          <p class="why-eyebrow"><span>{{ section.settings.eyebrow }}</span></p>
+          {%- if section.settings.show_lotus -%}<span class="why-lotus">{% render 'promise-icon', name: 'lotus' %}</span>{%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="why-row">
+        {%- for block in items -%}
+          {%- unless forloop.first -%}
+            <span class="why-sep" aria-hidden="true">{% render 'promise-icon', name: 'leaf' %}</span>
+          {%- endunless -%}
+          <div class="why" {{ block.shopify_attributes }}>
+            <div class="why-art" aria-hidden="true">
+              {%- if block.settings.image != blank -%}
+                {{ block.settings.image | image_url: width: 160 | image_tag: loading: 'lazy', alt: '', class: 'why-img' }}
+              {%- else -%}
+                <span class="why-icon">{% render 'promise-icon', name: block.settings.icon %}</span>
+              {%- endif -%}
+              {%- if section.settings.show_sprigs -%}<span class="why-sprig">{% render 'promise-icon', name: 'sprig' %}</span>{%- endif -%}
+            </div>
+            {%- if block.settings.title != blank -%}<h3>{{ block.settings.title }}</h3>{%- endif -%}
+            {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+            {%- if block.settings.link_label != blank and block.settings.link != blank -%}
+              <a class="why-link" href="{{ block.settings.link }}">
+                <span>{{ block.settings.link_label }}</span>{% render 'icon', name: 'arrow', size: 15 %}
+              </a>
+            {%- endif -%}
+          </div>
+        {%- endfor -%}
+      </div>
+    </div>
+  </section>
+{%- endif -%}
+
+{% schema %}
+{
+  "name": "Why shop with us",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Top line",
+      "default": "A more meaningful way to shop"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_lotus",
+      "label": "Show the lotus under the top line",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_sprigs",
+      "label": "Show the leaf sprig beside each icon",
+      "default": true
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Background",
+      "default": "plain",
+      "options": [
+        { "value": "plain", "label": "Page colour" },
+        { "value": "sand", "label": "Sand" }
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "type": "promise",
+      "name": "Promise",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "quality",
+          "options": [
+            { "value": "india", "label": "Map of India" },
+            { "value": "quality", "label": "Quality badge" },
+            { "value": "cod", "label": "Wallet (cash on delivery)" },
+            { "value": "shipping", "label": "Delivery truck" },
+            { "value": "returns", "label": "Return arrow" },
+            { "value": "fabric", "label": "Fabric" },
+            { "value": "whatsapp", "label": "Chat" }
+          ]
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Your own icon (optional)",
+          "info": "Replaces the drawn icon. A square, transparent PNG or SVG works best."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Title",
+          "default": "Assured Quality"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "info": "One or two short lines."
+        },
+        {
+          "type": "text",
+          "id": "link_label",
+          "label": "Link text",
+          "default": "Shop now"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link",
+          "info": "Leave empty to show no link."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why shop with us",
+      "blocks": [
+        { "type": "promise", "settings": { "icon": "india", "title": "Made in India", "text": "Celebrating India's artisan spirit and manufacturing heritage.", "link_label": "Explore now" } },
+        { "type": "promise", "settings": { "icon": "quality", "title": "Assured Quality", "text": "Tested for reliability. Certified excellence. Shop with confidence.", "link_label": "Shop confidently" } },
+        { "type": "promise", "settings": { "icon": "cod", "title": "Cash on Delivery", "text": "Pay upon receipt. Simple and secure payment.", "link_label": "Order now" } },
+        { "type": "promise", "settings": { "icon": "shipping", "title": "Free Shipping Over ₹849", "text": "Available on all qualifying orders. Shop today.", "link_label": "Shop now" } },
+        { "type": "promise", "settings": { "icon": "returns", "title": "7 Day Returns", "text": "Hassle-free returns on most products. Shop with confidence.", "link_label": "Learn more" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

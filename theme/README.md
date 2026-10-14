@@ -380,6 +380,16 @@ Slides live in this theme's homepage settings, so uploading a fresh theme ZIP
 starts with none. Set them up on the theme you publish, or carry them across by
 keeping that theme's `templates/index.json`.
 
+### Why shop with us
+
+The row of promises at the foot of the homepage — *Made in India*, *Assured
+Quality*, *Cash on Delivery*, *Free Shipping Over ₹849*, *7 Day Returns* — is
+the **Why shop with us** section. Each column is a block: pick a drawn icon or
+upload your own, and set its title, text, link text and link. The defaults are
+an example; make sure each one matches what the shop actually offers (shipping
+threshold, returns window, cash on delivery) before going live. Up to six
+columns; the top line, the lotus and the leaf sprigs can be turned off.
+
 ### The shelves
 
 The shelves read **newest first** by default, so a quality entered at the

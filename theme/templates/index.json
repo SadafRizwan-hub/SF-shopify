@@ -68,6 +68,74 @@
         "swatch",
         "cut"
       ]
+    },
+    "why": {
+      "type": "promise-strip",
+      "settings": {
+        "eyebrow": "A more meaningful way to shop",
+        "show_lotus": true,
+        "show_sprigs": true,
+        "background": "plain"
+      },
+      "blocks": {
+        "india": {
+          "type": "promise",
+          "settings": {
+            "icon": "india",
+            "title": "Made in India",
+            "text": "Celebrating India's artisan spirit and manufacturing heritage.",
+            "link_label": "Explore now",
+            "link": "/collections/all"
+          }
+        },
+        "quality": {
+          "type": "promise",
+          "settings": {
+            "icon": "quality",
+            "title": "Assured Quality",
+            "text": "Tested for reliability. Certified excellence. Shop with confidence.",
+            "link_label": "Shop confidently",
+            "link": "/collections/all"
+          }
+        },
+        "cod": {
+          "type": "promise",
+          "settings": {
+            "icon": "cod",
+            "title": "Cash on Delivery",
+            "text": "Pay upon receipt. Simple and secure payment.",
+            "link_label": "Order now",
+            "link": "/collections/all"
+          }
+        },
+        "shipping": {
+          "type": "promise",
+          "settings": {
+            "icon": "shipping",
+            "title": "Free Shipping Over ₹849",
+            "text": "Available on all qualifying orders. Shop today.",
+            "link_label": "Shop now",
+            "link": "/collections/all"
+          }
+        },
+        "returns": {
+          "type": "promise",
+          "settings": {
+            "icon": "returns",
+            "title": "7 Day Returns",
+            "text": "Hassle-free returns on most products. Shop with confidence.",
+            "link_label": "Learn more",
+            "link": "/policies/refund-policy"
+          }
+        }
+      },
+      "block_order": [
+        "india",
+        "quality",
+        "cod",
+        "shipping",
+        "returns"
+      ]
     }
   },
   "order": [
@@ -75,6 +143,7 @@
     "qualities",
     "by-the-metre",
     "designs",
-    "promise"
+    "promise",
+    "why"
   ]
 }

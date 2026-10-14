@@ -1366,3 +1366,75 @@ button.prow:hover { background: var(--paper); }
 .acct table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .acct th, .acct td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line-soft); }
 .acct th { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--ink-45); font-weight: 400; }
+
+/* --- why shop with us ------------------------------------------------------
+   A row of promises under a small-caps line between rules and a lotus. The
+   drawings take --ink, the sprigs and ornaments --brass. */
+.whyband { padding: 64px 20px 72px; }
+.whyband--sand { background: var(--sand); margin-top: 54px; }
+/* five columns need more room than the page shell gives them */
+.whyband > .shell { max-width: 1480px; }
+.why-head { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 40px; }
+.why-eyebrow {
+  display: flex; align-items: center; gap: 22px; width: 100%; max-width: 760px; margin: 0;
+  font-size: 11.5px; letter-spacing: 3.6px; text-transform: uppercase; color: var(--ink-70); text-align: center;
+}
+.why-eyebrow::before,
+.why-eyebrow::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+.why-lotus { color: var(--brass); display: inline-flex; }
+
+.why-row { display: flex; align-items: stretch; }
+.why {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; text-align: center;
+  padding: 0 14px;
+}
+.why-art { position: relative; display: inline-flex; align-items: flex-end; height: 80px; margin-bottom: 16px; }
+.why-icon { color: var(--ink); display: inline-flex; }
+.why-icon svg { width: 72px; height: 72px; }
+.why-img { width: 72px; height: 72px; object-fit: contain; }
+.why-sprig { color: var(--brass); display: inline-flex; margin-left: -4px; margin-bottom: 4px; }
+.why h3 {
+  font-family: var(--serif); font-weight: 400;
+  font-size: clamp(20px, 1.75vw, 27px); line-height: 1.15; margin: 0 0 10px; color: var(--ink);
+}
+.why p {
+  margin: 0 0 20px; max-width: 260px;
+  font-family: var(--serif); font-size: 15.5px; line-height: 1.55; color: var(--ink-70);
+}
+.why-link {
+  margin-top: auto;
+  display: inline-flex; align-items: center; gap: 12px; white-space: nowrap;
+  font-size: 11.5px; letter-spacing: 2.6px; text-transform: uppercase; color: var(--ink);
+}
+.why-link span { padding-bottom: 6px; border-bottom: 1px solid var(--line-strong); transition: border-color 0.15s; }
+.why-link:hover span { border-color: var(--ink); }
+.why-link svg { margin-top: -6px; transition: transform 0.15s; }
+.why-link:hover svg { transform: translateX(3px); }
+
+/* the rule between two promises, with a leaf where it breaks */
+.why-sep {
+  flex: 0 0 auto; width: 22px; color: var(--brass);
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
+  padding: 18px 0 30px;
+}
+.why-sep::before,
+.why-sep::after { content: ''; flex: 1; width: 1px; background: var(--line); }
+.why-sep svg { transform: rotate(180deg); }
+
+@media (max-width: 1100px) {
+  .why-row { flex-wrap: wrap; justify-content: center; row-gap: 44px; }
+  .why-sep { display: none; }
+  .why { flex: 0 0 33.333%; }
+}
+@media (max-width: 700px) {
+  .whyband { padding: 48px 16px 56px; }
+  .why-eyebrow { gap: 12px; letter-spacing: 2.4px; font-size: 10.5px; }
+  .why-head { margin-bottom: 30px; }
+  .why-row { row-gap: 36px; }
+  .why { flex: 0 0 50%; padding: 0 8px; }
+  .why-icon svg, .why-img { width: 54px; height: 54px; }
+  .why-art { height: 60px; }
+  .why p { font-size: 14px; margin-bottom: 14px; }
+  .why-link { letter-spacing: 1.2px; font-size: 10px; gap: 6px; }
+}

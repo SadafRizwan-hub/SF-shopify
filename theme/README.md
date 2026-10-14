@@ -359,9 +359,32 @@ This theme is built to sit *beside* a headless front, not instead of it.
 
 ## What the home page shows
 
-The hero and the shelves read **newest first** by default, so a quality
-entered at the counter today is the first thing on the page. Both have an
-**Order** setting if you would rather keep a collection's own order.
+### The banner
+
+The banner at the top is a slideshow run from the theme editor:
+**Customize → Banner → Add slide**. Each slide has an image (and optionally a
+tall one for phones), a short label such as *New arrival* or *Offer*, a
+heading, a button and its link. Pick a **Fabric** on a slide and it fills
+whatever you leave empty — the fabric's photo, its name, its page, and its rate
+on the button if you tick that. Slides can be dragged into order, hidden with
+the eye icon and removed; a slide with no image and no fabric is skipped.
+
+With more than one slide the banner shows arrows and dots and, if
+**Move to the next slide by itself** is on, advances every few seconds
+(**Seconds per slide**). It pauses under the pointer, stops for good once a
+shopper uses a control, and never moves for someone whose device asks for
+reduced motion. With no slides at all it shows the newest fabric that has a
+photo, by itself.
+
+Slides live in this theme's homepage settings, so uploading a fresh theme ZIP
+starts with none. Set them up on the theme you publish, or carry them across by
+keeping that theme's `templates/index.json`.
+
+### The shelves
+
+The shelves read **newest first** by default, so a quality entered at the
+counter today is the first thing on the page. They have an **Order** setting if
+you would rather keep a collection's own order.
 
 Liquid hands a theme at most 50 products outside a paginated loop, so
 "newest first" is the newest of those 50. Past that size, point the section at

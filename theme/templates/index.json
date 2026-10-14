@@ -3,11 +3,11 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "eyebrow": "New this week",
-        "heading_tail": "cut to your metre",
-        "prefer_product_photo": true,
-        "empty_heading": "Wholesale cloth,",
-        "empty_body": "Cut fresh off the than at the wholesale rate, to the length you ask for. The counter is open \u2014 the catalog goes up here as stock lands."
+        "height": "medium",
+        "autoplay": true,
+        "speed": 5,
+        "eyebrow": "New arrival",
+        "empty_heading": "Wholesale cloth, cut to your metre"
       }
     },
     "qualities": {
@@ -30,7 +30,7 @@
       "type": "design-book-row",
       "settings": {
         "heading": "One design, many grounds",
-        "body": "The design book sits across qualities \u2014 pick the drawing first, then choose which cloth it should be printed on.",
+        "body": "",
         "count": 6,
         "link_label": "All designs"
       }
@@ -43,7 +43,7 @@
           "settings": {
             "eyebrow": "Wholesale rates on",
             "heading": "Slab pricing past 10 metres",
-            "body": "Cross the slab and the rate drops on the whole cut \u2014 no negotiation, the app shows it before you order."
+            "body": "The rate drops on the whole cut."
           }
         },
         "swatch": {
@@ -51,7 +51,7 @@
           "settings": {
             "eyebrow": "Swatch first",
             "heading": "Swatch before you commit",
-            "body": "Screen colour cannot be trusted. Order the shade card, hold it to your light, then order the than."
+            "body": "Order the shade card first."
           }
         },
         "cut": {
@@ -59,7 +59,7 @@
           "settings": {
             "eyebrow": "Cut to order",
             "heading": "Half-metre increments",
-            "body": "Cut fresh off the than, folded and dispatched the same evening from Kalbadevi."
+            "body": "Dispatched the same evening."
           }
         }
       },

@@ -166,6 +166,10 @@
     scrollbar-width: none; overscroll-behavior-x: contain;
   }
   .qualities-row::-webkit-scrollbar { display: none; }
+  /* a short row (two or three tiles) sits in the middle rather than hugging
+     the left; auto margins, unlike justify-content, never clip a long row */
+  .quality:first-child { margin-left: auto; }
+  .quality:last-child { margin-right: auto; }
 
   .quality {
     /* about four and a half tiles across the screen, whatever its width */

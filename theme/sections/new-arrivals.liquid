@@ -1,0 +1,283 @@
+{%- comment -%}
+  New Arrivals: the newest fabrics as a scrolling row of shop cards — photo,
+  a SAVE n% badge when the fabric carries a compare-at price, its name on two
+  lines, the struck old rate and the rate per metre, and a button.
+
+  Newest first, from the whole catalog or a chosen collection. "Only fabrics
+  that are still new" narrows it to those inside Theme settings → The counter →
+  New for, so the row empties itself as stock ages; off by default, so the row
+  is never blank.
+
+  The button adds the fabric's minimum cut (snippets/min-cut — the same floor
+  the fabric page and the cut list use) to the cart. A fabric sold in several
+  shades or designs cannot be added from a card without guessing the shade, so
+  its button says Choose shade and opens the fabric page instead. Without
+  JavaScript the add is a plain cart form; with it, the add happens in place,
+  the cart count updates, and a toast says what went in.
+
+  Styles and script live in this file, so it is one file to copy into a theme.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+
+  assign source = collections[section.settings.collection] | default: collections.all
+  assign items = source.products | sort: 'created_at' | reverse
+  assign limit = section.settings.count
+  assign shown = 0
+-%}
+<section class="arrivals" data-arrivals>
+  <div class="arrivals-head">
+    <h2>{{ section.settings.heading }}</h2>
+    {%- if section.settings.link_label != blank -%}
+      <a class="linkish" href="{{ section.settings.link | default: routes.all_products_collection_url }}{% if section.settings.link == blank %}?sort_by=created-descending{% endif %}">{{ section.settings.link_label }}</a>
+    {%- endif -%}
+  </div>
+
+  <div class="arrivals-wrap">
+    <div class="arrivals-row" data-arrivals-row>
+      {%- for product in items -%}
+        {%- if shown >= limit -%}{%- break -%}{%- endif -%}
+        {%- if product.available == false and section.settings.hide_sold_out -%}{%- continue -%}{%- endif -%}
+        {%- if section.settings.only_new -%}
+          {%- capture fresh -%}{%- render 'is-new', product: product -%}{%- endcapture -%}
+          {%- if fresh != 'new' -%}{%- continue -%}{%- endif -%}
+        {%- endif -%}
+        {%- liquid
+          assign shown = shown | plus: 1
+          assign variant = product.selected_or_first_available_variant
+          assign rate = product.price | times: factor | round
+          assign was = product.compare_at_price | times: factor | round
+          assign save = 0
+          if product.compare_at_price > product.price
+            assign off = product.compare_at_price | minus: product.price | times: 100.0
+            assign save = off | divided_by: product.compare_at_price | round
+          endif
+          capture units
+            render 'min-cut', variant: variant
+          endcapture
+          assign units = units | strip | times: 1
+          # 5.0 reads as 5, 2.5 stays 2.5
+          assign metres = units | times: unit | append: '' | remove: '.0'
+          assign load = 'lazy'
+          if forloop.first
+            assign load = 'eager'
+          endif
+        -%}
+        <article class="arrival">
+          <a class="arrival-photo" href="{{ product.url }}" tabindex="-1" aria-hidden="true">
+            {%- if product.featured_image -%}
+              {% render 'responsive-img', image: product.featured_image, alt: product.title, sizes: '(max-width: 700px) 62vw, (max-width: 1050px) 38vw, 20vw', loading: load %}
+            {%- else -%}
+              <span class="arrival-blank"></span>
+            {%- endif -%}
+            {%- if save > 0 -%}<span class="arrival-save">Save {{ save }}%</span>{%- endif -%}
+          </a>
+          <div class="arrival-body">
+            <h3><a href="{{ product.url }}">{{ product.title }}</a></h3>
+            <p class="arrival-price">
+              {%- if save > 0 -%}<s>{{ was | money_without_trailing_zeros }}</s>{%- endif -%}
+              <b>{{ rate | money_without_trailing_zeros }}</b><span>/meter</span>
+            </p>
+            {%- if product.available == false -%}
+              <span class="arrival-btn is-off">Sold out</span>
+            {%- elsif product.has_only_default_variant -%}
+              <form class="arrival-form" action="{{ routes.cart_add_url }}" method="post" data-arrival-add
+                    data-label="{{ metres }} m · {{ product.title | escape }}">
+                <input type="hidden" name="id" value="{{ variant.id }}">
+                <input type="hidden" name="quantity" value="{{ units }}">
+                <button type="submit" class="arrival-btn">{{ section.settings.button_label | default: 'Add to cart' }}</button>
+              </form>
+            {%- else -%}
+              <a class="arrival-btn" href="{{ product.url }}">{{ section.settings.choose_label | default: 'Choose shade' }}</a>
+            {%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+    <button type="button" class="arrivals-arrow prev" data-arrivals-prev aria-label="Scroll back" hidden>{% render 'icon', name: 'back', size: 18 %}</button>
+    <button type="button" class="arrivals-arrow next" data-arrivals-next aria-label="Scroll on" hidden>{% render 'icon', name: 'forward', size: 18 %}</button>
+  </div>
+
+  {%- if shown == 0 -%}
+    {%- comment -%} nothing qualifies: take the whole band away, heading and all {%- endcomment -%}
+    <style>#shopify-section-{{ section.id }} { display: none; }</style>
+  {%- endif -%}
+</section>
+
+<script>
+  (function () {
+    /* wire each row once, however many times this tag runs */
+    document.querySelectorAll('[data-arrivals]:not([data-wired])').forEach(function (host) {
+      host.setAttribute('data-wired', '');
+      var row = host.querySelector('[data-arrivals-row]');
+      var prev = host.querySelector('[data-arrivals-prev]');
+      var next = host.querySelector('[data-arrivals-next]');
+      if (row && prev && next) {
+        var step = function () { return Math.max(row.clientWidth * 0.8, 240); };
+        var update = function () {
+          prev.hidden = row.scrollLeft <= 2;
+          next.hidden = row.scrollLeft >= row.scrollWidth - row.clientWidth - 2;
+        };
+        prev.addEventListener('click', function () { row.scrollBy({ left: -step(), behavior: 'smooth' }); });
+        next.addEventListener('click', function () { row.scrollBy({ left: step(), behavior: 'smooth' }); });
+        row.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+      }
+
+      /* add in place; on any failure, let the form post as it would without JS */
+      host.querySelectorAll('[data-arrival-add]').forEach(function (form) {
+        form.addEventListener('submit', function (event) {
+          if (!window.fetch || !window.FormData) return;
+          event.preventDefault();
+          var button = form.querySelector('button');
+          button.disabled = true;
+          fetch('{{ routes.cart_add_url }}.js', {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            body: new FormData(form)
+          })
+            .then(function (response) {
+              if (!response.ok) throw response;
+              return fetch('{{ routes.cart_url }}.js', { headers: { 'Accept': 'application/json' } });
+            })
+            .then(function (response) { return response.json(); })
+            .then(function (cart) {
+              document.querySelectorAll('[data-cart-count]').forEach(function (pip) {
+                pip.textContent = cart.item_count;
+                pip.hidden = cart.item_count === 0;
+              });
+              var said = 'Added ' + form.getAttribute('data-label');
+              if (window.SF && window.SF.flash) window.SF.flash(said);
+              button.textContent = 'Added';
+              setTimeout(function () {
+                button.textContent = {{ section.settings.button_label | default: 'Add to cart' | json }};
+                button.disabled = false;
+              }, 1800);
+            })
+            .catch(function () {
+              button.disabled = false;
+              form.submit();
+            });
+        });
+      });
+    });
+  })();
+</script>
+
+{% stylesheet %}
+  .arrivals { padding: 60px 0 10px; }
+  .arrivals-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 30px; text-align: center; padding: 0 20px; }
+  .arrivals-head h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 4vw, 52px); line-height: 1.1; margin: 0; }
+
+  .arrivals-wrap { position: relative; }
+  /* the snap padding matches the side padding, or the row snaps in on load */
+  .arrivals-row {
+    --apad: 24px;
+    --agap: 22px;
+    display: flex; gap: var(--agap);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--apad);
+    padding: 4px var(--apad) 14px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .arrivals-row::-webkit-scrollbar { display: none; }
+  /* a short row sits in the middle rather than hugging the left */
+  .arrival:first-child { margin-left: auto; }
+  .arrival:last-child { margin-right: auto; }
+
+  .arrival {
+    /* five across on a wide screen */
+    flex: 0 0 calc((100vw - 2 * var(--apad) - 4 * var(--agap)) / 5);
+    scroll-snap-align: start;
+    display: flex; flex-direction: column;
+    background: #fff; border: 1px solid rgba(150, 112, 46, 0.22); border-radius: 12px; overflow: hidden;
+    box-shadow: 0 1px 2px rgba(20, 17, 15, 0.04);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .arrival:hover { box-shadow: 0 10px 28px rgba(20, 17, 15, 0.1); transform: translateY(-2px); }
+
+  .arrival-photo { position: relative; display: block; aspect-ratio: 5 / 7; background: var(--sand, #efe8dc); overflow: hidden; }
+  .arrival-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+  .arrival:hover .arrival-photo img { transform: scale(1.03); }
+  .arrival-blank { position: absolute; inset: 0; }
+  .arrival-save {
+    position: absolute; top: 14px; left: 12px;
+    background: #d91a1a; color: #fff; padding: 5px 9px 4px;
+    font-size: 12px; letter-spacing: 2.2px; text-transform: uppercase; line-height: 1;
+  }
+
+  .arrival-body { display: flex; flex-direction: column; flex: 1; padding: 20px 20px 22px; }
+  .arrival-body h3 {
+    margin: 0 0 12px; font-family: var(--sans, inherit); font-weight: 400; font-size: 16px; line-height: 1.45; color: var(--ink);
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em;
+  }
+  .arrival-price { margin: 0 0 22px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; color: var(--ink); }
+  .arrival-price s { font-size: 14px; color: var(--ink-70); }
+  .arrival-price b { font-size: 21px; font-weight: 600; }
+  .arrival-price span { font-size: 13px; color: var(--ink-70); margin-left: -6px; }
+
+  .arrival-form { margin-top: auto; }
+  .arrival-btn {
+    margin-top: auto; width: 100%;
+    display: flex; align-items: center; justify-content: center; min-height: 54px; padding: 0 14px;
+    background: #23202a; color: #fffdf8; border-radius: 9px;
+    font-size: 15px; letter-spacing: 2.4px; text-transform: uppercase; text-align: center;
+    transition: background 0.15s;
+  }
+  .arrival-form .arrival-btn { margin-top: 0; }
+  .arrival-btn:hover { background: #000; }
+  .arrival-btn:disabled { opacity: 0.7; }
+  .arrival-btn.is-off { background: transparent; color: var(--ink-70); border: 1px solid var(--line, rgba(20,17,15,.16)); }
+
+  .arrivals-arrow {
+    position: absolute; top: 34%; transform: translateY(-50%); z-index: 2;
+    width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
+    background: #14110f; color: #e8c98a; box-shadow: 0 4px 16px rgba(20, 17, 15, 0.25);
+  }
+  .arrivals-arrow[hidden] { display: none; }
+  .arrivals-arrow.prev { left: 40px; }
+  .arrivals-arrow.next { right: 40px; }
+
+  @media (max-width: 1280px) {
+    .arrival { flex-basis: calc((100vw - 2 * var(--apad) - 3 * var(--agap)) / 4); }
+  }
+  @media (max-width: 1050px) {
+    .arrival { flex-basis: calc((100vw - 2 * var(--apad) - 2 * var(--agap)) / 2.6); }
+  }
+  @media (max-width: 700px) {
+    .arrivals { padding-top: 44px; }
+    .arrivals-head { margin-bottom: 22px; }
+    .arrivals-row { --apad: 16px; --agap: 14px; }
+    .arrival { flex-basis: 62vw; }
+    .arrival-body { padding: 14px 14px 16px; }
+    .arrival-body h3 { font-size: 14px; }
+    .arrival-price b { font-size: 18px; }
+    .arrival-btn { min-height: 46px; font-size: 13px; letter-spacing: 1.6px; }
+    .arrivals-arrow { display: none; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "New Arrivals",
+  "settings": [
+    { "type": "text", "id": "heading", "label": "Heading", "default": "New Arrivals" },
+    { "type": "collection", "id": "collection", "label": "Fabrics from", "info": "Leave empty to use the whole catalog. Always newest first." },
+    { "type": "range", "id": "count", "label": "Fabrics", "min": 4, "max": 20, "step": 1, "default": 10 },
+    {
+      "type": "checkbox",
+      "id": "only_new",
+      "label": "Only fabrics that are still new",
+      "info": "Uses Theme settings → The counter → New for. The row hides itself when nothing is new.",
+      "default": false
+    },
+    { "type": "checkbox", "id": "hide_sold_out", "label": "Leave out sold-out fabrics", "default": true },
+    { "type": "text", "id": "button_label", "label": "Button text", "default": "Add to cart" },
+    { "type": "text", "id": "choose_label", "label": "Button text for fabrics with shades", "info": "These open the fabric page so the shopper can pick a shade.", "default": "Choose shade" },
+    { "type": "text", "id": "link_label", "label": "Link under the heading", "default": "View all" },
+    { "type": "url", "id": "link", "label": "Link", "info": "Leave empty for the catalog, newest first." }
+  ],
+  "presets": [{ "name": "New Arrivals" }]
+}
+{% endschema %}

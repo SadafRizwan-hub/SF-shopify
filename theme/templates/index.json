@@ -136,11 +136,24 @@
         "shipping",
         "returns"
       ]
+    },
+    "new-arrivals": {
+      "type": "new-arrivals",
+      "settings": {
+        "heading": "New Arrivals",
+        "count": 10,
+        "only_new": false,
+        "hide_sold_out": true,
+        "button_label": "Add to cart",
+        "choose_label": "Choose shade",
+        "link_label": "View all"
+      }
     }
   },
   "order": [
     "hero",
     "qualities",
+    "new-arrivals",
     "by-the-metre",
     "designs",
     "promise",

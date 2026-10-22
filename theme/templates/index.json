@@ -210,6 +210,14 @@
         "rating": "",
         "google_label": "Google Reviews"
       }
+    },
+    "view-shop": {
+      "type": "view-shop",
+      "settings": {
+        "eyebrow": "As seen on Instagram",
+        "heading": "View & Shop",
+        "subheading": "Watch the fabric move, then take it home."
+      }
     }
   },
   "order": [
@@ -218,6 +226,7 @@
     "new-arrivals",
     "by-the-metre",
     "why-buy",
+    "view-shop",
     "customer-love",
     "designs",
     "promise",

@@ -1,0 +1,284 @@
+{%- comment -%}
+  See before you stitch: the shop's fabrics shown made up — an outfit image
+  with a framed swatch of the real cloth on it, and the card opens that
+  fabric to buy.
+
+  Each card is a block (Customize → Finished looks → Add look): the outfit
+  image (generated or photographed by the shop and uploaded here — the theme
+  does not make them), the fabric it is made from, an optional swatch picture
+  (else the fabric's own photo), a title such as "Fabric to Indo-Western" and
+  a line under it. The card opens the fabric, or a page of the shop's choosing.
+
+  The corner badge says what the picture is. It defaults to "AI preview",
+  because a generated outfit is not a garment the shop sells or has made, and
+  the shopper should not have to guess; the shop can reword it, and can
+  switch it off for a card that is a real photograph.
+
+  Three across on a wide screen, two on a tablet, one and a bit on a phone,
+  with arrows and dots. With no looks the section is off the live site and
+  shows outlined placeholders in the theme editor. Styles and script live in
+  this file.
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign factor = 1 | divided_by: unit
+  assign looks = section.blocks | where: 'type', 'look'
+  assign shown = 0
+  for block in looks
+    if block.settings.image != blank
+      assign shown = shown | plus: 1
+    endif
+  endfor
+-%}
+{%- if shown > 0 or request.design_mode -%}
+<section class="flook" data-flook>
+  <div class="flook-head">
+    {%- if section.settings.eyebrow != blank -%}<p class="flook-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+    <h2>{{ section.settings.heading }}</h2>
+    {%- if section.settings.subheading != blank -%}<p class="flook-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+  </div>
+
+  <div class="flook-wrap">
+    <div class="flook-row" data-flook-row>
+      {%- if shown > 0 -%}
+        {%- for block in looks -%}
+          {%- if block.settings.image == blank -%}{%- continue -%}{%- endif -%}
+          {%- liquid
+            assign fabric = block.settings.product
+            assign swatch = block.settings.swatch | default: fabric.featured_image
+            assign href = block.settings.link | default: fabric.url
+            assign badge = section.settings.badge
+            if block.settings.real_photo
+              assign badge = section.settings.badge_real
+            endif
+          -%}
+          <article class="flook-card" {{ block.shopify_attributes }}>
+            {%- if href != blank -%}<a class="flook-link" href="{{ href }}" aria-label="{{ block.settings.title | default: fabric.title | escape }}{% if fabric != blank %} — shop {{ fabric.title | escape }}{% endif %}"></a>{%- endif -%}
+            <div class="flook-photo">
+              {% render 'responsive-img', image: block.settings.image, alt: block.settings.title, sizes: '(max-width: 700px) 84vw, (max-width: 1100px) 46vw, 30vw' %}
+              {%- if badge != blank -%}<span class="flook-badge">{{ badge }}</span>{%- endif -%}
+              {%- if swatch != blank -%}
+                <span class="flook-swatch">
+                  {% render 'responsive-img', image: swatch, alt: fabric.title, sizes: '160px' %}
+                  <span class="flook-tag">{{ section.settings.swatch_label | default: 'Fabric' }}</span>
+                </span>
+              {%- endif -%}
+            </div>
+            <div class="flook-body">
+              {%- if block.settings.title != blank -%}<h3>{{ block.settings.title }}</h3>{%- endif -%}
+              {%- assign line = block.settings.text | default: section.settings.default_text -%}
+              {%- if line != blank -%}<p class="flook-line">{{ line }}</p>{%- endif -%}
+              {%- if fabric != blank -%}
+                <p class="flook-fabric">
+                  <span>{{ fabric.title }}</span>
+                  <b>{{ fabric.price | times: factor | round | money_without_trailing_zeros }}<i>/meter</i></b>
+                </p>
+              {%- endif -%}
+            </div>
+          </article>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..3) -%}
+          <div class="flook-card flook-empty"><span>Add a look<br><small>Customize → Finished looks → Add look</small></span></div>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+    <button type="button" class="flook-arrow prev" data-flook-prev aria-label="Previous looks">{% render 'icon', name: 'back', size: 18 %}</button>
+    <button type="button" class="flook-arrow next" data-flook-next aria-label="More looks">{% render 'icon', name: 'forward', size: 18 %}</button>
+  </div>
+  <div class="flook-dots" data-flook-dots aria-hidden="true"></div>
+</section>
+
+<script>
+  (function () {
+    document.querySelectorAll('[data-flook]:not([data-wired])').forEach(function (host) {
+      host.setAttribute('data-wired', '');
+      var row = host.querySelector('[data-flook-row]');
+      var prev = host.querySelector('[data-flook-prev]');
+      var next = host.querySelector('[data-flook-next]');
+      var dotsBox = host.querySelector('[data-flook-dots]');
+      if (!row) return;
+      var cards = [].slice.call(row.children);
+
+      /* one dot per stop: the first card of each screenful the row can show */
+      var stops = [];
+      function build() {
+        var max = row.scrollWidth - row.clientWidth;
+        stops = [];
+        cards.forEach(function (card) {
+          var at = Math.min(card.offsetLeft - cards[0].offsetLeft, max);
+          if (!stops.length || at - stops[stops.length - 1] > 4) stops.push(at);
+        });
+        dotsBox.innerHTML = '';
+        if (stops.length < 2) return;
+        stops.forEach(function (at, i) {
+          var dot = document.createElement('button');
+          dot.type = 'button';
+          dot.tabIndex = -1;
+          dot.className = 'flook-dot';
+          dot.addEventListener('click', function () { row.scrollTo({ left: at, behavior: 'smooth' }); });
+          dotsBox.appendChild(dot);
+        });
+      }
+      function update() {
+        var max = row.scrollWidth - row.clientWidth;
+        prev.disabled = row.scrollLeft <= 2;
+        next.disabled = row.scrollLeft >= max - 2;
+        prev.hidden = next.hidden = max <= 2;
+        var nearest = 0, best = Infinity;
+        stops.forEach(function (at, i) { var d = Math.abs(at - row.scrollLeft); if (d < best) { best = d; nearest = i; } });
+        [].forEach.call(dotsBox.children, function (dot, i) { dot.classList.toggle('on', i === nearest); });
+      }
+      function step(dir) {
+        var card = cards[0];
+        var by = card ? card.getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0) : row.clientWidth * 0.8;
+        row.scrollBy({ left: dir * by, behavior: 'smooth' });
+      }
+      prev.addEventListener('click', function () { step(-1); });
+      next.addEventListener('click', function () { step(1); });
+      row.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', function () { build(); update(); });
+      build();
+      update();
+    });
+  })();
+</script>
+{%- endif -%}
+
+{% stylesheet %}
+  .flook { padding: 70px 0 40px; }
+  .flook-head { padding: 0 24px; margin-bottom: 28px; }
+  .flook-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .flook-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; color: var(--ink); }
+  .flook-sub { margin: 12px 0 0; font-size: 17px; color: var(--ink-70); }
+
+  .flook-wrap { position: relative; padding: 0 84px; }
+  .flook-row {
+    --fgap: 28px;
+    display: flex; gap: var(--fgap);
+    overflow-x: auto; scroll-snap-type: x mandatory;
+    padding: 4px 2px 20px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .flook-row::-webkit-scrollbar { display: none; }
+  /* a short row sits in the middle */
+  .flook-card:first-child { margin-left: auto; }
+  .flook-card:last-child { margin-right: auto; }
+
+  .flook-card {
+    position: relative; flex: 0 0 calc((100% - 2 * var(--fgap)) / 3);
+    scroll-snap-align: start; display: flex; flex-direction: column;
+    background: #fff; border: 1px solid rgba(150, 112, 46, 0.18); border-radius: 18px; overflow: hidden;
+    box-shadow: 0 14px 30px -20px rgba(20, 17, 15, 0.3);
+    transition: box-shadow 0.2s, transform 0.2s;
+  }
+  .flook-card:hover { transform: translateY(-3px); box-shadow: 0 20px 36px -20px rgba(20, 17, 15, 0.38); }
+  .flook-link { position: absolute; inset: 0; z-index: 3; border-radius: inherit; }
+
+  .flook-photo { position: relative; aspect-ratio: 6 / 7; background: var(--sand, #efe8dc); overflow: hidden; }
+  .flook-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
+  .flook-card:hover .flook-photo > img { transform: scale(1.03); }
+  .flook-badge {
+    position: absolute; top: 16px; right: 16px; z-index: 1;
+    padding: 7px 13px; border-radius: 8px; background: rgba(20, 17, 15, 0.72); color: #fffdf8;
+    font-size: 12px; font-weight: 600; letter-spacing: 2.2px; text-transform: uppercase;
+  }
+  .flook-swatch {
+    position: absolute; left: 4%; top: 34%; z-index: 1; width: 28%; aspect-ratio: 3 / 4;
+    border: 4px solid #fff; border-radius: 14px; overflow: hidden; background: var(--sand, #efe8dc);
+    box-shadow: 0 8px 22px rgba(20, 17, 15, 0.3);
+  }
+  .flook-swatch img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .flook-tag {
+    position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 6px;
+    background: #2f5a3c; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+  }
+
+  .flook-body { padding: 18px 22px 22px; text-align: center; }
+  .flook-body h3 { margin: 0 0 6px; font-family: var(--sans, inherit); font-weight: 400; font-size: clamp(19px, 1.5vw, 24px); color: var(--ink); }
+  .flook-line { margin: 0; font-size: 15.5px; color: var(--ink-70); }
+  .flook-fabric {
+    margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(150, 112, 46, 0.15);
+    display: flex; justify-content: center; align-items: baseline; gap: 10px; font-size: 14px; color: var(--ink-70);
+  }
+  .flook-fabric span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .flook-fabric b { color: var(--ink); font-size: 15px; white-space: nowrap; }
+  .flook-fabric i { font-style: normal; font-weight: 400; font-size: 12.5px; color: var(--ink-70); }
+
+  .flook-empty {
+    display: grid; place-items: center; text-align: center; aspect-ratio: 6 / 8.4;
+    border: 1.5px dashed rgba(150, 112, 46, 0.45); background: rgba(239, 232, 220, 0.5); box-shadow: none;
+    color: var(--ink-70); font-size: 15px; line-height: 1.5;
+  }
+  .flook-empty small { font-size: 12px; color: var(--ink-45, rgba(20,17,15,.45)); }
+
+  .flook-arrow {
+    position: absolute; top: 44%; transform: translateY(-50%);
+    width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
+    background: #fff; color: var(--ink); box-shadow: 0 4px 18px rgba(20, 17, 15, 0.14);
+    transition: opacity 0.2s;
+  }
+  .flook-arrow[hidden] { display: none; }
+  .flook-arrow:disabled { opacity: 0.4; cursor: default; }
+  .flook-arrow.prev { left: 14px; }
+  .flook-arrow.next { right: 14px; }
+
+  .flook-dots { display: flex; justify-content: center; gap: 8px; margin-top: 6px; min-height: 8px; }
+  .flook-dot { width: 8px; height: 8px; padding: 0; border-radius: 999px; background: rgba(20, 17, 15, 0.2); transition: width 0.2s, background 0.2s; }
+  .flook-dot.on { width: 28px; background: var(--brass, #96702e); }
+
+  @media (max-width: 1100px) {
+    .flook-wrap { padding: 0 24px; }
+    .flook-card { flex-basis: calc((100% - var(--fgap)) / 2); }
+    .flook-arrow { display: none; }
+  }
+  @media (max-width: 700px) {
+    .flook { padding: 50px 0 30px; }
+    .flook-head { padding: 0 16px; margin-bottom: 20px; }
+    .flook-wrap { padding: 0 16px; }
+    .flook-row { --fgap: 14px; }
+    .flook-card { flex-basis: 84%; }
+    .flook-badge { top: 10px; right: 10px; font-size: 10.5px; padding: 5px 9px; }
+    .flook-swatch { border-width: 3px; border-radius: 10px; }
+    .flook-tag { font-size: 10.5px; left: 6px; bottom: 6px; }
+    .flook-line { font-size: 14px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Finished looks",
+  "max_blocks": 16,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "See before you stitch" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Your fabric, as a finished look" },
+    { "type": "text", "id": "subheading", "label": "Line under the heading (optional)" },
+    {
+      "type": "text",
+      "id": "badge",
+      "label": "Badge on the outfit",
+      "default": "AI preview",
+      "info": "Tells shoppers the outfit is an illustration, not a garment we sell. Leave empty to hide."
+    },
+    { "type": "text", "id": "badge_real", "label": "Badge on real photos", "default": "Real look", "info": "Used on looks marked as a real photo. Leave empty to hide." },
+    { "type": "text", "id": "swatch_label", "label": "Swatch label", "default": "Fabric" },
+    { "type": "text", "id": "default_text", "label": "Line under each title", "default": "Shown to you in minutes, in store" }
+  ],
+  "blocks": [
+    {
+      "type": "look",
+      "name": "Look",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Outfit image", "info": "Portrait, about 6:7. The AI-made outfit (or a real photo)." },
+        { "type": "product", "id": "product", "label": "Fabric it is made from", "info": "Its photo becomes the swatch, its name and rate show under the card, and the card opens it." },
+        { "type": "image_picker", "id": "swatch", "label": "Swatch picture (optional)", "info": "Leave empty to use the fabric's own photo." },
+        { "type": "text", "id": "title", "label": "Title", "default": "Fabric to Indo-Western" },
+        { "type": "text", "id": "text", "label": "Line under the title (optional)", "info": "Leave empty to use the section's line." },
+        { "type": "url", "id": "link", "label": "Or open this page instead (optional)" },
+        { "type": "checkbox", "id": "real_photo", "label": "This is a real photo, not AI-made", "default": false }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Finished looks" }]
+}
+{% endschema %}

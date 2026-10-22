@@ -324,6 +324,17 @@
         "shipping",
         "returns"
       ]
+    },
+    "looks": {
+      "type": "finished-look",
+      "settings": {
+        "eyebrow": "See before you stitch",
+        "heading": "Your fabric, as a finished look",
+        "badge": "AI preview",
+        "badge_real": "Real look",
+        "swatch_label": "Fabric",
+        "default_text": "Shown to you in minutes, in store"
+      }
     }
   },
   "order": [
@@ -337,6 +348,7 @@
     "view-shop",
     "customer-love",
     "designs",
+    "looks",
     "promise",
     "why"
   ]

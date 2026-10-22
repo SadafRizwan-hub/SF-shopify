@@ -21,8 +21,8 @@
       "type": "featured-fabrics",
       "settings": {
         "heading": "By the metre",
-        "count": 8,
-        "columns": 4,
+        "count": 10,
+        "columns": 5,
         "link_label": "See all"
       }
     },
@@ -148,6 +148,58 @@
         "choose_label": "Choose shade",
         "link_label": "View all"
       }
+    },
+    "why-buy": {
+      "type": "why-buy",
+      "settings": {
+        "eyebrow": "Our promise to you",
+        "heading": "Buy fabric",
+        "heading_accent": "without the worry"
+      },
+      "blocks": {
+        "loved": {
+          "type": "card",
+          "settings": {
+            "icon": "heart",
+            "title": "Loved by",
+            "title_accent": "our customers",
+            "text": "Trusted by families across India."
+          }
+        },
+        "quality": {
+          "type": "card",
+          "settings": {
+            "icon": "shield",
+            "title": "Quality",
+            "title_accent": "checked",
+            "text": "Every metre is checked before we cut and pack it."
+          }
+        },
+        "shipped": {
+          "type": "card",
+          "settings": {
+            "icon": "truck",
+            "title": "Cut & shipped",
+            "title_accent": "in 24–48h",
+            "text": "Carefully packed and shipped anywhere in India."
+          }
+        },
+        "secure": {
+          "type": "card",
+          "settings": {
+            "icon": "lock",
+            "title": "Secure",
+            "title_accent": "payments",
+            "text": "Pay by UPI, card or net banking."
+          }
+        }
+      },
+      "block_order": [
+        "loved",
+        "quality",
+        "shipped",
+        "secure"
+      ]
     }
   },
   "order": [
@@ -155,6 +207,7 @@
     "qualities",
     "new-arrivals",
     "by-the-metre",
+    "why-buy",
     "designs",
     "promise",
     "why"

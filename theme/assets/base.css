@@ -662,6 +662,13 @@ body.drawer-open { overflow: hidden; }
 .herodot.on { width: 22px; background: #fffdf8; }
 
 .homeband { padding: 54px 20px 0; }
+/* Homepage bands run the full width with the same 24px edge as the banner,
+   Shop By Fabric and New Arrivals rows, rather than sitting in the 1240px
+   page shell with a wide margin either side on a large screen. */
+.shell.homeband { max-width: none; padding-inline: 24px; }
+@media (min-width: 1400px) { .homeband .designrow { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1051px) and (max-width: 1280px) { .homeband .grid[style*="--cols: 5"] { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 700px) { .shell.homeband { padding-inline: 16px; } }
 .head {
   display: flex; align-items: baseline; justify-content: space-between;
   gap: 16px; margin-bottom: 20px;

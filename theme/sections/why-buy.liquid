@@ -1,0 +1,174 @@
+{%- comment -%}
+  Why Buy From Us: four photo cards under a small eyebrow, a rule with a
+  heart, and a heading whose second half is set in italic brass ("Buy fabric
+  without the worry").
+
+  Each card is a block (Customize → Why Buy From Us → Add card): a photo, a
+  round icon badge sitting on the photo's lower edge, a two-line title in bold
+  capitals (the second line in brass) and a line of text. Every word is the
+  counter's to write — the defaults are neutral placeholders, and numbers
+  ("1 lakh+ families", "30 years") belong here only if they are the shop's
+  own. A card with no photo shows a plain sand frame until one is added.
+
+  Four across on a wide screen, two on a tablet, one under another on a
+  phone. Styles live in this file, so it is one file to copy into a theme.
+{%- endcomment -%}
+{%- assign cards = section.blocks | where: 'type', 'card' -%}
+{%- if cards.size > 0 -%}
+  <section class="whybuy">
+    <div class="whybuy-head">
+      {%- if section.settings.eyebrow != blank -%}<p class="whybuy-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <span class="whybuy-rule" aria-hidden="true">{% render 'icon', name: 'heart', size: 15 %}</span>
+      <h2>
+        {{- section.settings.heading -}}
+        {%- if section.settings.heading_accent != blank %} <em>{{ section.settings.heading_accent }}</em>{% endif -%}
+      </h2>
+    </div>
+
+    <div class="whybuy-row" style="--whybuy-cols: {{ cards.size | at_most: 4 }};">
+      {%- for block in cards -%}
+        <article class="whybuy-card" {{ block.shopify_attributes }}>
+          <div class="whybuy-photo">
+            {%- if block.settings.image != blank -%}
+              {% render 'responsive-img', image: block.settings.image, alt: block.settings.image.alt, sizes: '(max-width: 700px) 92vw, (max-width: 1100px) 46vw, 25vw' %}
+            {%- endif -%}
+          </div>
+          <span class="whybuy-badge" aria-hidden="true">
+            {%- case block.settings.icon -%}
+              {%- when 'heart' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M12 20.3 4.6 13a4.6 4.6 0 0 1 6.5-6.5L12 7.4l.9-.9A4.6 4.6 0 0 1 19.4 13Z"/></svg>
+              {%- when 'shield' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M12 3 5 6v5.5c0 4.4 3 8 7 9.5 4-1.5 7-5.1 7-9.5V6z"/><path d="m8.8 12.2 2.3 2.3 4.2-4.6"/></svg>
+              {%- when 'truck' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3.2v2.8h-7"/><circle cx="6.5" cy="17" r="1.8"/><circle cx="17" cy="17" r="1.8"/></svg>
+              {%- when 'lock' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><rect x="5" y="10.5" width="14" height="10" rx="2.2"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/></svg>
+              {%- when 'scissors' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><circle cx="6.5" cy="7" r="2.6"/><circle cx="6.5" cy="17" r="2.6"/><path d="M8.8 8.4 19.5 17M8.8 15.6 19.5 7"/></svg>
+              {%- when 'return' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M4.5 8.5h10a5 5 0 0 1 0 10h-6"/><path d="M8 5 4.5 8.5 8 12"/></svg>
+              {%- when 'star' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="m12 3.6 2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8Z"/></svg>
+              {%- when 'chat' -%}
+                <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"><path d="M4 5.5h16v10.5H9.5L5.5 19.5V16H4z"/><path d="M8 9.5h8M8 12.5h5"/></svg>
+            {%- endcase -%}
+          </span>
+          <div class="whybuy-body">
+            <h3>
+              {{- block.settings.title -}}
+              {%- if block.settings.title_accent != blank %}<br><span>{{ block.settings.title_accent }}</span>{% endif -%}
+            </h3>
+            {%- if block.settings.text != blank -%}<p>{{ block.settings.text }}</p>{%- endif -%}
+          </div>
+        </article>
+      {%- endfor -%}
+    </div>
+  </section>
+{%- endif -%}
+
+{% stylesheet %}
+  .whybuy { padding: 70px 24px 40px; }
+  .whybuy-head { display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 44px; }
+  .whybuy-eyebrow {
+    margin: 0 0 12px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase;
+    color: var(--brass, #96702e);
+  }
+  .whybuy-rule { display: flex; align-items: center; gap: 14px; color: var(--brass, #96702e); margin-bottom: 14px; }
+  .whybuy-rule::before, .whybuy-rule::after { content: ''; width: 64px; height: 1px; background: currentColor; opacity: 0.45; }
+  .whybuy-head h2 {
+    margin: 0; font-family: var(--serif); font-weight: 400;
+    font-size: clamp(32px, 4.4vw, 58px); line-height: 1.1; color: var(--ink);
+  }
+  .whybuy-head h2 em { font-style: italic; color: var(--brass, #96702e); }
+
+  .whybuy-row {
+    display: grid; gap: 30px;
+    grid-template-columns: repeat(var(--whybuy-cols, 4), minmax(0, 1fr));
+    /* full width, the same 24px edge as the other homepage rows */
+  }
+  .whybuy-card {
+    position: relative; display: flex; flex-direction: column;
+    background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 18px; overflow: hidden;
+    box-shadow: 0 14px 30px -18px rgba(20, 17, 15, 0.22);
+  }
+  .whybuy-photo { position: relative; aspect-ratio: 5 / 4; background: var(--sand, #efe8dc); }
+  .whybuy-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .whybuy-badge {
+    position: relative; z-index: 1; align-self: center; margin-top: -42px;
+    width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center;
+    background: #fbf6ec; color: var(--brass, #96702e);
+    border: 1px solid rgba(150, 112, 46, 0.25); box-shadow: 0 6px 16px -8px rgba(20, 17, 15, 0.3);
+  }
+  .whybuy-badge svg { width: 34px; height: 34px; }
+  .whybuy-body { padding: 16px 22px 30px; text-align: center; }
+  .whybuy-body h3 {
+    margin: 0 0 12px; font-family: var(--sans, inherit); font-weight: 700;
+    font-size: clamp(17px, 1.35vw, 21px); line-height: 1.25; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink);
+  }
+  .whybuy-body h3 span { color: var(--brass, #96702e); }
+  .whybuy-body p { margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-70); }
+
+  @media (max-width: 1100px) {
+    .whybuy-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  }
+  @media (max-width: 700px) {
+    .whybuy { padding: 50px 16px 30px; }
+    .whybuy-head { margin-bottom: 30px; }
+    .whybuy-row { grid-template-columns: 1fr; gap: 22px; }
+    .whybuy-photo { aspect-ratio: 16 / 10; }
+    .whybuy-badge { width: 72px; height: 72px; margin-top: -36px; }
+    .whybuy-badge svg { width: 30px; height: 30px; }
+    .whybuy-body p { font-size: 15px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Why Buy From Us",
+  "max_blocks": 8,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "Our promise to you" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Buy fabric" },
+    { "type": "text", "id": "heading_accent", "label": "Heading, italic part", "default": "without the worry" }
+  ],
+  "blocks": [
+    {
+      "type": "card",
+      "name": "Card",
+      "settings": [
+        { "type": "image_picker", "id": "image", "label": "Photo", "info": "Landscape, about 5:4. Use your own photos." },
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "default": "heart",
+          "options": [
+            { "value": "heart", "label": "Heart" },
+            { "value": "shield", "label": "Shield with tick" },
+            { "value": "truck", "label": "Delivery truck" },
+            { "value": "lock", "label": "Lock" },
+            { "value": "scissors", "label": "Scissors" },
+            { "value": "return", "label": "Return arrow" },
+            { "value": "star", "label": "Star" },
+            { "value": "chat", "label": "Chat" }
+          ]
+        },
+        { "type": "text", "id": "title", "label": "Title, first line", "default": "Loved by" },
+        { "type": "text", "id": "title_accent", "label": "Title, second line (brass)", "default": "our customers" },
+        { "type": "textarea", "id": "text", "label": "Text", "default": "Trusted by families across India." }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Why Buy From Us",
+      "blocks": [
+        { "type": "card", "settings": { "icon": "heart", "title": "Loved by", "title_accent": "our customers", "text": "Trusted by families across India." } },
+        { "type": "card", "settings": { "icon": "shield", "title": "Quality", "title_accent": "checked", "text": "Every metre is checked before we cut and pack it." } },
+        { "type": "card", "settings": { "icon": "truck", "title": "Cut & shipped", "title_accent": "in 24–48h", "text": "Carefully packed and shipped anywhere in India." } },
+        { "type": "card", "settings": { "icon": "lock", "title": "Secure", "title_accent": "payments", "text": "Pay by UPI, card or net banking." } }
+      ]
+    }
+  ]
+}
+{% endschema %}

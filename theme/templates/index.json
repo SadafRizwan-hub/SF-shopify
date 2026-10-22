@@ -218,6 +218,48 @@
         "heading": "View & Shop",
         "subheading": "Watch the fabric move, then take it home."
       }
+    },
+    "highlights": {
+      "type": "insta-highlights",
+      "settings": {
+        "heading": ""
+      },
+      "blocks": {
+        "bestsellers": {
+          "type": "highlight",
+          "settings": {
+            "icon": "bestseller",
+            "label": "Bestsellers"
+          }
+        },
+        "reviews": {
+          "type": "highlight",
+          "settings": {
+            "icon": "reviews",
+            "label": "Reviews"
+          }
+        },
+        "wa": {
+          "type": "highlight",
+          "settings": {
+            "icon": "whatsapp",
+            "label": "WA"
+          }
+        },
+        "faqs": {
+          "type": "highlight",
+          "settings": {
+            "icon": "faq",
+            "label": "FAQs"
+          }
+        }
+      },
+      "block_order": [
+        "bestsellers",
+        "reviews",
+        "wa",
+        "faqs"
+      ]
     }
   },
   "order": [
@@ -226,6 +268,7 @@
     "new-arrivals",
     "by-the-metre",
     "why-buy",
+    "highlights",
     "view-shop",
     "customer-love",
     "designs",

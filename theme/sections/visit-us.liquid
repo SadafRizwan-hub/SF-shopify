@@ -33,7 +33,8 @@
 
   <div class="visit-photo">
     {%- if section.settings.image != blank -%}
-      {% render 'responsive-img', image: section.settings.image, alt: section.settings.image.alt | default: shop.name, sizes: '100vw' %}
+      {%- assign photo_alt = section.settings.image.alt | default: shop.name -%}
+      {% render 'responsive-img', image: section.settings.image, alt: photo_alt, sizes: '100vw' %}
     {%- elsif request.design_mode -%}
       <span class="visit-empty">Add a photo of your shop<br><small>Customize → Visit us → Shop photo</small></span>
     {%- endif -%}

@@ -27,7 +27,9 @@
         <span class="hilite-ring">
           <span class="hilite-disc">
             {%- if block.settings.image != blank -%}
-              {{ block.settings.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', class: 'hilite-img' }}
+              {%- assign focus = block.settings.image.presentation.focal_point | default: 'center' -%}
+              {%- assign focus_style = 'object-position: ' | append: focus -%}
+              {{ block.settings.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', class: 'hilite-img', style: focus_style }}
             {%- else -%}
               {%- case block.settings.icon -%}
                 {%- when 'bestseller' -%}

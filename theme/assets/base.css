@@ -612,6 +612,12 @@ body.drawer-open { overflow: hidden; }
 .hero { position: relative; overflow: hidden; background: var(--ink); --hero-h: 520px; }
 .hero--small { --hero-h: 400px; }
 .hero--large { --hero-h: 640px; }
+/* Fit to image: the slide takes the photo's own shape, so nothing is cut off.
+   It never grows past the screen on a desktop; there the focal point set in
+   Shopify decides what stays in view. */
+.hero--adapt { --hero-h: 0px; }
+.hero--adapt .slide { aspect-ratio: var(--hero-ratio, 2.4); max-height: calc(100vh - 90px); }
+.hero--adapt .slide.bare { aspect-ratio: auto; }
 .hero .slides {
   display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
   scrollbar-width: none; overscroll-behavior-x: contain;
@@ -765,6 +771,8 @@ body.drawer-open { overflow: hidden; }
   .hero { --hero-h: 440px; }
   .hero--small { --hero-h: 340px; }
   .hero--large { --hero-h: 540px; }
+  .hero--adapt { --hero-h: 0px; }
+  .hero--adapt .slide { aspect-ratio: var(--hero-ratio-m, var(--hero-ratio, 0.8)); max-height: none; }
   .hero .copy { padding-top: 60px; padding-bottom: 52px; }
   .hero .cta .btn { flex: 1; min-width: 0; }
   .hero .slide img.narrow { display: block; }

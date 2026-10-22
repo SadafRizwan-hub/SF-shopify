@@ -51,8 +51,29 @@
 
   assign height = section.settings.height | default: 'medium'
   assign drawn = 0
+
+  # "Fit to image": the banner takes the shape of the first slide's photo,
+  # and on a phone the shape of its phone photo, so nothing is cropped. Every
+  # slide shares that one shape, so the carousel never jumps in height.
+  assign ratio = ''
+  assign ratio_m = ''
+  if shown > 0
+    for block in slides
+      assign pic = block.settings.image | default: block.settings.product.featured_image
+      if pic != blank
+        assign ratio = pic.aspect_ratio
+        assign mpic = block.settings.image_mobile | default: pic
+        assign ratio_m = mpic.aspect_ratio
+        break
+      endif
+    endfor
+  elsif lead.featured_image
+    assign ratio = lead.featured_image.aspect_ratio
+    assign ratio_m = ratio
+  endif
 -%}
 <section class="hero hero--{{ height }}" data-hero
+  {%- if height == 'adapt' and ratio != blank %} style="--hero-ratio: {{ ratio }}; --hero-ratio-m: {{ ratio_m }};"{% endif %}
   {%- if shown > 1 and section.settings.autoplay %} data-autoplay="{{ section.settings.speed | times: 1000 }}"{% endif %}
   aria-roledescription="carousel" aria-label="{{ section.settings.label | default: 'Featured fabrics' | escape }}">
 
@@ -73,6 +94,8 @@
           endif
           # the first slide is the one seen on arrival: its photo loads at
           # once and its heading is the page's h1; the rest wait their turn
+          # render arguments take plain values, never filters: work the alt out here
+          assign slide_alt = heading | default: shop.name
           assign drawn = drawn | plus: 1
           assign load = 'lazy'
           assign priority = ''
@@ -87,7 +110,7 @@
              role="group" aria-roledescription="slide" aria-label="{{ drawn }} of {{ shown }}">
           {% render 'responsive-img',
             image: picture,
-            alt: heading | default: shop.name,
+            alt: slide_alt,
             sizes: '100vw',
             loading: load,
             fetchpriority: priority,
@@ -95,7 +118,7 @@
           {%- if block.settings.image_mobile != blank -%}
             {% render 'responsive-img',
               image: block.settings.image_mobile,
-              alt: heading | default: shop.name,
+              alt: slide_alt,
               sizes: '100vw',
               loading: 'lazy',
               class: 'narrow' %}
@@ -181,8 +204,10 @@
       "type": "select",
       "id": "height",
       "label": "Banner height",
-      "default": "medium",
+      "default": "adapt",
+      "info": "Fit to image shows the whole photo, cropping nothing — use photos of the same size on every slide. The fixed heights crop the photo to fill the banner; set each image's focal point in Shopify to choose what stays in view.",
       "options": [
+        { "value": "adapt", "label": "Fit to image (no cropping)" },
         { "value": "small", "label": "Small" },
         { "value": "medium", "label": "Medium" },
         { "value": "large", "label": "Large" }

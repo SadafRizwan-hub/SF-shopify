@@ -3,7 +3,7 @@
     "hero": {
       "type": "hero",
       "settings": {
-        "height": "medium",
+        "height": "adapt",
         "autoplay": true,
         "speed": 5,
         "eyebrow": "New arrival",

@@ -1,6 +1,11 @@
 {%- comment -%}
   One <img>, with a srcset that never asks for a width the source does not
-  have.
+  have, and the image's focal point.
+
+  Wherever a frame crops a picture (object-fit: cover), the crop centres on
+  the focal point the shop sets on the image in Shopify (Content → Files, or
+  the image picker → Edit → focal point), so faces and motifs stay in view
+  instead of the middle of the picture winning by default.
 
   image_tag's `widths` is the tidy way to do this until someone uploads a
   photograph smaller than the widths asked for, at which point Liquid prints an
@@ -39,5 +44,6 @@
     height="{{ image.height }}"
     loading="{{ loading }}"
     {% if fetchpriority != blank %}fetchpriority="{{ fetchpriority }}"{% endif %}
+    {% if image.presentation.focal_point != blank %}style="object-position: {{ image.presentation.focal_point }};"{% endif %}
   >
 {%- endif -%}

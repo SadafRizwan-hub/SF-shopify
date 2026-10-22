@@ -380,6 +380,21 @@ Slides live in this theme's homepage settings, so uploading a fresh theme ZIP
 starts with none. Set them up on the theme you publish, or carry them across by
 keeping that theme's `templates/index.json`.
 
+### Images that fit
+
+- **Banner height → Fit to image** (the default) gives the banner the shape
+  of the first slide's photo, and on a phone the shape of its phone photo,
+  so nothing is cropped. Use photos of one size for every slide. On a desktop
+  the banner stops at the screen's height.
+- Everywhere a frame crops a picture (tiles, cards, reels, the banner at a
+  fixed height), the crop centres on the image's **focal point**: in Shopify
+  open the image (Content → Files, or the image picker → Edit) and click the
+  part that must stay in view.
+- Recommended uploads: banner 2400 × 1000 (phone banner 1080 × 1350),
+  Shop By Fabric tiles 1200 × 1200, Why Buy From Us 1600 × 1000, Finished
+  looks 1200 × 1500, View & Shop reels 1080 × 1920, Visit us 2400 × 900,
+  product photos 2000 × 2500.
+
 ### Why shop with us
 
 The row of promises at the foot of the homepage — *Made in India*, *Assured

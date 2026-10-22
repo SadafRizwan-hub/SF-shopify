@@ -200,6 +200,16 @@
         "shipped",
         "secure"
       ]
+    },
+    "customer-love": {
+      "type": "customer-love",
+      "settings": {
+        "eyebrow": "Happy customers",
+        "heading": "Loved by customers across India",
+        "subheading": "Real outfits, made from fabric off our shelves.",
+        "rating": "",
+        "google_label": "Google Reviews"
+      }
     }
   },
   "order": [
@@ -208,6 +218,7 @@
     "new-arrivals",
     "by-the-metre",
     "why-buy",
+    "customer-love",
     "designs",
     "promise",
     "why"

@@ -1,0 +1,328 @@
+{%- comment -%}
+  Happy customers: customer videos in a scrolling row, then the shop's Google
+  rating and a row of reviews.
+
+  Videos. Shopify cannot pull reels from Instagram on its own (that needs an
+  app or the Instagram API), so each video is uploaded to Shopify in the theme
+  editor — Customize → Happy customers → Add video — with the customer's name
+  for the pill and, optionally, the Instagram post the card opens. A video
+  plays silently on loop only while it is on screen; off screen it pauses, so
+  ten videos do not all stream at once. A card can be a photo instead.
+
+  Reviews. Likewise Google reviews cannot be fetched without an app or an API
+  key, so the rating, the link to the Google listing and each review are typed
+  in. They must be real reviews by real customers: the theme ships none, and
+  the section stays off the live site until something real is added. In the
+  theme editor, empty slots show as outlined placeholders so the layout can be
+  seen while it is being filled.
+
+  Styles and script live in this file, so it is one file to copy into a theme.
+{%- endcomment -%}
+{%- liquid
+  assign videos = section.blocks | where: 'type', 'video'
+  assign reviews = section.blocks | where: 'type', 'review'
+  assign rating = section.settings.rating | strip
+  assign show_videos = false
+  for block in videos
+    if block.settings.video != blank or block.settings.image != blank
+      assign show_videos = true
+      break
+    endif
+  endfor
+  assign show_reviews = false
+  for block in reviews
+    if block.settings.text != blank
+      assign show_reviews = true
+      break
+    endif
+  endfor
+  assign live = false
+  if show_videos or show_reviews or rating != blank
+    assign live = true
+  endif
+-%}
+{%- if live or request.design_mode -%}
+<section class="love" data-love>
+  <div class="love-head">
+    {%- if section.settings.eyebrow != blank -%}<p class="love-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+    <h2>{{ section.settings.heading }}</h2>
+    {%- if section.settings.subheading != blank -%}<p class="love-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+  </div>
+
+  {%- comment -%} ---- videos ---- {%- endcomment -%}
+  {%- if show_videos or request.design_mode -%}
+    <div class="love-wrap">
+      <div class="love-row" data-love-row>
+        {%- if show_videos -%}
+          {%- for block in videos -%}
+            {%- if block.settings.video == blank and block.settings.image == blank -%}{%- continue -%}{%- endif -%}
+            {%- if block.settings.link != blank -%}
+              <a class="love-clip" href="{{ block.settings.link }}" target="_blank" rel="noopener" {{ block.shopify_attributes }}>
+            {%- else -%}
+              <div class="love-clip" {{ block.shopify_attributes }}>
+            {%- endif -%}
+              {%- if block.settings.video != blank -%}
+                {{ block.settings.video | video_tag: muted: true, loop: true, playsinline: true, preload: 'none', image_size: '720x' }}
+              {%- else -%}
+                {% render 'responsive-img', image: block.settings.image, alt: block.settings.name, sizes: '(max-width: 700px) 60vw, 20vw' %}
+              {%- endif -%}
+              {%- if block.settings.name != blank -%}<span class="love-name">{{ block.settings.name }}</span>{%- endif -%}
+              {%- if block.settings.link != blank -%}
+                <span class="love-ig" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none"/></svg></span>
+                <span class="visually-hidden">{{ block.settings.name | default: 'Customer' }} on Instagram</span>
+              {%- endif -%}
+            {%- if block.settings.link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+          {%- endfor -%}
+        {%- else -%}
+          {%- for i in (1..5) -%}
+            <div class="love-clip love-empty"><span>Add a video<br><small>Customize → Happy customers → Add video</small></span></div>
+          {%- endfor -%}
+        {%- endif -%}
+      </div>
+      <button type="button" class="love-arrow prev" data-love-prev aria-label="Scroll back" hidden>{% render 'icon', name: 'back', size: 18 %}</button>
+      <button type="button" class="love-arrow next" data-love-next aria-label="Scroll on" hidden>{% render 'icon', name: 'forward', size: 18 %}</button>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} ---- Google rating ---- {%- endcomment -%}
+  {%- if rating != blank or request.design_mode -%}
+    {%- liquid
+      assign stars = rating | times: 1.0
+      if stars > 5
+        assign stars = 5
+      endif
+      assign fill = stars | divided_by: 5.0 | times: 100 | round
+    -%}
+    <div class="love-google">
+      <span class="love-g" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="30" height="30"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 13 4 4 13 4 24s9 20 20 20 20-9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+      </span>
+      <div>
+        <p class="love-score">{{ rating | default: '4.8' }}{% if rating == blank %} <small>(enter your rating in Customize)</small>{% endif %}</p>
+        <p class="love-meta">
+          <span class="love-stars" style="--fill: {{ fill | default: 96 }}%;" aria-label="{{ rating }} out of 5"></span>
+          &middot;
+          {%- if section.settings.google_url != blank -%}
+            <a href="{{ section.settings.google_url }}" target="_blank" rel="noopener">{{ section.settings.google_label | default: 'Google Reviews' }}</a>
+          {%- else -%}
+            {{ section.settings.google_label | default: 'Google Reviews' }}
+          {%- endif -%}
+        </p>
+      </div>
+    </div>
+  {%- endif -%}
+
+  {%- comment -%} ---- reviews ---- {%- endcomment -%}
+  {%- if show_reviews or request.design_mode -%}
+    <div class="love-reviews">
+      {%- if show_reviews -%}
+        {%- for block in reviews -%}
+          {%- if block.settings.text == blank -%}{%- continue -%}{%- endif -%}
+          {%- assign who = block.settings.name | default: 'Customer' -%}
+          <article class="love-review" {{ block.shopify_attributes }}>
+            <header>
+              <span class="love-avatar" aria-hidden="true">{{ who | slice: 0 | upcase }}</span>
+              <div>
+                <h3>{{ who }}</h3>
+                <span class="love-stars small" style="--fill: {{ block.settings.stars | times: 20 }}%;" aria-label="{{ block.settings.stars }} out of 5"></span>
+              </div>
+            </header>
+            <p>{{ block.settings.text }}</p>
+          </article>
+        {%- endfor -%}
+      {%- else -%}
+        {%- for i in (1..4) -%}
+          <article class="love-review love-empty"><p>Add a real review<br><small>Customize → Happy customers → Add review</small></p></article>
+        {%- endfor -%}
+      {%- endif -%}
+    </div>
+  {%- endif -%}
+</section>
+
+<script>
+  (function () {
+    document.querySelectorAll('[data-love]:not([data-wired])').forEach(function (host) {
+      host.setAttribute('data-wired', '');
+      var row = host.querySelector('[data-love-row]');
+      var prev = host.querySelector('[data-love-prev]');
+      var next = host.querySelector('[data-love-next]');
+      if (row && prev && next) {
+        var step = function () { return Math.max(row.clientWidth * 0.8, 240); };
+        var update = function () {
+          prev.hidden = row.scrollLeft <= 2;
+          next.hidden = row.scrollLeft >= row.scrollWidth - row.clientWidth - 2;
+        };
+        prev.addEventListener('click', function () { row.scrollBy({ left: -step(), behavior: 'smooth' }); });
+        next.addEventListener('click', function () { row.scrollBy({ left: step(), behavior: 'smooth' }); });
+        row.addEventListener('scroll', update, { passive: true });
+        window.addEventListener('resize', update);
+        update();
+      }
+
+      /* play a clip only while it is on screen; never for reduced motion */
+      var calm = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var clips = host.querySelectorAll('video');
+      clips.forEach(function (v) { v.muted = true; v.setAttribute('muted', ''); v.removeAttribute('controls'); });
+      if (calm || !('IntersectionObserver' in window)) return;
+      var seen = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          var v = entry.target;
+          if (entry.isIntersecting) {
+            if (v.preload === 'none') v.preload = 'metadata';
+            var p = v.play();
+            if (p && p.catch) p.catch(function () {});
+          } else {
+            v.pause();
+          }
+        });
+      }, { threshold: 0.4 });
+      clips.forEach(function (v) { seen.observe(v); });
+    });
+  })();
+</script>
+{%- endif -%}
+
+{% stylesheet %}
+  .love { padding: 70px 0 40px; }
+  .love-head { padding: 0 24px; margin-bottom: 30px; }
+  .love-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .love-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; color: var(--ink); }
+  .love-sub { margin: 12px 0 0; font-size: 17px; color: var(--ink-70); }
+
+  .love-wrap { position: relative; }
+  .love-row {
+    --lpad: 24px; --lgap: 22px;
+    display: flex; gap: var(--lgap);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--lpad);
+    padding: 4px var(--lpad) 18px;
+    scrollbar-width: none; overscroll-behavior-x: contain;
+  }
+  .love-row::-webkit-scrollbar { display: none; }
+  .love-clip {
+    position: relative; flex: 0 0 calc((100vw - 2 * var(--lpad) - 4 * var(--lgap)) / 5.2);
+    aspect-ratio: 3 / 4; border-radius: 16px; overflow: hidden; scroll-snap-align: start;
+    background: var(--sand, #efe8dc); box-shadow: 0 14px 28px -18px rgba(20, 17, 15, 0.35);
+    display: block; color: inherit;
+  }
+  .love-clip video, .love-clip img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .love-clip::after { content: ''; position: absolute; inset: auto 0 0; height: 30%; background: linear-gradient(transparent, rgba(20, 17, 15, 0.35)); pointer-events: none; }
+  .love-name {
+    position: absolute; left: 14px; bottom: 14px; z-index: 1;
+    padding: 6px 12px; border-radius: 8px; background: rgba(20, 17, 15, 0.62); color: #fffdf8;
+    font-size: 13px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
+  }
+  .love-ig {
+    position: absolute; right: 12px; top: 12px; z-index: 1; width: 34px; height: 34px; border-radius: 50%;
+    display: grid; place-items: center; background: rgba(255, 253, 248, 0.88); color: var(--ink);
+  }
+  .love-empty {
+    display: grid; place-items: center; text-align: center; padding: 18px;
+    border: 1.5px dashed rgba(150, 112, 46, 0.45); background: rgba(239, 232, 220, 0.5); box-shadow: none;
+    color: var(--ink-70); font-size: 15px; line-height: 1.5;
+  }
+  .love-empty small { font-size: 12px; color: var(--ink-45, rgba(20,17,15,.45)); }
+  .love-empty::after { display: none; }
+
+  .love-arrow {
+    position: absolute; top: 46%; transform: translateY(-50%); z-index: 2;
+    width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+    background: #14110f; color: #e8c98a; box-shadow: 0 4px 16px rgba(20, 17, 15, 0.25);
+  }
+  .love-arrow[hidden] { display: none; }
+  .love-arrow.prev { left: 36px; }
+  .love-arrow.next { right: 36px; }
+
+  .love-google { display: flex; align-items: center; gap: 16px; padding: 22px 24px 26px; }
+  .love-g { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 2px 10px rgba(20, 17, 15, 0.1); }
+  .love-score { margin: 0; font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--ink); }
+  .love-score small { font-size: 12px; font-weight: 400; color: var(--ink-70); }
+  .love-meta { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--ink-70); }
+  .love-meta a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+
+  /* five stars, filled to --fill: one row of grey, one of brass clipped over it */
+  .love-stars { position: relative; display: inline-block; font-size: 20px; line-height: 1; letter-spacing: 3px; color: rgba(150, 112, 46, 0.25); }
+  .love-stars::before { content: '★★★★★'; }
+  .love-stars::after { content: '★★★★★'; position: absolute; left: 0; top: 0; width: var(--fill, 100%); overflow: hidden; color: var(--brass, #96702e); white-space: nowrap; }
+  .love-stars.small { font-size: 17px; letter-spacing: 2px; }
+
+  .love-reviews {
+    display: grid; gap: 22px; padding: 0 24px;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+  .love-review {
+    background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 16px; padding: 26px 28px 28px;
+    box-shadow: 0 10px 24px -18px rgba(20, 17, 15, 0.25);
+  }
+  .love-review header { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+  .love-avatar {
+    flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+    background: #f3eadb; color: var(--brass, #96702e); font-size: 19px; font-weight: 600;
+  }
+  .love-review h3 { margin: 0 0 4px; font-family: var(--sans, inherit); font-size: 17px; font-weight: 600; color: var(--ink); }
+  .love-review > p { margin: 0; font-size: 17px; line-height: 1.6; color: var(--ink-70); }
+  .love-review.love-empty { display: grid; place-items: center; min-height: 170px; }
+
+  @media (max-width: 1280px) {
+    .love-clip { flex-basis: calc((100vw - 2 * var(--lpad) - 3 * var(--lgap)) / 4.2); }
+  }
+  @media (max-width: 1100px) {
+    .love-clip { flex-basis: calc((100vw - 2 * var(--lpad) - 2 * var(--lgap)) / 2.6); }
+    .love-reviews { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 700px) {
+    .love { padding: 50px 0 30px; }
+    .love-head { padding: 0 16px; margin-bottom: 22px; }
+    .love-sub { font-size: 15px; }
+    .love-row { --lpad: 16px; --lgap: 14px; }
+    .love-clip { flex-basis: 62vw; }
+    .love-arrow { display: none; }
+    .love-google { padding: 18px 16px 20px; }
+    /* reviews become a swipe row too, rather than a long stack */
+    .love-reviews {
+      display: flex; gap: 14px; padding: 0 16px 6px;
+      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none;
+    }
+    .love-reviews::-webkit-scrollbar { display: none; }
+    .love-review { flex: 0 0 84vw; scroll-snap-align: start; padding: 22px; }
+    .love-review > p { font-size: 15px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Happy customers",
+  "max_blocks": 24,
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "Happy customers" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Loved by customers across India" },
+    { "type": "text", "id": "subheading", "label": "Line under the heading", "default": "Real outfits, made from fabric off our shelves." },
+    { "type": "header", "content": "Google rating" },
+    { "type": "paragraph", "content": "Copy these from your Google Business profile. The rating is hidden until you enter one." },
+    { "type": "text", "id": "rating", "label": "Your Google rating", "info": "e.g. 4.8" },
+    { "type": "text", "id": "google_label", "label": "Label", "default": "Google Reviews", "info": "e.g. 312 Google Reviews" },
+    { "type": "url", "id": "google_url", "label": "Link to your Google reviews" }
+  ],
+  "blocks": [
+    {
+      "type": "video",
+      "name": "Video",
+      "settings": [
+        { "type": "video", "id": "video", "label": "Video", "info": "Upload the reel (download it from Instagram first). Portrait, MP4, under a minute." },
+        { "type": "image_picker", "id": "image", "label": "Photo (instead of a video)" },
+        { "type": "text", "id": "name", "label": "Customer's name", "info": "Shown in the pill, e.g. Samiksha. Ask their permission first." },
+        { "type": "url", "id": "link", "label": "Instagram post (optional)", "info": "Paste the reel's link; the card opens it." }
+      ]
+    },
+    {
+      "type": "review",
+      "name": "Review",
+      "settings": [
+        { "type": "text", "id": "name", "label": "Name", "info": "As it appears on Google, e.g. Ananya S." },
+        { "type": "range", "id": "stars", "label": "Stars", "min": 1, "max": 5, "step": 1, "default": 5 },
+        { "type": "textarea", "id": "text", "label": "Review", "info": "Copy a real review word for word." }
+      ]
+    }
+  ],
+  "presets": [{ "name": "Happy customers" }]
+}
+{% endschema %}

@@ -339,6 +339,21 @@
         "swatch_label": "Fabric",
         "default_text": "Shown to you in minutes, in store"
       }
+    },
+    "visit": {
+      "type": "visit-us",
+      "settings": {
+        "eyebrow": "Visit us",
+        "heading": "Come see the fabric in person",
+        "address_title": "Address",
+        "directions_label": "Get directions",
+        "show_map": false,
+        "timings_title": "Timings",
+        "timings": "Mon – Sat | 10:30 am – 8:30 pm\nSunday | Closed",
+        "talk_title": "Any questions?",
+        "talk_text": "Ask about a fabric, a shade or an order — we reply on WhatsApp.",
+        "whatsapp_label": "WhatsApp us"
+      }
     }
   },
   "order": [
@@ -353,6 +368,7 @@
     "customer-love",
     "designs",
     "looks",
+    "visit",
     "promise",
     "why"
   ]

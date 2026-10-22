@@ -1,0 +1,208 @@
+{%- comment -%}
+  Visit us: a photograph of the shop, then where it is, when it is open,
+  and a WhatsApp button for anything else.
+
+  Address and WhatsApp come from Theme settings → Contact (the same number
+  the floating WhatsApp button uses, the same address the footer shows), so
+  they are entered once; the section can override either. Get directions
+  opens Google Maps on the address, or on a Maps link the shop pastes. The
+  timings are one line each — "Mon – Sat | 10:30 am – 8:30 pm" — and the
+  part before | becomes the day column. An optional map shows the address
+  from Google Maps' plain embed (no key needed), loaded only when scrolled to.
+
+  A WhatsApp button with no number is never shown on the live site; the
+  theme editor says what is missing instead. Styles live in this file.
+{%- endcomment -%}
+{%- liquid
+  assign address = section.settings.address | default: settings.shop_address
+  assign wa_number = section.settings.whatsapp_number | default: settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign wa_text = section.settings.whatsapp_message | default: settings.whatsapp_message | url_encode
+  assign maps = section.settings.maps_url
+  if maps == blank and address != blank
+    assign q = address | strip_newlines | url_encode
+    assign maps = 'https://www.google.com/maps/search/?api=1&query=' | append: q
+  endif
+  assign hours = section.settings.timings | newline_to_br | split: '<br />'
+-%}
+<section class="visit">
+  <div class="visit-head">
+    {%- if section.settings.eyebrow != blank -%}<p class="visit-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+    <h2>{{ section.settings.heading }}</h2>
+    {%- if section.settings.subheading != blank -%}<p class="visit-sub">{{ section.settings.subheading }}</p>{%- endif -%}
+  </div>
+
+  <div class="visit-photo">
+    {%- if section.settings.image != blank -%}
+      {% render 'responsive-img', image: section.settings.image, alt: section.settings.image.alt | default: shop.name, sizes: '100vw' %}
+    {%- elsif request.design_mode -%}
+      <span class="visit-empty">Add a photo of your shop<br><small>Customize → Visit us → Shop photo</small></span>
+    {%- endif -%}
+  </div>
+
+  <div class="visit-cards">
+    {%- if address != blank -%}
+      <div class="visit-card">
+        <span class="visit-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.6"/></svg></span>
+        <h3>{{ section.settings.address_title | default: 'Address' }}</h3>
+        <p>{{ address | newline_to_br }}</p>
+        {%- if maps != blank -%}
+          <a class="visit-link" href="{{ maps }}" target="_blank" rel="noopener">{{ section.settings.directions_label | default: 'Get directions' }} {% render 'icon', name: 'arrow', size: 14 %}</a>
+        {%- endif -%}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.timings != blank -%}
+      <div class="visit-card">
+        <span class="visit-ico" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span>
+        <h3>{{ section.settings.timings_title | default: 'Timings' }}</h3>
+        <dl class="visit-hours">
+          {%- for line in hours -%}
+            {%- assign row = line | strip -%}
+            {%- if row == blank -%}{%- continue -%}{%- endif -%}
+            {%- if row contains '|' -%}
+              {%- assign bits = row | split: '|' -%}
+              <div><dt>{{ bits[0] | strip }}</dt><dd>{{ bits[1] | strip }}</dd></div>
+            {%- else -%}
+              <div><dd>{{ row }}</dd></div>
+            {%- endif -%}
+          {%- endfor -%}
+        </dl>
+      </div>
+    {%- endif -%}
+
+    <div class="visit-card visit-card--talk">
+      <span class="visit-ico visit-ico--wa" aria-hidden="true">{% render 'icon', name: 'whatsapp', size: 22 %}</span>
+      <h3>{{ section.settings.talk_title | default: 'Any questions?' }}</h3>
+      {%- if section.settings.talk_text != blank -%}<p>{{ section.settings.talk_text }}</p>{%- endif -%}
+      {%- if wa_number != blank -%}
+        <a class="visit-wa" href="https://wa.me/{{ wa_number }}?text={{ wa_text }}" target="_blank" rel="noopener">
+          {% render 'icon', name: 'whatsapp', size: 18 %}<span>{{ section.settings.whatsapp_label | default: 'WhatsApp us' }}</span>
+        </a>
+      {%- elsif request.design_mode -%}
+        <p class="visit-note">Add your WhatsApp number in Theme settings → Contact (or in this section) to show the button.</p>
+      {%- endif -%}
+      {%- if section.settings.phone != blank -%}
+        <a class="visit-call" href="tel:{{ section.settings.phone | remove: ' ' | remove: '-' }}">or call {{ section.settings.phone }}</a>
+      {%- endif -%}
+    </div>
+  </div>
+
+  {%- if section.settings.show_map and address != blank -%}
+    <div class="visit-map">
+      <iframe title="Map: {{ address | escape }}" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+              src="https://www.google.com/maps?q={{ address | url_encode }}&output=embed"></iframe>
+    </div>
+  {%- endif -%}
+</section>
+
+{% stylesheet %}
+  .visit { padding: 60px 24px 40px; }
+  .visit-head { text-align: center; margin-bottom: var(--h-sec-gap, 30px); }
+  .visit-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size, 11.5px); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .visit-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec, 40px); line-height: 1.1; color: var(--ink); }
+  .visit-sub { margin: 10px 0 0; font-size: var(--sub-size, 15.5px); color: var(--ink-70); }
+
+  .visit-photo {
+    position: relative; aspect-ratio: 21 / 8; border-radius: 18px; overflow: hidden;
+    background: var(--sand, #efe8dc); box-shadow: 0 16px 34px -22px rgba(20, 17, 15, 0.35);
+  }
+  .visit-photo:empty { display: none; }
+  .visit-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .visit-empty {
+    position: absolute; inset: 0; display: grid; place-items: center; text-align: center;
+    border: 1.5px dashed rgba(150, 112, 46, 0.45); border-radius: inherit; color: var(--ink-70); font-size: 15px; line-height: 1.5;
+  }
+  .visit-empty small { font-size: 12px; color: var(--ink-45, rgba(20,17,15,.45)); }
+
+  .visit-cards {
+    position: relative; z-index: 1;
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px;
+    max-width: 1180px; margin: -46px auto 0; padding: 0 24px;
+  }
+  .visit-photo:empty + .visit-cards { margin-top: 0; }
+  .visit-card {
+    display: flex; flex-direction: column; align-items: center; text-align: center;
+    background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 16px; padding: 26px 24px 26px;
+    box-shadow: 0 14px 28px -20px rgba(20, 17, 15, 0.3);
+  }
+  .visit-ico {
+    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px;
+    background: #f6eedf; color: var(--brass, #96702e);
+  }
+  .visit-ico--wa { background: #e7f6ec; color: #1f9d55; }
+  .visit-card h3 { margin: 0 0 8px; font-family: var(--sans, inherit); font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); }
+  .visit-card p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-70); }
+  .visit-link {
+    margin-top: 14px; display: inline-flex; align-items: center; gap: 8px;
+    font-size: 13px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink);
+    padding-bottom: 4px; border-bottom: 1px solid var(--line-strong, rgba(20,17,15,.34));
+  }
+  .visit-link:hover { border-color: var(--ink); }
+
+  .visit-hours { margin: 0; width: 100%; max-width: 300px; }
+  .visit-hours div { display: flex; justify-content: space-between; gap: 14px; padding: 5px 0; border-bottom: 1px dashed rgba(150, 112, 46, 0.2); font-size: 15px; }
+  .visit-hours div:last-child { border-bottom: 0; }
+  .visit-hours div:only-child, .visit-hours div:has(> dd:only-child) { justify-content: center; }
+  .visit-hours dt { color: var(--ink); font-weight: 500; }
+  .visit-hours dd { margin: 0; color: var(--ink-70); }
+
+  .visit-wa {
+    margin-top: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+    min-height: 48px; padding: 0 26px; border-radius: 999px;
+    background: #1f9d55; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: 0.4px;
+    box-shadow: 0 8px 18px -10px rgba(31, 157, 85, 0.8); transition: background 0.15s, transform 0.15s;
+  }
+  .visit-wa:hover { background: #178046; transform: translateY(-1px); }
+  .visit-call { margin-top: 10px; font-size: 13.5px; color: var(--ink-70); text-decoration: underline; text-underline-offset: 3px; }
+  .visit-note { margin-top: 12px !important; font-size: 13px !important; color: #a3461f !important; }
+
+  .visit-map { max-width: 1180px; margin: 26px auto 0; padding: 0 24px; }
+  .visit-map iframe { display: block; width: 100%; height: 320px; border: 0; border-radius: 16px; }
+
+  @media (max-width: 900px) {
+    .visit-photo { aspect-ratio: 16 / 9; }
+    .visit-cards { grid-template-columns: 1fr; gap: 14px; margin-top: -28px; padding: 0 12px; }
+  }
+  @media (max-width: 700px) {
+    .visit { padding: 44px 16px 30px; }
+    .visit-photo { border-radius: 14px; aspect-ratio: 4 / 3; }
+    .visit-card { padding: 22px 18px; }
+    .visit-map { padding: 0; }
+    .visit-map iframe { height: 260px; }
+  }
+{% endstylesheet %}
+
+{% schema %}
+{
+  "name": "Visit us",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "Visit us" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Come see the fabric in person" },
+    { "type": "text", "id": "subheading", "label": "Line under the heading (optional)" },
+    { "type": "image_picker", "id": "image", "label": "Shop photo", "info": "Wide, at least 2000 px across." },
+    { "type": "header", "content": "Address" },
+    { "type": "text", "id": "address_title", "label": "Title", "default": "Address" },
+    { "type": "textarea", "id": "address", "label": "Address", "info": "Leave empty to use Theme settings → Contact → Address line." },
+    { "type": "url", "id": "maps_url", "label": "Google Maps link (optional)", "info": "Your shop's Maps link (Share → Copy link). Leave empty to search Maps for the address." },
+    { "type": "text", "id": "directions_label", "label": "Directions button", "default": "Get directions" },
+    { "type": "checkbox", "id": "show_map", "label": "Show a map under the cards", "default": false },
+    { "type": "header", "content": "Timings" },
+    { "type": "text", "id": "timings_title", "label": "Title", "default": "Timings" },
+    {
+      "type": "textarea",
+      "id": "timings",
+      "label": "Timings",
+      "info": "One line each, day and time split by | — e.g. Mon – Sat | 10:30 am – 8:30 pm",
+      "default": "Mon – Sat | 10:30 am – 8:30 pm\nSunday | Closed"
+    },
+    { "type": "header", "content": "WhatsApp" },
+    { "type": "text", "id": "talk_title", "label": "Title", "default": "Any questions?" },
+    { "type": "text", "id": "talk_text", "label": "Text", "default": "Ask about a fabric, a shade or an order — we reply on WhatsApp." },
+    { "type": "text", "id": "whatsapp_label", "label": "Button", "default": "WhatsApp us" },
+    { "type": "text", "id": "whatsapp_number", "label": "WhatsApp number (optional)", "info": "With country code, e.g. 919820012345. Leave empty to use Theme settings → Contact." },
+    { "type": "text", "id": "whatsapp_message", "label": "Prefilled message (optional)", "info": "Leave empty to use Theme settings → Contact." },
+    { "type": "text", "id": "phone", "label": "Phone to call (optional)", "info": "e.g. +91 98200 12345" }
+  ],
+  "presets": [{ "name": "Visit us" }]
+}
+{% endschema %}

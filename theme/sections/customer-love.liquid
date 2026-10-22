@@ -66,7 +66,8 @@
   {%- endif -%}
 
   {%- if show_reviews or request.design_mode -%}
-    <div class="love-reviews">
+    <div class="love-wrap">
+    <div class="love-reviews" data-love-row>
       {%- if show_reviews -%}
         {%- for block in reviews -%}
           {%- if block.settings.text == blank -%}{%- continue -%}{%- endif -%}
@@ -89,6 +90,10 @@
         {%- endfor -%}
       {%- endif -%}
     </div>
+    <button type="button" class="love-arrow prev" data-love-prev aria-label="Previous reviews" hidden>{% render 'icon', name: 'back', size: 18 %}</button>
+    <button type="button" class="love-arrow next" data-love-next aria-label="More reviews" hidden>{% render 'icon', name: 'forward', size: 18 %}</button>
+    </div>
+    <div class="love-dots" data-love-dots aria-hidden="true"></div>
   {%- endif -%}
 </section>
 
@@ -117,6 +122,51 @@
       });
       window.addEventListener('resize', measure);
       measure();
+
+      /* the carousel: arrows step one card, dots mark each stop */
+      var row = host.querySelector('[data-love-row]');
+      var prev = host.querySelector('[data-love-prev]');
+      var next = host.querySelector('[data-love-next]');
+      var dotsBox = host.querySelector('[data-love-dots]');
+      if (!row || !prev || !next || !dotsBox) return;
+      var cards = [].slice.call(row.children);
+      var stops = [];
+      function build() {
+        var max = row.scrollWidth - row.clientWidth;
+        stops = [];
+        cards.forEach(function (card) {
+          var at = Math.min(card.offsetLeft - cards[0].offsetLeft, max);
+          if (!stops.length || at - stops[stops.length - 1] > 4) stops.push(at);
+        });
+        dotsBox.innerHTML = '';
+        if (stops.length < 2) return;
+        stops.forEach(function (at) {
+          var dot = document.createElement('button');
+          dot.type = 'button';
+          dot.tabIndex = -1;
+          dot.className = 'love-dot';
+          dot.addEventListener('click', function () { row.scrollTo({ left: at, behavior: 'smooth' }); });
+          dotsBox.appendChild(dot);
+        });
+      }
+      function update() {
+        var max = row.scrollWidth - row.clientWidth;
+        prev.hidden = row.scrollLeft <= 2;
+        next.hidden = row.scrollLeft >= max - 2;
+        var nearest = 0, best = Infinity;
+        stops.forEach(function (at, i) { var d = Math.abs(at - row.scrollLeft); if (d < best) { best = d; nearest = i; } });
+        [].forEach.call(dotsBox.children, function (dot, i) { dot.classList.toggle('on', i === nearest); });
+      }
+      function step(dir) {
+        var w = cards[0] ? cards[0].getBoundingClientRect().width + parseFloat(getComputedStyle(row).columnGap || 0) : row.clientWidth * 0.8;
+        row.scrollBy({ left: dir * w, behavior: 'smooth' });
+      }
+      prev.addEventListener('click', function () { step(-1); });
+      next.addEventListener('click', function () { step(1); });
+      row.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', function () { build(); update(); });
+      build();
+      update();
     });
   })();
 </script>
@@ -124,12 +174,12 @@
 
 {% stylesheet %}
   .love { padding: 70px 0 40px; }
-  .love-head { padding: 0 24px; margin-bottom: 26px; }
-  .love-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
-  .love-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; color: var(--ink); }
-  .love-sub { margin: 12px 0 0; font-size: 17px; color: var(--ink-70); }
+  .love-head { padding: 0 24px; margin-bottom: 22px; text-align: center; }
+  .love-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .love-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
+  .love-sub { margin: 10px 0 0; font-size: var(--sub-size); color: var(--ink-70); }
 
-  .love-google { display: flex; align-items: center; gap: 16px; padding: 0 24px 26px; }
+  .love-google { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 0 24px var(--h-sec-gap); }
   .love-g { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 2px 10px rgba(20, 17, 15, 0.1); }
   .love-score { margin: 0; font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--ink); }
   .love-score small { font-size: 12px; font-weight: 400; color: var(--ink-70); }
@@ -142,11 +192,20 @@
   .love-stars::after { content: '★★★★★'; position: absolute; left: 0; top: 0; width: var(--fill, 100%); overflow: hidden; color: var(--brass, #96702e); white-space: nowrap; }
   .love-stars.small { font-size: 17px; letter-spacing: 2px; }
 
+  .love-wrap { position: relative; }
+  /* the reviews scroll as a row at every size; the snap padding matches the
+     side padding, or the row snaps in on load */
   .love-reviews {
-    display: grid; gap: 22px; padding: 0 24px; align-items: start;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    --rpad: 24px; --rgap: 22px;
+    display: flex; align-items: flex-start; gap: var(--rgap);
+    overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--rpad);
+    padding: 4px var(--rpad) 16px; scrollbar-width: none; overscroll-behavior-x: contain;
   }
+  .love-reviews::-webkit-scrollbar { display: none; }
+  .love-review:first-child { margin-left: auto; }
+  .love-review:last-child { margin-right: auto; }
   .love-review {
+    flex: 0 0 calc((100vw - 2 * var(--rpad) - 4 * var(--rgap)) / 4.4); scroll-snap-align: start;
     background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 16px; padding: 24px 26px 24px;
     box-shadow: 0 10px 24px -18px rgba(20, 17, 15, 0.25);
   }
@@ -174,21 +233,32 @@
   }
   .love-empty small { font-size: 12px; color: var(--ink-45, rgba(20,17,15,.45)); }
 
+  .love-arrow {
+    position: absolute; top: 50%; transform: translateY(-60%); z-index: 2;
+    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
+    background: #14110f; color: #e8c98a; box-shadow: 0 4px 16px rgba(20, 17, 15, 0.25);
+  }
+  .love-arrow[hidden] { display: none; }
+  .love-arrow.prev { left: 34px; }
+  .love-arrow.next { right: 34px; }
+  .love-dots { display: flex; justify-content: center; gap: 8px; margin-top: 6px; min-height: 8px; }
+  .love-dot { width: 8px; height: 8px; padding: 0; border-radius: 999px; background: rgba(20, 17, 15, 0.2); transition: width 0.2s, background 0.2s; }
+  .love-dot.on { width: 26px; background: var(--brass, #96702e); }
+
+  @media (max-width: 1280px) {
+    .love-review { flex-basis: calc((100vw - 2 * var(--rpad) - 2 * var(--rgap)) / 3.3); }
+  }
   @media (max-width: 1100px) {
-    .love-reviews { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .love-review { flex-basis: calc((100vw - 2 * var(--rpad) - var(--rgap)) / 2.2); }
   }
   @media (max-width: 700px) {
     .love { padding: 50px 0 30px; }
     .love-head { padding: 0 16px; margin-bottom: 20px; }
     .love-sub { font-size: 15px; }
     .love-google { padding: 0 16px 20px; }
-    /* reviews become a swipe row, rather than a long stack */
-    .love-reviews {
-      display: flex; align-items: flex-start; gap: 14px; padding: 0 16px 6px;
-      overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 16px; scrollbar-width: none;
-    }
-    .love-reviews::-webkit-scrollbar { display: none; }
-    .love-review { flex: 0 0 84vw; scroll-snap-align: start; padding: 20px; }
+    .love-reviews { --rpad: 16px; --rgap: 14px; }
+    .love-review { flex-basis: 84vw; padding: 20px; }
+    .love-arrow { display: none; }
     .love-text { font-size: 15px; }
   }
 {% endstylesheet %}

@@ -21,9 +21,13 @@
       "type": "featured-fabrics",
       "settings": {
         "heading": "By the metre",
-        "count": 10,
+        "count": 24,
         "columns": 5,
-        "link_label": "See all"
+        "link_label": "See all",
+        "rows": 2,
+        "more_label": "View more",
+        "all_label": "See the full catalog",
+        "link_url": "/collections/all"
       }
     },
     "designs": {

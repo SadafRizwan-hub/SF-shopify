@@ -139,10 +139,10 @@
 
 {% stylesheet %}
   .vshop { padding: 70px 0 30px; }
-  .vshop-head { padding: 0 24px; margin-bottom: 28px; text-align: center; }
-  .vshop-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
-  .vshop-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; color: var(--ink); }
-  .vshop-sub { margin: 12px 0 0; font-size: 17px; color: var(--ink-70); }
+  .vshop-head { padding: 0 24px; margin-bottom: var(--h-sec-gap); text-align: center; }
+  .vshop-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .vshop-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
+  .vshop-sub { margin: 10px 0 0; font-size: var(--sub-size); color: var(--ink-70); }
 
   .vshop-wrap { position: relative; }
   .vshop-row {
@@ -158,7 +158,7 @@
   .reel:last-child { margin-right: auto; }
 
   .reel {
-    position: relative; flex: 0 0 calc((100vw - 2 * var(--vpad) - 5 * var(--vgap)) / 6);
+    position: relative; flex: 0 0 calc((100vw - 2 * var(--vpad) - 6 * var(--vgap)) / 7);
     aspect-ratio: 9 / 16; border-radius: 16px; overflow: hidden; scroll-snap-align: start;
     background: #1d1a17; box-shadow: 0 14px 28px -18px rgba(20, 17, 15, 0.4);
   }
@@ -205,6 +205,9 @@
   .vshop-arrow.prev { left: 36px; }
   .vshop-arrow.next { right: 36px; }
 
+  @media (max-width: 1600px) {
+    .reel { flex-basis: calc((100vw - 2 * var(--vpad) - 5 * var(--vgap)) / 6); }
+  }
   @media (max-width: 1280px) {
     .reel { flex-basis: calc((100vw - 2 * var(--vpad) - 4 * var(--vgap)) / 4.6); }
   }

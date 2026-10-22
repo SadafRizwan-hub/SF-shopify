@@ -147,12 +147,12 @@
 
 {% stylesheet %}
   .flook { padding: 70px 0 40px; }
-  .flook-head { padding: 0 24px; margin-bottom: 28px; }
-  .flook-eyebrow { margin: 0 0 10px; font-size: 12px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
-  .flook-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: clamp(32px, 4vw, 54px); line-height: 1.1; color: var(--ink); }
-  .flook-sub { margin: 12px 0 0; font-size: 17px; color: var(--ink-70); }
+  .flook-head { padding: 0 24px; margin-bottom: var(--h-sec-gap); text-align: center; }
+  .flook-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
+  .flook-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
+  .flook-sub { margin: 10px 0 0; font-size: var(--sub-size); color: var(--ink-70); }
 
-  .flook-wrap { position: relative; padding: 0 84px; }
+  .flook-wrap { position: relative; padding: 0 76px; }
   .flook-row {
     --fgap: 28px;
     display: flex; gap: var(--fgap);
@@ -166,7 +166,7 @@
   .flook-card:last-child { margin-right: auto; }
 
   .flook-card {
-    position: relative; flex: 0 0 calc((100% - 2 * var(--fgap)) / 3);
+    position: relative; flex: 0 0 calc((100% - 3 * var(--fgap)) / 4);
     scroll-snap-align: start; display: flex; flex-direction: column;
     background: #fff; border: 1px solid rgba(150, 112, 46, 0.18); border-radius: 18px; overflow: hidden;
     box-shadow: 0 14px 30px -20px rgba(20, 17, 15, 0.3);
@@ -175,7 +175,7 @@
   .flook-card:hover { transform: translateY(-3px); box-shadow: 0 20px 36px -20px rgba(20, 17, 15, 0.38); }
   .flook-link { position: absolute; inset: 0; z-index: 3; border-radius: inherit; }
 
-  .flook-photo { position: relative; aspect-ratio: 6 / 7; background: var(--sand, #efe8dc); overflow: hidden; }
+  .flook-photo { position: relative; aspect-ratio: 4 / 5; background: var(--sand, #efe8dc); overflow: hidden; }
   .flook-photo > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s ease; }
   .flook-card:hover .flook-photo > img { transform: scale(1.03); }
   .flook-badge {
@@ -195,8 +195,8 @@
   }
 
   .flook-body { padding: 18px 22px 22px; text-align: center; }
-  .flook-body h3 { margin: 0 0 6px; font-family: var(--sans, inherit); font-weight: 400; font-size: clamp(19px, 1.5vw, 24px); color: var(--ink); }
-  .flook-line { margin: 0; font-size: 15.5px; color: var(--ink-70); }
+  .flook-body h3 { margin: 0 0 6px; font-family: var(--sans, inherit); font-weight: 500; font-size: clamp(16px, 1.15vw, 19px); color: var(--ink); }
+  .flook-line { margin: 0; font-size: 14px; color: var(--ink-70); }
   .flook-fabric {
     margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(150, 112, 46, 0.15);
     display: flex; justify-content: center; align-items: baseline; gap: 10px; font-size: 14px; color: var(--ink-70);
@@ -227,6 +227,9 @@
   .flook-dot { width: 8px; height: 8px; padding: 0; border-radius: 999px; background: rgba(20, 17, 15, 0.2); transition: width 0.2s, background 0.2s; }
   .flook-dot.on { width: 28px; background: var(--brass, #96702e); }
 
+  @media (max-width: 1400px) {
+    .flook-card { flex-basis: calc((100% - 2 * var(--fgap)) / 3); }
+  }
   @media (max-width: 1100px) {
     .flook-wrap { padding: 0 24px; }
     .flook-card { flex-basis: calc((100% - var(--fgap)) / 2); }
@@ -237,7 +240,7 @@
     .flook-head { padding: 0 16px; margin-bottom: 20px; }
     .flook-wrap { padding: 0 16px; }
     .flook-row { --fgap: 14px; }
-    .flook-card { flex-basis: 84%; }
+    .flook-card { flex-basis: 76%; }
     .flook-badge { top: 10px; right: 10px; font-size: 10.5px; padding: 5px 9px; }
     .flook-swatch { border-width: 3px; border-radius: 10px; }
     .flook-tag { font-size: 10.5px; left: 6px; bottom: 6px; }

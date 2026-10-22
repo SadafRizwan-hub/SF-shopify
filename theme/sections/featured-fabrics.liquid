@@ -27,12 +27,57 @@
         <a class="linkish" href="{{ section.settings.link_url }}">{{ section.settings.link_label }}</a>
       {%- endif -%}
     </div>
-    <div class="grid" style="--cols: {{ section.settings.columns }};">
+    {%- comment -%}
+      Two rows first, then View more opens two more at a time. The rows are
+      counted by the script from however many columns the screen shows, so
+      it is two rows on a monitor and on a phone alike. Once every fabric
+      here is showing, the button becomes a link to the full catalog. Without
+      the script every fabric shows and there is no button.
+    {%- endcomment -%}
+    <div class="grid" style="--cols: {{ section.settings.columns }};" data-more-grid data-rows="{{ section.settings.rows | default: 2 }}">
       {%- for product in items limit: count -%}
         {% render 'fabric-card', product: product %}
       {%- endfor -%}
     </div>
+    <div class="moreband">
+      <button type="button" class="btn btn-ghost morebtn" data-more hidden>{{ section.settings.more_label | default: 'View more' }}</button>
+      <a class="btn btn-ghost morebtn" data-more-all href="{{ section.settings.link_url | default: routes.all_products_collection_url }}" hidden>{{ section.settings.all_label | default: 'See the full catalog' }}</a>
+    </div>
   </section>
+
+  <script>
+    (function () {
+      document.querySelectorAll('[data-more-grid]:not([data-wired])').forEach(function (grid) {
+        grid.setAttribute('data-wired', '');
+        var band = grid.nextElementSibling;
+        var more = band && band.querySelector('[data-more]');
+        var all = band && band.querySelector('[data-more-all]');
+        if (!more || !all) return;
+        var rows = parseInt(grid.getAttribute('data-rows'), 10) || 2;
+        var items = [].slice.call(grid.children);
+        var open = rows;
+
+        function cols() { return getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length || 1; }
+        function show() {
+          var limit = open * cols();
+          items.forEach(function (el, i) { el.hidden = i >= limit; });
+          var rest = items.length > limit;
+          more.hidden = !rest;
+          all.hidden = rest;
+        }
+        more.addEventListener('click', function () {
+          var first = open * cols();
+          open += rows;
+          show();
+          /* keep the shopper where they were: focus the first new fabric */
+          var link = items[first] && items[first].querySelector('a');
+          if (link) link.focus({ preventScroll: true });
+        });
+        window.addEventListener('resize', show);
+        show();
+      });
+    })();
+  </script>
 {%- endif -%}
 
 {% schema %}
@@ -55,9 +100,9 @@
       "id": "count",
       "label": "Products",
       "min": 2,
-      "max": 16,
+      "max": 48,
       "step": 1,
-      "default": 8
+      "default": 24
     },
     {
       "type": "select",
@@ -84,6 +129,27 @@
       "max": 5,
       "step": 1,
       "default": 4
+    },
+    {
+      "type": "range",
+      "id": "rows",
+      "label": "Rows shown before View more",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "text",
+      "id": "more_label",
+      "label": "View more button",
+      "default": "View more"
+    },
+    {
+      "type": "text",
+      "id": "all_label",
+      "label": "Button once everything is shown",
+      "default": "See the full catalog"
     },
     {
       "type": "url",

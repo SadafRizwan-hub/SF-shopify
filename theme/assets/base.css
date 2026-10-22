@@ -32,6 +32,17 @@ h1, h2, h3, h4 {
 }
 
 h1 { font-size: 34px; }
+
+/* Homepage type: two families in three roles, the same in every section —
+   Cormorant Garamond for section headings (its italic for the accent words),
+   Inter for everything read or pressed (body, card titles, prices, buttons)
+   and, in spaced small capitals, for the line above a heading. */
+:root {
+  --h-sec: clamp(28px, 2.5vw, 40px);   /* section headings */
+  --h-sec-gap: 30px;                    /* heading block to content */
+  --eyebrow-size: 11.5px;
+  --sub-size: 15.5px;
+}
 h2 { font-size: 25px; }
 h3 { font-size: 19px; }
 
@@ -462,6 +473,10 @@ body.drawer-open { overflow: hidden; }
 /* --- fabric card -------------------------------------------------------- */
 
 .card { position: relative; }
+.card[hidden] { display: none; }
+.moreband { display: flex; justify-content: center; margin-top: 30px; }
+.moreband .morebtn[hidden] { display: none; }
+.morebtn { min-width: 220px; justify-content: center; letter-spacing: 1.6px; text-transform: uppercase; font-size: 12.5px; }
 .card .press { display: block; width: 100%; padding: 0; }
 .card:hover .press img { transform: scale(1.03); }
 .card .press img { transition: transform 0.5s ease; }
@@ -667,6 +682,7 @@ body.drawer-open { overflow: hidden; }
    page shell with a wide margin either side on a large screen. */
 .shell.homeband { max-width: none; padding-inline: 24px; }
 @media (min-width: 1400px) { .homeband .designrow { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+@media (min-width: 1501px) { .homeband .grid[style*="--cols: 5"] { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
 @media (min-width: 1051px) and (max-width: 1280px) { .homeband .grid[style*="--cols: 5"] { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (max-width: 700px) { .shell.homeband { padding-inline: 16px; } }
 .head {
@@ -674,6 +690,11 @@ body.drawer-open { overflow: hidden; }
   gap: 16px; margin-bottom: 20px;
 }
 .head h2 { font-size: clamp(23px, 3vw, 30px); }
+/* homepage bands: the heading centred like every other homepage section,
+   its link underneath */
+.homeband .head { flex-direction: column; align-items: center; text-align: center; gap: 8px; margin-bottom: var(--h-sec-gap); }
+.homeband .head h2 { font-size: var(--h-sec); line-height: 1.1; }
+.homeband .subline { margin: -18px auto var(--h-sec-gap); text-align: center; }
 .subline { margin: -10px 0 22px; color: var(--ink-70); font-size: 14px; max-width: 560px; }
 .types { display: flex; flex-wrap: wrap; gap: 9px; }
 

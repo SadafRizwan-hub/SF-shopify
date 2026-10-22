@@ -149,8 +149,8 @@
 
 {% stylesheet %}
   .qualities { padding: 60px 0 10px; }
-  .qualities-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: 34px; text-align: center; }
-  .qualities-head h2 { font-family: var(--serif); font-weight: 400; font-size: clamp(30px, 4vw, 52px); line-height: 1.1; margin: 0; }
+  .qualities-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: var(--h-sec-gap); text-align: center; }
+  .qualities-head h2 { font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; margin: 0; }
 
   .qualities-wrap { position: relative; }
   /* full width: a small gutter, not the page shell, so the row starts near
@@ -173,7 +173,7 @@
 
   .quality {
     /* about four and a half tiles across the screen, whatever its width */
-    position: relative; flex: 0 0 calc((100vw - 2 * var(--qpad) - 4 * var(--qgap)) / 4.4);
+    position: relative; flex: 0 0 calc((100vw - 2 * var(--qpad) - 5 * var(--qgap)) / 6.3);
     aspect-ratio: 1 / 1; border-radius: 6px; overflow: hidden;
     scroll-snap-align: start; background: var(--ink);
     display: flex; align-items: center; justify-content: center;
@@ -184,7 +184,7 @@
   .quality:hover::after { background: rgba(20, 17, 15, 0.46); }
   .quality-name {
     position: relative; z-index: 1; padding: 0 14px; text-align: center;
-    font-family: var(--serif); font-size: clamp(26px, 2.6vw, 40px); line-height: 1.1; color: #fffdf8;
+    font-family: var(--serif); font-size: clamp(22px, 1.9vw, 30px); line-height: 1.1; color: #fffdf8;
     text-shadow: 0 2px 18px rgba(20, 17, 15, 0.35);
   }
 
@@ -198,14 +198,18 @@
   .quality-arrow.prev { left: 36px; }
   .quality-arrow.next { right: 36px; }
 
+  @media (max-width: 1500px) {
+    .quality { flex-basis: calc((100vw - 2 * var(--qpad) - 4 * var(--qgap)) / 5.3); }
+  }
   @media (max-width: 1050px) {
-    .quality { flex-basis: calc((100vw - 2 * var(--qpad) - 2 * var(--qgap)) / 2.6); }
+    .quality { flex-basis: calc((100vw - 2 * var(--qpad) - 2 * var(--qgap)) / 3.3); }
   }
   @media (max-width: 700px) {
     .qualities { padding-top: 44px; }
     .qualities-head { margin-bottom: 24px; }
     .qualities-row { --qpad: 16px; --qgap: 14px; }
-    .quality { flex-basis: 64vw; }
+    .quality { flex-basis: 42vw; }
+    .quality-name { font-size: 21px; }
     .quality-arrow { display: none; }
   }
 {% endstylesheet %}

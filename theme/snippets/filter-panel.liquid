@@ -14,6 +14,9 @@
              across the products currently rendered. The panel says so.
 
   Every native control is a link, so that path works with no JavaScript.
+
+  Each group is a <details>: closed until the shopper opens it, except a
+  group that already has something chosen, which opens so the choice shows.
 {%- endcomment -%}
 {%- liquid
   assign shade_names = 'shade,shades,colour,colours,color,colors' | split: ','
@@ -51,13 +54,13 @@
     -%}
 
     {%- if filter.type == 'price_range' -%}
-      <section>
-        <header>
+      <details class="facet"{% if filter.min_value.value != blank or filter.max_value.value != blank %} open{% endif %}>
+        <summary>
           <span class="label">{{ filter.label }}</span>
           {%- if filter.min_value.value != blank or filter.max_value.value != blank -%}
             <a class="linkish clearfacet" href="{{ filter.url_to_remove }}">Clear</a>
           {%- endif -%}
-        </header>
+        </summary>
         <form method="get" class="range">
           {%- for other in collection.filters -%}
             {%- if other.type == 'price_range' -%}{%- continue -%}{%- endif -%}
@@ -69,11 +72,11 @@
           <input type="number" name="{{ filter.max_value.param_name }}" value="{{ filter.max_value.value | divided_by: 100.0 }}" placeholder="Max" min="0">
           <button class="chip" type="submit">Go</button>
         </form>
-      </section>
+      </details>
 
     {%- elsif filter.values.size > 0 -%}
-      <section>
-        <header>
+      <details class="facet"{% if filter.active_values.size > 0 %} open{% endif %}>
+        <summary>
           <span class="label">{{ filter.label }}</span>
           <span class="meta">
             {%- if filter.active_values.size > 0 -%}{{ filter.active_values.size }} selected{%- else -%}none{%- endif -%}
@@ -81,7 +84,7 @@
           {%- if filter.active_values.size > 0 -%}
             <a class="linkish clearfacet" href="{{ filter.url_to_remove }}">Clear</a>
           {%- endif -%}
-        </header>
+        </summary>
 
         {%- if is_colour -%}
           <div class="shades">
@@ -116,7 +119,7 @@
             {%- endfor -%}
           </div>
         {%- endif -%}
-      </section>
+      </details>
     {%- endif -%}
   {%- endfor -%}
 
@@ -142,19 +145,19 @@
       assign type_rows = types | split: '||'
     -%}
     {%- if type_rows.size > 0 -%}
-      <section data-facet-group="type">
-        <header>
+      <details class="facet" data-facet-group="type">
+        <summary>
           <span class="label">Fabric</span>
           <span class="meta" data-facet-count="type">none</span>
           <button type="button" class="linkish clearfacet" data-facet-clear="type" hidden>Clear</button>
-        </header>
+        </summary>
         <div class="chips">
           {%- for row in type_rows -%}
             {%- assign parts = row | split: '|' -%}
             <button type="button" class="chip" data-facet="type" data-value="{{ parts[0] }}">{{ parts[1] }}</button>
           {%- endfor -%}
         </div>
-      </section>
+      </details>
     {%- endif -%}
   {%- endunless -%}
 
@@ -184,12 +187,12 @@
       assign shade_rows = shades | split: '||'
     -%}
     {%- if shade_rows.size > 0 -%}
-      <section data-facet-group="shades">
-        <header>
+      <details class="facet" data-facet-group="shades">
+        <summary>
           <span class="label">Colour</span>
           <span class="meta" data-facet-count="shades">tap to add</span>
           <button type="button" class="linkish clearfacet" data-facet-clear="shades" hidden>Clear</button>
-        </header>
+        </summary>
         <div class="shades">
           {%- for row in shade_rows -%}
             {%- assign parts = row | split: '|' -%}
@@ -200,7 +203,7 @@
             </button>
           {%- endfor -%}
         </div>
-      </section>
+      </details>
     {%- endif -%}
   {%- endunless -%}
 
@@ -237,12 +240,12 @@
       assign design_rows = designs | split: '||'
     -%}
     {%- if design_rows.size > 0 -%}
-      <section data-facet-group="designs">
-        <header>
+      <details class="facet" data-facet-group="designs">
+        <summary>
           <span class="label">Design / Pattern</span>
           <span class="meta" data-facet-count="designs">none selected</span>
           <button type="button" class="linkish clearfacet" data-facet-clear="designs" hidden>Clear</button>
-        </header>
+        </summary>
         <div class="designs-facet">
           {%- for row in design_rows -%}
             {%- assign parts = row | split: '|' -%}
@@ -252,7 +255,7 @@
             </button>
           {%- endfor -%}
         </div>
-      </section>
+      </details>
     {%- endif -%}
   {%- endunless -%}
 
@@ -291,19 +294,19 @@
     assign fam_rows = fams | split: '||'
   -%}
   {%- if fam_rows.size > 0 -%}
-    <section data-facet-group="families">
-      <header>
+    <details class="facet" data-facet-group="families">
+      <summary>
         <span class="label">Design family</span>
         <span class="meta" data-facet-count="families">none</span>
           <button type="button" class="linkish clearfacet" data-facet-clear="families" hidden>Clear</button>
-      </header>
+      </summary>
       <div class="chips">
         {%- for row in fam_rows -%}
           {%- assign parts = row | split: '|' -%}
           <button type="button" class="chip" data-facet="families" data-value="{{ parts[0] }}">{{ parts[1] }}</button>
         {%- endfor -%}
       </div>
-    </section>
+    </details>
   {%- endif -%}
 
   {%- if paginate.pages > 1 and native_fabric == false or paginate.pages > 1 and native_colour == false or paginate.pages > 1 and native_design == false -%}

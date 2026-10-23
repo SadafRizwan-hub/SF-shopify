@@ -303,9 +303,9 @@
   <button
     class="heart"
     type="button"
-    data-save="{{ product.handle }}"
+    data-save="{{ product.handle }}{% if one_design %}~{{ design_slug }}{% endif %}"
     aria-pressed="false"
-    aria-label="Save {{ product.title | escape }}"
+    aria-label="Save {{ product.title | escape }}{% if one_design %} – {{ design | escape }}{% endif %}"
   >
     {% render 'icon', name: 'heart', size: 15 %}
   </button>

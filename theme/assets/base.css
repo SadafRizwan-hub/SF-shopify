@@ -826,6 +826,11 @@ body.drawer-open { overflow: hidden; }
 }
 .top h1 { font-size: clamp(28px, 4vw, 38px); }
 .top .meta { margin: 6px 0 0; }
+/* the catalog heading, set like a homepage section heading */
+.cat-top { flex-direction: column; align-items: stretch; gap: 18px; margin-bottom: 30px; }
+.cat-head { text-align: center; }
+.cat-head h1 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; }
+.cat-top .topright { align-self: flex-end; }
 .topright { display: flex; align-items: center; gap: 8px; }
 .msearch { display: none; }
 
@@ -851,17 +856,33 @@ body.drawer-open { overflow: hidden; }
 }
 
 .split { display: grid; grid-template-columns: 268px minmax(0, 1fr); gap: 44px; align-items: start; }
-.rail { position: sticky; top: 90px; }
+/* the filters scroll on their own, beside the grid, which scrolls with the page */
+.rail {
+  position: sticky; top: 90px;
+  max-height: calc(100vh - 110px); overflow-y: auto; overscroll-behavior: contain;
+  padding-right: 10px; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+}
+.rail::-webkit-scrollbar { width: 5px; }
+.rail::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 5px; }
 .railhead { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 18px; }
 
-.panel { display: flex; flex-direction: column; gap: 30px; }
-.panel section header {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 12px; padding-bottom: 11px; margin-bottom: 15px;
-  border-bottom: 1px solid var(--line-soft);
+.panel { display: flex; flex-direction: column; }
+.panel .facet { border-bottom: 1px solid var(--line-soft); }
+.panel .facet > summary {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 15px 2px; cursor: pointer; list-style: none;
 }
-/* label left; the count and its Clear sit together on the right */
-.panel section header .label { margin-right: auto; }
+.panel .facet > summary::-webkit-details-marker { display: none; }
+/* label left; the count and its Clear sit together on the right, then the arrow */
+.panel .facet > summary .label { margin-right: auto; }
+.panel .facet > summary::after {
+  content: ''; flex: none; width: 7px; height: 7px; margin: -4px 2px 0 4px;
+  border-right: 1.4px solid var(--ink-70); border-bottom: 1.4px solid var(--ink-70);
+  transform: rotate(45deg); transition: transform 0.2s ease;
+}
+.panel .facet[open] > summary::after { transform: rotate(-135deg); margin-top: 4px; }
+.panel .facet > summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+.panel .facet > :not(summary) { margin-bottom: 18px; }
 .panel .clearfacet { font-size: 11.5px; }
 .panel .clearfacet[hidden] { display: none; }
 .panel .chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -898,7 +919,7 @@ body.drawer-open { overflow: hidden; }
 .panel .designpick .nm { font-size: 10.5px; color: var(--ink-70); text-align: left; }
 .panel .designpick.on .nm { color: var(--ink); font-weight: 500; }
 
-.panel .facetnote { margin-top: -10px; line-height: 1.5; }
+.panel .facetnote { margin-top: 16px; line-height: 1.5; }
 
 .panel .range { display: flex; align-items: center; gap: 8px; }
 .panel .range input {

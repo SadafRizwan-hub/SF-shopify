@@ -42,16 +42,17 @@
   -%}
 
   <div class="shell page">
-    <header class="top">
-      <div>
-        <h1>{{ collection.title | default: 'Catalog' }}</h1>
-        <p class="meta">
-          {%- if collection.products_count > 0 -%}
-            {{ collection.products_count }} {% if collection.products_count == 1 %}quality{% else %}qualities{% endif %} &middot; wholesale rates on
-          {%- else -%}
-            Wholesale rates on
-          {%- endif -%}
-        </p>
+    {%- liquid
+      # the all-products collection is called "Products" by Shopify: give it the shop's own name
+      assign page_title = collection.title
+      if collection.handle == 'all' or page_title == blank or page_title == 'Products'
+        assign page_title = section.settings.all_heading | default: 'All fabrics'
+      endif
+    -%}
+    <header class="top cat-top">
+      <div class="cat-head">
+        {%- if section.settings.eyebrow != blank -%}<p class="sec-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+        <h1>{{ page_title }}</h1>
       </div>
 
       {%- if collection.products_count > 0 -%}
@@ -232,6 +233,8 @@
 {
   "name": "Catalog",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line above the heading", "default": "The collection" },
+    { "type": "text", "id": "all_heading", "label": "Heading for all products", "info": "Used on the all-products page in place of Shopify's \"Products\". Other collections show their own name.", "default": "All fabrics" },
     { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 5, "step": 1, "default": 3 },
     { "type": "range", "id": "per_page", "label": "Products per page", "min": 8, "max": 48, "step": 4, "default": 24 },
     { "type": "text", "id": "empty_heading", "label": "Empty heading", "default": "The shelf is being stocked" },

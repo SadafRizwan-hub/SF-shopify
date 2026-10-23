@@ -109,7 +109,10 @@
       writeSaved(list);
       paintShortlist();
       return i === -1;
-    }
+    },
+    /* for a page that changes which key a heart saves (the fabric page,
+       when the shopper switches design) */
+    paint: function () { paintShortlist(); }
   };
 
   function paintShortlist() {

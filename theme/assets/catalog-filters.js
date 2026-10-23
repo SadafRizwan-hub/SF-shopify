@@ -143,6 +143,12 @@
       btn.hidden = !(chosen[group] && chosen[group].length);
     });
 
+    /* a closed group with something chosen in it opens, so the choice shows */
+    Object.keys(chosen).forEach(function (group) {
+      if (!chosen[group].length) return;
+      document.querySelectorAll('details[data-facet-group="' + group + '"]').forEach(function (d) { d.open = true; });
+    });
+
     pills();
   }
 

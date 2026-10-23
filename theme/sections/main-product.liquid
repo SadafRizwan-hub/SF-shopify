@@ -102,7 +102,23 @@
           overlay: overlay %}
       </div>
 
-      <button class="heart" type="button" data-save="{{ product.handle }}" aria-pressed="false" aria-label="Save {{ product.title | escape }}">
+      {%- liquid
+        # a fabric printed in several designs is saved one design at a time,
+        # the same key its catalog card uses: handle~design
+        assign save_key = product.handle
+        assign save_base = ''
+        assign design_axis = 'design,designs,pattern,patterns' | split: ','
+        for option in product.options_with_values
+          assign okey = option.name | strip | downcase
+          if design_axis contains okey and option.values.size > 1
+            assign save_base = product.handle
+            assign chosen_design = product.selected_or_first_available_variant.options[forloop.index0] | handle
+            assign save_key = product.handle | append: '~' | append: chosen_design
+            break
+          endif
+        endfor
+      -%}
+      <button class="heart" type="button" data-save="{{ save_key }}"{% if save_base != blank %} data-save-base="{{ save_base }}"{% endif %} aria-pressed="false" aria-label="Save {{ product.title | escape }}">
         {% render 'icon', name: 'heart' %}
       </button>
 

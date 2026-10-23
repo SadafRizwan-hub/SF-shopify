@@ -359,7 +359,19 @@
 
   /* ---- paint ----------------------------------------------------------- */
 
+  /* the heart saves this design, as the catalog card for it does */
+  function paintSaveKey() {
+    var heart = document.querySelector('[data-save-base]');
+    if (!heart || !state.design) return;
+    var slug = String(state.design).toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    var key = heart.getAttribute('data-save-base') + '~' + slug;
+    if (heart.getAttribute('data-save') === key) return;
+    heart.setAttribute('data-save', key);
+    if (window.SF && window.SF.shortlist && window.SF.shortlist.paint) window.SF.shortlist.paint();
+  }
+
   function paint() {
+    paintSaveKey();
     var variant = currentVariant();
     var floor = floorMetres();
 

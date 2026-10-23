@@ -4,6 +4,9 @@
   product on the shelf, hidden, and shows the ones this browser saved. That
   keeps it a static page: no fetch, no API token, and it still works when the
   catalogue is large because a card costs nothing until it is shown.
+
+  A fabric printed in several designs is saved one design at a time
+  (handle~design), as its catalog cards are, so it has a card per design here.
 {%- endcomment -%}
 <div class="shell page">
   <header class="top">
@@ -15,9 +18,29 @@
 
   <div class="grid" style="--cols: {{ section.settings.columns }};" data-shortlist-grid hidden>
     {%- for product in collections.all.products limit: section.settings.pool -%}
-      <div data-shortlist-item="{{ product.handle }}" hidden>
-        {% render 'fabric-card', product: product %}
-      </div>
+      {%- liquid
+        assign design_values = ''
+        assign design_axis = 'design,designs,pattern,patterns' | split: ','
+        for option in product.options_with_values
+          assign okey = option.name | strip | downcase
+          if design_axis contains okey
+            assign design_values = option.values
+            break
+          endif
+        endfor
+      -%}
+      {%- if design_values.size > 1 -%}
+        {%- for value in design_values -%}
+          {%- assign vslug = value | handle -%}
+          <div data-shortlist-item="{{ product.handle }}~{{ vslug }}" hidden>
+            {% render 'fabric-card', product: product, design: value %}
+          </div>
+        {%- endfor -%}
+      {%- else -%}
+        <div data-shortlist-item="{{ product.handle }}" hidden>
+          {% render 'fabric-card', product: product %}
+        </div>
+      {%- endif -%}
     {%- endfor -%}
   </div>
 

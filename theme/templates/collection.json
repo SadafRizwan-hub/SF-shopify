@@ -1,6 +1,6 @@
 {
   "sections": {
-    "main": { "type": "main-collection", "settings": { "columns": 3, "per_page": 24 } }
+    "main": { "type": "main-collection", "settings": { "eyebrow": "The collection", "all_heading": "All fabrics", "columns": 3, "per_page": 24 } }
   },
   "order": ["main"]
 }

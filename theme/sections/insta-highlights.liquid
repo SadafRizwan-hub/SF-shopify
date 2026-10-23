@@ -1,115 +1,200 @@
 {%- comment -%}
-  Instagram highlights: a row of round story buttons — Bestsellers, Reviews,
-  WA, FAQs — each opening the matching highlight on the shop's Instagram.
+  Highlights: a row of round badges — Bestsellers, Reviews, WA, FAQs — each
+  a gold-rimmed glass disc with a line drawing, a sprig of blossom on its
+  edge, the name in the heading serif and a small gold ornament under it.
 
   Each circle is a block (Customize → Highlights → Add highlight): a drawn
-  icon or an uploaded image, the label under it, and the highlight's link
-  (open the highlight on Instagram, Share → Copy link). A circle with no link
-  still shows but is not clickable, so the row can be laid out first.
+  icon or an uploaded image, the label under it, and where it goes (an
+  Instagram highlight: open it, tap ⋯ → Copy link). The WhatsApp circle opens
+  a WhatsApp chat with the shop's number (Theme settings → Contact) with the
+  prefilled message, whatever link is pasted on it; with no number it falls
+  back to that link. A circle with nowhere to go still shows, unclickable,
+  so the row can be laid out first.
 
-  The look follows the shop's reference: an Instagram-gradient ring, a
-  parchment disc with a dashed stitch ring and a stitch dot, the drawing in
-  maroon. Centred on a wide screen; a swipe row on a phone if they do not fit.
-  Styles live in this file, so it is one file to copy into a theme.
+  Four across on a wide screen, two by two on a phone.
 {%- endcomment -%}
-{%- assign items = section.blocks | where: 'type', 'highlight' -%}
+{%- liquid
+  assign items = section.blocks | where: 'type', 'highlight'
+  assign wa_number = settings.whatsapp_number | remove: '+' | remove: ' ' | remove: '-' | remove: '(' | remove: ')'
+  assign wa_text = settings.whatsapp_message | url_encode
+-%}
 {%- if items.size > 0 -%}
 <section class="hilite">
+  {%- comment -%} one blossom sprig, drawn once and reused on every circle {%- endcomment -%}
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+    <defs>
+      <g id="hilite-bloom">
+        <g fill="#fbf4ea" stroke="#d9c09a" stroke-width=".7">
+          <ellipse cx="0" cy="-3.4" rx="2.3" ry="3.2"/>
+          <ellipse cx="0" cy="-3.4" rx="2.3" ry="3.2" transform="rotate(72)"/>
+          <ellipse cx="0" cy="-3.4" rx="2.3" ry="3.2" transform="rotate(144)"/>
+          <ellipse cx="0" cy="-3.4" rx="2.3" ry="3.2" transform="rotate(216)"/>
+          <ellipse cx="0" cy="-3.4" rx="2.3" ry="3.2" transform="rotate(288)"/>
+        </g>
+        <circle r="1.4" fill="#b8893e"/>
+      </g>
+      <symbol id="hilite-sprig" viewBox="0 0 100 100">
+        <g fill="none" stroke="#a8843f" stroke-width="1.3" stroke-linecap="round">
+          <path d="M96 96C74 88 52 70 36 48S16 22 8 16"/>
+          <path d="M58 76C50 66 47 58 47 48M42 56C34 52 26 50 18 50M30 38C30 30 33 24 38 18M70 84c-6-2-12-2-18 2"/>
+        </g>
+        <g fill="#b39553">
+          <ellipse cx="66" cy="86" rx="5" ry="2" transform="rotate(-20 66 86)"/>
+          <ellipse cx="52" cy="66" rx="5" ry="2" transform="rotate(60 52 66)"/>
+          <ellipse cx="24" cy="44" rx="4.5" ry="1.8" transform="rotate(30 24 44)"/>
+          <ellipse cx="80" cy="88" rx="4" ry="1.6" transform="rotate(15 80 88)"/>
+        </g>
+        <use href="#hilite-bloom" transform="translate(8 16) scale(1.1)"/>
+        <use href="#hilite-bloom" transform="translate(38 18) scale(.9)"/>
+        <use href="#hilite-bloom" transform="translate(18 50) scale(1.15)"/>
+        <use href="#hilite-bloom" transform="translate(47 46) scale(.95)"/>
+        <use href="#hilite-bloom" transform="translate(28 34) scale(.8)"/>
+        <use href="#hilite-bloom" transform="translate(52 86) scale(.75)"/>
+        <circle cx="14" cy="26" r="1.8" fill="#e9d8bd"/>
+        <circle cx="36" cy="58" r="1.6" fill="#e9d8bd"/>
+      </symbol>
+    </defs>
+  </svg>
+
   {%- if section.settings.heading != blank -%}<h2 class="hilite-heading">{{ section.settings.heading }}</h2>{%- endif -%}
   <div class="hilite-row">
     {%- for block in items -%}
-      {%- assign label = block.settings.label | default: 'Highlight' -%}
-      {%- if block.settings.link != blank -%}
-        <a class="hilite-item" href="{{ block.settings.link }}" target="_blank" rel="noopener" {{ block.shopify_attributes }}>
+      {%- liquid
+        assign label = block.settings.label | default: 'Highlight'
+        assign href = block.settings.link
+        assign external = true
+        if block.settings.icon == 'whatsapp' and wa_number != blank
+          assign href = 'https://wa.me/' | append: wa_number | append: '?text=' | append: wa_text
+        endif
+        assign side = 'left'
+        if forloop.index0 == 1 or forloop.index0 == 3 or forloop.index0 == 5 or forloop.index0 == 7 or forloop.index0 == 9
+          assign side = 'right'
+        endif
+      -%}
+      {%- if href != blank -%}
+        <a class="hilite-item" href="{{ href }}" target="_blank" rel="noopener" {{ block.shopify_attributes }}>
       {%- else -%}
         <div class="hilite-item" {{ block.shopify_attributes }}>
       {%- endif -%}
-        <span class="hilite-ring">
+        <span class="hilite-badge">
           <span class="hilite-disc">
             {%- if block.settings.image != blank -%}
               {%- assign focus = block.settings.image.presentation.focal_point | default: 'center' -%}
               {%- assign focus_style = 'object-position: ' | append: focus -%}
-              {{ block.settings.image | image_url: width: 240 | image_tag: loading: 'lazy', alt: '', class: 'hilite-img', style: focus_style }}
+              {{ block.settings.image | image_url: width: 400 | image_tag: loading: 'lazy', alt: '', class: 'hilite-img', style: focus_style }}
             {%- else -%}
+              <span class="hilite-wash" aria-hidden="true"></span>
               {%- case block.settings.icon -%}
                 {%- when 'bestseller' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-14 32 32)"><circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="32" cy="32" r="17.5" fill="none" stroke="currentColor" stroke-width=".9" stroke-dasharray="1.6 1.4"/><rect x="4" y="25.5" width="56" height="13" rx="2.5" fill="currentColor"/><text x="32" y="34.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="7.2" font-weight="700" fill="#f6ead2" letter-spacing=".2">BESTSELLER</text><text x="32" y="20.5" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="3.2" font-weight="700" fill="currentColor" letter-spacing=".5">BESTSELLER</text><text x="32" y="46" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="3.2" font-weight="700" fill="currentColor" letter-spacing=".5">BESTSELLER</text></g></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"><path d="M14 22h36l-3 32H17z"/><path d="M24 26v-8a8 8 0 0 1 16 0v8"/><path d="m32 31 2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-width="2"/></svg>
+                {%- when 'stamp' -%}
+                  <svg viewBox="0 0 64 64" aria-hidden="true"><g transform="rotate(-14 32 32)"><circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="32" cy="32" r="17.5" fill="none" stroke="currentColor" stroke-width=".9" stroke-dasharray="1.6 1.4"/><rect x="4" y="25.5" width="56" height="13" rx="2.5" fill="currentColor"/><text x="32" y="34.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="7.2" font-weight="700" fill="#f6ead2" letter-spacing=".2">BESTSELLER</text></g></svg>
                 {%- when 'reviews' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M14 9h36a4 4 0 0 1 4 4v9a4 4 0 0 1-4 4H30l-6 5v-5H14a4 4 0 0 1-4-4v-9a4 4 0 0 1 4-4z"/><path d="m21 13.6 1.2 2.4 2.7.4-2 1.9.5 2.6-2.4-1.2-2.4 1.2.5-2.6-2-1.9 2.7-.4zM32 11.6l1.2 2.4 2.7.4-2 1.9.5 2.6-2.4-1.2-2.4 1.2.5-2.6-2-1.9 2.7-.4zM43 13.6l1.2 2.4 2.7.4-2 1.9.5 2.6-2.4-1.2-2.4 1.2.5-2.6-2-1.9 2.7-.4z"/><path d="M20 39h6v18h-6z"/><path d="M26 41.5c3-1.5 5.5-5 6.5-9 .5-2 3.5-2 4 .5.5 2.2-.4 5-1.5 7H45a3.2 3.2 0 0 1 .5 6.3 3.2 3.2 0 0 1-.8 6 3 3 0 0 1-1.5 5.2H31c-2 0-3.5-.5-5-1.5"/></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M12 7h40a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H32l-5 5v-5H12a4 4 0 0 1-4-4V11a4 4 0 0 1 4-4z"/><path stroke-width="1.7" d="m19 11.8 1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4zM32 11.8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4zM45 11.8l1.3 2.6 2.9.4-2.1 2 .5 2.9-2.6-1.4-2.6 1.4.5-2.9-2.1-2 2.9-.4z"/><path d="M18 38h7v19h-7z"/><path d="M25 40.5c3-1.5 5.5-5 6.5-9 .5-2 3.5-2 4 .5.5 2.2-.4 5-1.5 7H45a3.2 3.2 0 0 1 .5 6.3 3.2 3.2 0 0 1-.8 6 3 3 0 0 1-1.5 5.2H30c-2 0-3.5-.5-5-1.5"/></svg>
                 {%- when 'whatsapp' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M13.5 52l3.4-10.3A19.5 19.5 0 1 1 24 49.2z"/><path stroke-width="2.4" d="M24.6 22.6c-1.4 1.4-1.7 3.8 0 7 1.9 3.4 5.3 6.6 8.5 8.1 2.8 1.3 4.9.8 6.2-.7l-.4-2.5-4.2-1.9-2 1.9c-2.6-1.1-4.9-3.4-6-6l1.9-2-1.9-4.2z"/></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"><path d="M13.5 52l3.4-10.3A19.5 19.5 0 1 1 24 49.2z"/><path stroke-width="2.6" d="M24.6 22.6c-1.4 1.4-1.7 3.8 0 7 1.9 3.4 5.3 6.6 8.5 8.1 2.8 1.3 4.9.8 6.2-.7l-.4-2.5-4.2-1.9-2 1.9c-2.6-1.1-4.9-3.4-6-6l1.9-2-1.9-4.2z"/></svg>
                 {%- when 'faq' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M22 23V17a4 4 0 0 1 4-4h26a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4h-3v6l-7-6h-4"/><path d="M8 27a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v14a4 4 0 0 1-4 4H22l-8 7v-7h-2a4 4 0 0 1-4-4z"/><text x="24" y="38.2" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="currentColor" stroke="none" letter-spacing=".4">FAQ</text></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M24 22v-6a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v13a4 4 0 0 1-4 4h-3v6l-7-6h-3"/><path d="M8 26a4 4 0 0 1 4-4h24a4 4 0 0 1 4 4v13a4 4 0 0 1-4 4H22l-8 7v-7h-2a4 4 0 0 1-4-4z"/><text x="24" y="36.6" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10.5" font-weight="700" fill="currentColor" stroke="none" letter-spacing=".5">FAQ</text></svg>
                 {%- when 'new' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="m32 7 5 6.4 7.8-2.3.6 8.1 7.6 3-4 7 4 7-7.6 3-.6 8.1-7.8-2.3L32 57l-5-6.4-7.8 2.3-.6-8.1-7.6-3 4-7-4-7 7.6-3 .6-8.1 7.8 2.3z"/><text x="32" y="36" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="currentColor" stroke="none">NEW</text></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="m32 7 5 6.4 7.8-2.3.6 8.1 7.6 3-4 7 4 7-7.6 3-.6 8.1-7.8-2.3L32 57l-5-6.4-7.8 2.3-.6-8.1-7.6-3 4-7-4-7 7.6-3 .6-8.1 7.8 2.3z"/><text x="32" y="36" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="currentColor" stroke="none">NEW</text></svg>
                 {%- when 'fabric' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M10 20c7-5 14-5 21 0s14 5 21 0v26c-7 5-14 5-21 0s-14-5-21 0z"/><path d="M18 27c4 2 8 2 12 0M32 33c4 2 8 2 12 0M18 39c4 2 8 2 12 0"/></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M10 20c7-5 14-5 21 0s14 5 21 0v26c-7 5-14 5-21 0s-14-5-21 0z"/><path d="M18 27c4 2 8 2 12 0M32 33c4 2 8 2 12 0M18 39c4 2 8 2 12 0"/></svg>
                 {%- when 'delivery' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M8 18h28v24H8zM36 26h10l8 9v7H36"/><circle cx="17" cy="45" r="4.5"/><circle cx="46" cy="45" r="4.5"/></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M8 18h28v24H8zM36 26h10l8 9v7H36"/><circle cx="17" cy="45" r="4.5"/><circle cx="46" cy="45" r="4.5"/></svg>
                 {%- when 'offer' -%}
-                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"><path d="M34 8h18a4 4 0 0 1 4 4v18L30 56 8 34z"/><circle cx="45" cy="19" r="3.4"/><path d="m24 40 12-12M25 30.5h.1M35 39.5h.1" stroke-width="3"/></svg>
+                  <svg viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"><path d="M34 8h18a4 4 0 0 1 4 4v18L30 56 8 34z"/><circle cx="45" cy="19" r="3.4"/><path d="m24 40 12-12M25 30.5h.1M35 39.5h.1" stroke-width="3"/></svg>
               {%- endcase -%}
             {%- endif -%}
           </span>
+          <svg class="hilite-sprig hilite-sprig--{{ side }}" aria-hidden="true" focusable="false"><use href="#hilite-sprig"/></svg>
         </span>
         <span class="hilite-label">{{ label }}</span>
-      {%- if block.settings.link != blank -%}</a>{%- else -%}</div>{%- endif -%}
+        <span class="hilite-orn" aria-hidden="true">
+          <svg viewBox="0 0 20 20"><g fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="10" cy="5.2" r="3"/><circle cx="10" cy="14.8" r="3"/><circle cx="5.2" cy="10" r="3"/><circle cx="14.8" cy="10" r="3"/></g><circle cx="10" cy="10" r="1.6" fill="currentColor"/></svg>
+        </span>
+      {%- if href != blank -%}</a>{%- else -%}</div>{%- endif -%}
     {%- endfor -%}
   </div>
 </section>
 {%- endif -%}
 
 {% stylesheet %}
-  .hilite { padding: var(--sec-y) 16px; text-align: center; }
+  .hilite { padding: var(--sec-y) 24px; text-align: center; }
   .hilite-heading { margin: 0 0 var(--h-sec-gap); font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
   .hilite-row {
-    display: flex; justify-content: center; gap: clamp(22px, 4vw, 64px);
-    overflow-x: auto; scrollbar-width: none; padding: 4px 8px 8px;
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 28px clamp(28px, 5vw, 96px); max-width: 1240px; margin: 0 auto;
   }
-  .hilite-row::-webkit-scrollbar { display: none; }
-  .hilite-item { flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; gap: 12px; color: var(--ink); }
-  /* Instagram's ring, a white gap, then the parchment disc */
-  .hilite-ring {
-    width: 124px; height: 124px; border-radius: 50%; padding: 4px;
-    background: linear-gradient(45deg, #f9a03f 0%, #f0574a 30%, #d6297a 60%, #a12bb4 100%);
-    transition: transform 0.2s ease;
+  .hilite-item {
+    --disc: clamp(150px, 12.5vw, 196px);
+    flex: 0 0 auto; width: calc(var(--disc) + 40px);
+    display: flex; flex-direction: column; align-items: center; color: var(--ink);
   }
-  .hilite-item:hover .hilite-ring { transform: scale(1.04); }
+  .hilite-badge { position: relative; width: var(--disc); height: var(--disc); }
+  /* the gold rim: a thin gradient band around a frosted ivory disc */
   .hilite-disc {
-    position: relative; display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%;
-    border: 4px solid #fff; overflow: hidden; color: var(--terracotta, #b5542e);
+    position: relative; display: grid; place-items: center;
+    width: 100%; height: 100%; border-radius: 50%; overflow: hidden;
+    color: #9b4a2c;
+    border: 3px solid transparent;
     background:
-      radial-gradient(circle at 30% 28%, rgba(255, 252, 240, 0.9), transparent 45%),
-      radial-gradient(circle at 72% 70%, rgba(190, 150, 95, 0.28), transparent 40%),
-      radial-gradient(circle at 20% 78%, rgba(180, 130, 80, 0.18), transparent 30%),
-      var(--sand, #efe8dc);
+      radial-gradient(circle at 34% 26%, #fffefb 0%, #fbf6ee 55%, #f3eadc 100%) padding-box,
+      linear-gradient(150deg, #e9cf92 0%, #a9792c 30%, #f3dfa8 52%, #9c6d24 76%, #dcbb76 100%) border-box;
+    box-shadow:
+      0 18px 34px -18px rgba(110, 76, 24, 0.45),
+      inset 0 2px 6px rgba(255, 255, 255, 0.9),
+      inset 0 -8px 18px rgba(176, 134, 70, 0.14);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
   }
-  /* the stitched ring and its dot */
+  /* the dashed stitch inside the rim */
   .hilite-disc::before {
-    content: ''; position: absolute; inset: 7px; border-radius: 50%;
-    border: 1.6px dashed rgba(181, 84, 46, 0.6);
+    content: ''; position: absolute; inset: 9%; border-radius: 50%;
+    border: 1.2px dashed rgba(169, 121, 44, 0.55); pointer-events: none;
   }
-  .hilite-disc::after {
-    content: ''; position: absolute; left: 50%; bottom: 5px; width: 5px; height: 5px; margin-left: -2.5px;
-    border-radius: 50%; background: #c08a3e;
+  /* soft rose watercolour behind the drawing */
+  .hilite-wash {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+      radial-gradient(circle at 62% 38%, rgba(226, 160, 150, 0.42) 0, rgba(226, 160, 150, 0) 21%),
+      radial-gradient(circle at 38% 62%, rgba(226, 160, 150, 0.34) 0, rgba(226, 160, 150, 0) 19%);
   }
-  .hilite-disc svg { position: relative; width: 62%; height: 62%; }
+  .hilite-disc svg { position: relative; width: 46%; height: 46%; }
   .hilite-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
-  .hilite-label { font: var(--card-title); font-size: 14.5px; color: var(--ink); }
 
+  .hilite-sprig { position: absolute; width: 56%; height: 56%; bottom: -2%; pointer-events: none; }
+  .hilite-sprig--left { left: -20%; }
+  .hilite-sprig--right { right: -20%; transform: scaleX(-1); }
+
+  a.hilite-item:hover .hilite-disc { transform: translateY(-4px); box-shadow: 0 26px 40px -20px rgba(110, 76, 24, 0.55), inset 0 2px 6px rgba(255, 255, 255, 0.9), inset 0 -8px 18px rgba(176, 134, 70, 0.14); }
+  a.hilite-item:focus-visible { outline: none; }
+  a.hilite-item:focus-visible .hilite-disc { outline: 2px solid var(--brass); outline-offset: 4px; }
+
+  .hilite-label {
+    margin-top: 22px; font-family: var(--serif); font-weight: 500;
+    font-size: clamp(22px, 1.8vw, 28px); line-height: 1.15; color: var(--ink);
+  }
+  /* line · flower · line */
+  .hilite-orn {
+    display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--brass, #96702e);
+  }
+  .hilite-orn::before, .hilite-orn::after { content: ''; width: 46px; height: 1px; background: currentColor; opacity: 0.55; }
+  .hilite-orn svg { width: 16px; height: 16px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hilite-disc { transition: none; }
+    a.hilite-item:hover .hilite-disc { transform: none; }
+  }
   @media (max-width: 700px) {
-    .hilite { padding: var(--sec-y) 0; }
-    .hilite-heading { margin-bottom: 18px; }
-    .hilite-row { justify-content: flex-start; gap: 14px; padding: 4px 16px 8px; }
-    /* centre the row when it fits; auto margins never clip a longer one */
-    .hilite-item:first-child { margin-left: auto; }
-    .hilite-item:last-child { margin-right: auto; }
-    /* four across a 390px phone: 4 x 76 + 3 x 14 + 32 = 378 */
-    .hilite-ring { width: 76px; height: 76px; padding: 3px; }
-    .hilite-disc { border-width: 3px; }
-    .hilite-disc::before { inset: 5px; border-width: 1.2px; }
-    .hilite-disc::after { bottom: 3px; width: 4px; height: 4px; margin-left: -2px; }
-    .hilite-label { font-size: 13.5px; }
+    .hilite { padding: var(--sec-y) 16px; }
+    .hilite-heading { margin-bottom: 20px; }
+    /* two by two: each circle about a third of the phone */
+    .hilite-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 12px; }
+    .hilite-item { --disc: min(128px, 34vw); width: auto; }
+    .hilite-disc { border-width: 2px; }
+    .hilite-label { margin-top: 16px; font-size: 21px; }
+    .hilite-orn { margin-top: 8px; }
+    .hilite-orn::before, .hilite-orn::after { width: 30px; }
+    .hilite-orn svg { width: 13px; height: 13px; }
   }
 {% endstylesheet %}
 
@@ -131,7 +216,8 @@
           "label": "Icon",
           "default": "bestseller",
           "options": [
-            { "value": "bestseller", "label": "Bestseller stamp" },
+            { "value": "bestseller", "label": "Shopping bag (bestsellers)" },
+            { "value": "stamp", "label": "Bestseller stamp" },
             { "value": "reviews", "label": "Reviews (thumbs up)" },
             { "value": "whatsapp", "label": "WhatsApp" },
             { "value": "faq", "label": "FAQ" },
@@ -143,7 +229,7 @@
         },
         { "type": "image_picker", "id": "image", "label": "Your own picture (optional)", "info": "Replaces the drawn icon. Square." },
         { "type": "text", "id": "label", "label": "Label", "default": "Bestsellers" },
-        { "type": "url", "id": "link", "label": "Instagram highlight link", "info": "On Instagram open the highlight, tap ⋯ → Copy link, paste it here." }
+        { "type": "url", "id": "link", "label": "Link", "info": "An Instagram highlight (open it, tap ⋯ → Copy link) or any page. The WhatsApp icon opens a chat with the number in Theme settings → Contact instead, and uses this link only if no number is set." }
       ]
     }
   ],

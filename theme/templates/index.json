@@ -2,32 +2,252 @@
   "sections": {
     "hero": {
       "type": "hero",
+      "blocks": {
+        "slide_ffCbhG": {
+          "type": "slide",
+          "settings": {
+            "image": "shopify://shop_images/Lustre_of_the_Lotus_Courtyard.png",
+            "product": "",
+            "tag": "",
+            "heading": "",
+            "text": "",
+            "button_label": "Shop now",
+            "link": "",
+            "show_price": false
+          }
+        }
+      },
+      "block_order": [
+        "slide_ffCbhG"
+      ],
       "settings": {
         "height": "adapt",
         "autoplay": true,
         "speed": 5,
+        "label": "Featured fabrics",
         "eyebrow": "New arrival",
         "empty_heading": "Wholesale cloth, cut to your metre"
+      }
+    },
+    "promises": {
+      "type": "promise-ticker",
+      "blocks": {
+        "india": {
+          "type": "promise",
+          "settings": {
+            "icon": "india",
+            "title": "Made in India",
+            "text": "",
+            "link": "/collections/all"
+          }
+        },
+        "quality": {
+          "type": "promise",
+          "settings": {
+            "icon": "quality",
+            "title": "Assured Quality",
+            "text": "",
+            "link": "/collections/all"
+          }
+        },
+        "cod": {
+          "type": "promise",
+          "settings": {
+            "icon": "cod",
+            "title": "Cash on Delivery",
+            "text": "",
+            "link": "/collections/all"
+          }
+        },
+        "shipping": {
+          "type": "promise",
+          "settings": {
+            "icon": "shipping",
+            "title": "Free Shipping Over ₹849",
+            "text": "",
+            "link": "/collections/all"
+          }
+        },
+        "returns": {
+          "type": "promise",
+          "settings": {
+            "icon": "returns",
+            "title": "7 Day Returns",
+            "text": "",
+            "link": "/policies/refund-policy"
+          }
+        }
+      },
+      "block_order": [
+        "india",
+        "quality",
+        "cod",
+        "shipping",
+        "returns"
+      ],
+      "settings": {
+        "move": true,
+        "speed": 7,
+        "background": "plain",
+        "label": "Our promises"
       }
     },
     "qualities": {
       "type": "quality-chips",
       "settings": {
         "heading": "Shop by quality",
-        "link_label": "See the full catalog"
+        "collection": "",
+        "link_url": "",
+        "link_label": "See the full catalog",
+        "eyebrow": "Explore"
+      }
+    },
+    "new-arrivals": {
+      "type": "new-arrivals",
+      "settings": {
+        "heading": "New Arrivals",
+        "collection": "",
+        "count": 10,
+        "only_new": false,
+        "hide_sold_out": true,
+        "button_label": "Add to cart",
+        "choose_label": "Choose shade",
+        "link_label": "View all",
+        "link": "",
+        "eyebrow": "Just in"
       }
     },
     "by-the-metre": {
       "type": "featured-fabrics",
       "settings": {
         "heading": "By the metre",
+        "collection": "",
         "count": 24,
+        "order": "newest",
         "columns": 5,
-        "link_label": "See all",
         "rows": 2,
         "more_label": "View more",
         "all_label": "See the full catalog",
-        "link_url": "/collections/all"
+        "link_url": "/collections/all",
+        "link_label": "See all",
+        "eyebrow": "Cut to your length"
+      }
+    },
+    "why-buy": {
+      "type": "why-buy",
+      "blocks": {
+        "loved": {
+          "type": "card",
+          "settings": {
+            "icon": "heart",
+            "title": "Loved by",
+            "title_accent": "our customers",
+            "text": "Trusted by families across India."
+          }
+        },
+        "quality": {
+          "type": "card",
+          "settings": {
+            "icon": "shield",
+            "title": "Quality",
+            "title_accent": "checked",
+            "text": "Every metre is checked before we cut and pack it."
+          }
+        },
+        "shipped": {
+          "type": "card",
+          "settings": {
+            "icon": "truck",
+            "title": "Cut & shipped",
+            "title_accent": "in 24–48h",
+            "text": "Carefully packed and shipped anywhere in India."
+          }
+        },
+        "secure": {
+          "type": "card",
+          "settings": {
+            "icon": "lock",
+            "title": "Secure",
+            "title_accent": "payments",
+            "text": "Pay by UPI, card or net banking."
+          }
+        }
+      },
+      "block_order": [
+        "loved",
+        "quality",
+        "shipped",
+        "secure"
+      ],
+      "settings": {
+        "eyebrow": "Our promise to you",
+        "heading": "Buy fabric",
+        "heading_accent": "without the worry"
+      }
+    },
+    "highlights": {
+      "type": "insta-highlights",
+      "blocks": {
+        "bestsellers": {
+          "type": "highlight",
+          "settings": {
+            "icon": "bestseller",
+            "label": "Bestsellers",
+            "link": ""
+          }
+        },
+        "reviews": {
+          "type": "highlight",
+          "settings": {
+            "icon": "reviews",
+            "label": "Reviews",
+            "link": ""
+          }
+        },
+        "wa": {
+          "type": "highlight",
+          "settings": {
+            "icon": "whatsapp",
+            "label": "WA",
+            "link": ""
+          }
+        },
+        "faqs": {
+          "type": "highlight",
+          "settings": {
+            "icon": "faq",
+            "label": "FAQs",
+            "link": ""
+          }
+        }
+      },
+      "block_order": [
+        "bestsellers",
+        "reviews",
+        "wa",
+        "faqs"
+      ],
+      "settings": {
+        "heading": ""
+      }
+    },
+    "view-shop": {
+      "type": "view-shop",
+      "settings": {
+        "eyebrow": "As seen on Instagram",
+        "heading": "View & Shop",
+        "subheading": "Watch the fabric move, then take it home."
+      }
+    },
+    "customer-love": {
+      "type": "customer-love",
+      "settings": {
+        "eyebrow": "Happy customers",
+        "heading": "Loved by customers across India",
+        "subheading": "Real outfits, made from fabric off our shelves.",
+        "rating": "",
+        "google_label": "Google Reviews",
+        "google_url": ""
       }
     },
     "designs": {
@@ -36,7 +256,43 @@
         "heading": "One design, many grounds",
         "body": "",
         "count": 6,
-        "link_label": "All designs"
+        "link_url": "",
+        "link_label": "All designs",
+        "eyebrow": "The design book"
+      }
+    },
+    "looks": {
+      "type": "finished-look",
+      "settings": {
+        "eyebrow": "See before you stitch",
+        "heading": "Your fabric, as a finished look",
+        "subheading": "",
+        "badge": "AI preview",
+        "badge_real": "Real look",
+        "swatch_label": "Fabric",
+        "default_text": "Shown to you in minutes, in store"
+      }
+    },
+    "visit": {
+      "type": "visit-us",
+      "settings": {
+        "eyebrow": "Visit us",
+        "heading": "Come see the fabric in person",
+        "subheading": "",
+        "image": "shopify://shop_images/Screenshot_2026-10-22_at_3.55.14_PM.png",
+        "address_title": "Address",
+        "address": "3rd Floor, JT Tower, Urdu Gali, Patel Market, Ghansi Bazaar, Hyderabad, Telangana 500002",
+        "maps_url": "https://maps.app.goo.gl/4jQCsuH9NSbvpYng9",
+        "directions_label": "Get directions",
+        "show_map": false,
+        "timings_title": "Timings",
+        "timings": "Mon – Sat | 10:30 am – 8:30 pm\nSunday | Closed",
+        "talk_title": "Any questions?",
+        "talk_text": "Ask about a fabric, a shade or an order — we reply on WhatsApp.",
+        "whatsapp_label": "WhatsApp us",
+        "whatsapp_number": "",
+        "whatsapp_message": "",
+        "phone": ""
       }
     },
     "promise": {
@@ -71,16 +327,11 @@
         "slabs",
         "swatch",
         "cut"
-      ]
+      ],
+      "settings": {}
     },
     "why": {
       "type": "promise-strip",
-      "settings": {
-        "eyebrow": "A more meaningful way to shop",
-        "show_lotus": true,
-        "show_sprigs": true,
-        "background": "plain"
-      },
       "blocks": {
         "india": {
           "type": "promise",
@@ -140,219 +391,12 @@
         "shipping",
         "returns"
       ],
-      "disabled": true
-    },
-    "new-arrivals": {
-      "type": "new-arrivals",
+      "disabled": true,
       "settings": {
-        "heading": "New Arrivals",
-        "count": 10,
-        "only_new": false,
-        "hide_sold_out": true,
-        "button_label": "Add to cart",
-        "choose_label": "Choose shade",
-        "link_label": "View all"
-      }
-    },
-    "why-buy": {
-      "type": "why-buy",
-      "settings": {
-        "eyebrow": "Our promise to you",
-        "heading": "Buy fabric",
-        "heading_accent": "without the worry"
-      },
-      "blocks": {
-        "loved": {
-          "type": "card",
-          "settings": {
-            "icon": "heart",
-            "title": "Loved by",
-            "title_accent": "our customers",
-            "text": "Trusted by families across India."
-          }
-        },
-        "quality": {
-          "type": "card",
-          "settings": {
-            "icon": "shield",
-            "title": "Quality",
-            "title_accent": "checked",
-            "text": "Every metre is checked before we cut and pack it."
-          }
-        },
-        "shipped": {
-          "type": "card",
-          "settings": {
-            "icon": "truck",
-            "title": "Cut & shipped",
-            "title_accent": "in 24–48h",
-            "text": "Carefully packed and shipped anywhere in India."
-          }
-        },
-        "secure": {
-          "type": "card",
-          "settings": {
-            "icon": "lock",
-            "title": "Secure",
-            "title_accent": "payments",
-            "text": "Pay by UPI, card or net banking."
-          }
-        }
-      },
-      "block_order": [
-        "loved",
-        "quality",
-        "shipped",
-        "secure"
-      ]
-    },
-    "customer-love": {
-      "type": "customer-love",
-      "settings": {
-        "eyebrow": "Happy customers",
-        "heading": "Loved by customers across India",
-        "subheading": "Real outfits, made from fabric off our shelves.",
-        "rating": "",
-        "google_label": "Google Reviews"
-      }
-    },
-    "view-shop": {
-      "type": "view-shop",
-      "settings": {
-        "eyebrow": "As seen on Instagram",
-        "heading": "View & Shop",
-        "subheading": "Watch the fabric move, then take it home."
-      }
-    },
-    "highlights": {
-      "type": "insta-highlights",
-      "settings": {
-        "heading": ""
-      },
-      "blocks": {
-        "bestsellers": {
-          "type": "highlight",
-          "settings": {
-            "icon": "bestseller",
-            "label": "Bestsellers"
-          }
-        },
-        "reviews": {
-          "type": "highlight",
-          "settings": {
-            "icon": "reviews",
-            "label": "Reviews"
-          }
-        },
-        "wa": {
-          "type": "highlight",
-          "settings": {
-            "icon": "whatsapp",
-            "label": "WA"
-          }
-        },
-        "faqs": {
-          "type": "highlight",
-          "settings": {
-            "icon": "faq",
-            "label": "FAQs"
-          }
-        }
-      },
-      "block_order": [
-        "bestsellers",
-        "reviews",
-        "wa",
-        "faqs"
-      ]
-    },
-    "promises": {
-      "type": "promise-ticker",
-      "settings": {
-        "move": true,
-        "speed": 7,
-        "background": "plain",
-        "label": "Our promises"
-      },
-      "blocks": {
-        "india": {
-          "type": "promise",
-          "settings": {
-            "icon": "india",
-            "title": "Made in India",
-            "text": "",
-            "link": "/collections/all"
-          }
-        },
-        "quality": {
-          "type": "promise",
-          "settings": {
-            "icon": "quality",
-            "title": "Assured Quality",
-            "text": "",
-            "link": "/collections/all"
-          }
-        },
-        "cod": {
-          "type": "promise",
-          "settings": {
-            "icon": "cod",
-            "title": "Cash on Delivery",
-            "text": "",
-            "link": "/collections/all"
-          }
-        },
-        "shipping": {
-          "type": "promise",
-          "settings": {
-            "icon": "shipping",
-            "title": "Free Shipping Over ₹849",
-            "text": "",
-            "link": "/collections/all"
-          }
-        },
-        "returns": {
-          "type": "promise",
-          "settings": {
-            "icon": "returns",
-            "title": "7 Day Returns",
-            "text": "",
-            "link": "/policies/refund-policy"
-          }
-        }
-      },
-      "block_order": [
-        "india",
-        "quality",
-        "cod",
-        "shipping",
-        "returns"
-      ]
-    },
-    "looks": {
-      "type": "finished-look",
-      "settings": {
-        "eyebrow": "See before you stitch",
-        "heading": "Your fabric, as a finished look",
-        "badge": "AI preview",
-        "badge_real": "Real look",
-        "swatch_label": "Fabric",
-        "default_text": "Shown to you in minutes, in store"
-      }
-    },
-    "visit": {
-      "type": "visit-us",
-      "settings": {
-        "eyebrow": "Visit us",
-        "heading": "Come see the fabric in person",
-        "address_title": "Address",
-        "directions_label": "Get directions",
-        "show_map": false,
-        "timings_title": "Timings",
-        "timings": "Mon – Sat | 10:30 am – 8:30 pm\nSunday | Closed",
-        "talk_title": "Any questions?",
-        "talk_text": "Ask about a fabric, a shade or an order — we reply on WhatsApp.",
-        "whatsapp_label": "WhatsApp us"
+        "eyebrow": "A more meaningful way to shop",
+        "show_lotus": true,
+        "show_sprigs": true,
+        "background": "plain"
       }
     }
   },

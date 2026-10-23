@@ -22,6 +22,7 @@
 {%- if source.products.size > 0 -%}
   <section class="shell homeband">
     <div class="head">
+      {%- if section.settings.eyebrow != blank -%}<p class="sec-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
       <h2>{{ section.settings.heading }}</h2>
       {%- if section.settings.link_url != blank -%}
         <a class="linkish" href="{{ section.settings.link_url }}">{{ section.settings.link_label }}</a>
@@ -84,6 +85,7 @@
 {
   "name": "By the metre",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "Cut to your length" },
     {
       "type": "text",
       "id": "heading",

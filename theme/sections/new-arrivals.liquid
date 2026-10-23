@@ -28,6 +28,7 @@
 -%}
 <section class="arrivals" data-arrivals>
   <div class="arrivals-head">
+    {%- if section.settings.eyebrow != blank -%}<p class="sec-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
     <h2>{{ section.settings.heading }}</h2>
     {%- if section.settings.link_label != blank -%}
       <a class="linkish" href="{{ section.settings.link | default: routes.all_products_collection_url }}{% if section.settings.link == blank %}?sort_by=created-descending{% endif %}">{{ section.settings.link_label }}</a>
@@ -167,8 +168,8 @@
 </script>
 
 {% stylesheet %}
-  .arrivals { padding: 60px 0 10px; }
-  .arrivals-head { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-bottom: var(--h-sec-gap); text-align: center; padding: 0 20px; }
+  .arrivals { padding: var(--sec-y) 0; }
+  .arrivals-head { display: flex; flex-direction: column; align-items: center; gap: 0; margin-bottom: var(--h-sec-gap); text-align: center; padding: 0 20px; }
   .arrivals-head h2 { font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; margin: 0; }
 
   .arrivals-wrap { position: relative; }
@@ -191,11 +192,11 @@
     flex: 0 0 calc((100vw - 2 * var(--apad) - 5 * var(--agap)) / 6);
     scroll-snap-align: start;
     display: flex; flex-direction: column;
-    background: #fff; border: 1px solid rgba(150, 112, 46, 0.22); border-radius: 12px; overflow: hidden;
-    box-shadow: 0 1px 2px rgba(20, 17, 15, 0.04);
+    background: #fff; border: 1px solid var(--line-card); border-radius: var(--r-card); overflow: hidden;
+    box-shadow: var(--shadow-card);
     transition: box-shadow 0.2s, transform 0.2s;
   }
-  .arrival:hover { box-shadow: 0 10px 28px rgba(20, 17, 15, 0.1); transform: translateY(-2px); }
+  .arrival:hover { box-shadow: var(--shadow-lift); transform: translateY(-2px); }
 
   .arrival-photo { position: relative; display: block; aspect-ratio: 4 / 5; background: var(--sand, #efe8dc); overflow: hidden; }
   .arrival-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
@@ -203,13 +204,13 @@
   .arrival-blank { position: absolute; inset: 0; }
   .arrival-save {
     position: absolute; top: 14px; left: 12px;
-    background: #d91a1a; color: #fff; padding: 5px 9px 4px;
-    font-size: 12px; letter-spacing: 2.2px; text-transform: uppercase; line-height: 1;
+    background: var(--terracotta); color: #fff; padding: 6px 11px 5px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase; line-height: 1;
   }
 
   .arrival-body { display: flex; flex-direction: column; flex: 1; padding: 16px 16px 18px; }
   .arrival-body h3 {
-    margin: 0 0 10px; font-family: var(--sans, inherit); font-weight: 400; font-size: 14.5px; line-height: 1.45; color: var(--ink);
+    margin: 0 0 10px; font: var(--card-title); font-size: 14.5px; line-height: 1.45; color: var(--ink);
     display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 2.9em;
   }
   .arrival-price { margin: 0 0 16px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 10px; color: var(--ink); }
@@ -221,19 +222,19 @@
   .arrival-btn {
     margin-top: auto; width: 100%;
     display: flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 12px;
-    background: #23202a; color: #fffdf8; border-radius: 9px;
-    font-size: 12.5px; font-weight: 500; letter-spacing: 2px; text-transform: uppercase; text-align: center;
+    background: var(--ink); color: var(--paper); border-radius: 999px;
+    font-size: 12px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; text-align: center;
     transition: background 0.15s;
   }
   .arrival-form .arrival-btn { margin-top: 0; }
-  .arrival-btn:hover { background: #000; }
+  .arrival-btn:hover { opacity: 0.87; }
   .arrival-btn:disabled { opacity: 0.7; }
   .arrival-btn.is-off { background: transparent; color: var(--ink-70); border: 1px solid var(--line, rgba(20,17,15,.16)); }
 
   .arrivals-arrow {
     position: absolute; top: 34%; transform: translateY(-50%); z-index: 2;
-    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
-    background: #14110f; color: #e8c98a; box-shadow: 0 4px 16px rgba(20, 17, 15, 0.25);
+    width: var(--arrow-size); height: var(--arrow-size); border-radius: 50%; display: grid; place-items: center;
+    background: #fff; color: var(--ink); box-shadow: var(--arrow-shadow);
   }
   .arrivals-arrow[hidden] { display: none; }
   .arrivals-arrow.prev { left: 40px; }
@@ -249,14 +250,13 @@
     .arrival { flex-basis: calc((100vw - 2 * var(--apad) - 2 * var(--agap)) / 2.6); }
   }
   @media (max-width: 700px) {
-    .arrivals { padding-top: 44px; }
     .arrivals-head { margin-bottom: 22px; }
     .arrivals-row { --apad: 16px; --agap: 14px; }
     .arrival { flex-basis: 54vw; }
     .arrival-body { padding: 14px 14px 16px; }
     .arrival-body h3 { font-size: 14px; }
     .arrival-price b { font-size: 18px; }
-    .arrival-btn { min-height: 46px; font-size: 13px; letter-spacing: 1.6px; }
+    .arrival-btn { min-height: 42px; font-size: 11.5px; letter-spacing: 1.2px; }
     .arrivals-arrow { display: none; }
   }
 {% endstylesheet %}
@@ -265,6 +265,7 @@
 {
   "name": "New Arrivals",
   "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Small line on top", "default": "Just in" },
     { "type": "text", "id": "heading", "label": "Heading", "default": "New Arrivals" },
     { "type": "collection", "id": "collection", "label": "Fabrics from", "info": "Leave empty to use the whole catalog. Always newest first." },
     { "type": "range", "id": "count", "label": "Fabrics", "min": 4, "max": 20, "step": 1, "default": 10 },

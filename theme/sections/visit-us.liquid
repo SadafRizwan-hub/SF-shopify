@@ -97,15 +97,15 @@
 </section>
 
 {% stylesheet %}
-  .visit { padding: 60px 24px 40px; }
+  .visit { padding: var(--sec-y) 24px; }
   .visit-head { text-align: center; margin-bottom: var(--h-sec-gap, 30px); }
   .visit-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size, 11.5px); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
   .visit-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec, 40px); line-height: 1.1; color: var(--ink); }
   .visit-sub { margin: 10px 0 0; font-size: var(--sub-size, 15.5px); color: var(--ink-70); }
 
   .visit-photo {
-    position: relative; aspect-ratio: 21 / 8; border-radius: 18px; overflow: hidden;
-    background: var(--sand, #efe8dc); box-shadow: 0 16px 34px -22px rgba(20, 17, 15, 0.35);
+    position: relative; aspect-ratio: 21 / 8; border-radius: var(--r-card); overflow: hidden;
+    background: var(--sand, #efe8dc); box-shadow: var(--shadow-card);
   }
   .visit-photo:empty { display: none; }
   .visit-photo img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
@@ -123,20 +123,20 @@
   .visit-photo:empty + .visit-cards { margin-top: 0; }
   .visit-card {
     display: flex; flex-direction: column; align-items: center; text-align: center;
-    background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 16px; padding: 26px 24px 26px;
-    box-shadow: 0 14px 28px -20px rgba(20, 17, 15, 0.3);
+    background: #fff; border: 1px solid var(--line-card); border-radius: var(--r-card); padding: 26px 24px 26px;
+    box-shadow: var(--shadow-card);
   }
   .visit-ico {
     width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; margin-bottom: 12px;
-    background: #f6eedf; color: var(--brass, #96702e);
+    background: var(--tint); color: var(--brass, #96702e);
   }
   .visit-ico--wa { background: #e7f6ec; color: #1f9d55; }
-  .visit-card h3 { margin: 0 0 8px; font-family: var(--sans, inherit); font-size: 13px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--ink); }
+  .visit-card h3 { margin: 0 0 8px; font: var(--card-title); font-size: 16px; color: var(--ink); }
   .visit-card p { margin: 0; font-size: 15px; line-height: 1.6; color: var(--ink-70); }
   .visit-link {
     margin-top: 14px; display: inline-flex; align-items: center; gap: 8px;
-    font-size: 13px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink);
-    padding-bottom: 4px; border-bottom: 1px solid var(--line-strong, rgba(20,17,15,.34));
+    font-size: 11.5px; font-weight: 600; letter-spacing: 1.8px; text-transform: uppercase; color: var(--ink);
+    padding-bottom: 3px; border-bottom: 1px solid var(--line-strong, rgba(20,17,15,.34));
   }
   .visit-link:hover { border-color: var(--ink); }
 
@@ -149,8 +149,8 @@
 
   .visit-wa {
     margin-top: 16px; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-    min-height: 48px; padding: 0 26px; border-radius: 999px;
-    background: #1f9d55; color: #fff; font-size: 14px; font-weight: 600; letter-spacing: 0.4px;
+    min-height: 46px; padding: 0 26px; border-radius: 999px;
+    background: #1f9d55; color: #fff; font-size: 12.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;
     box-shadow: 0 8px 18px -10px rgba(31, 157, 85, 0.8); transition: background 0.15s, transform 0.15s;
   }
   .visit-wa:hover { background: #178046; transform: translateY(-1px); }
@@ -158,15 +158,15 @@
   .visit-note { margin-top: 12px !important; font-size: 13px !important; color: #a3461f !important; }
 
   .visit-map { max-width: 1180px; margin: 26px auto 0; padding: 0 24px; }
-  .visit-map iframe { display: block; width: 100%; height: 320px; border: 0; border-radius: 16px; }
+  .visit-map iframe { display: block; width: 100%; height: 320px; border: 0; border-radius: var(--r-card); }
 
   @media (max-width: 900px) {
     .visit-photo { aspect-ratio: 16 / 9; }
     .visit-cards { grid-template-columns: 1fr; gap: 14px; margin-top: -28px; padding: 0 12px; }
   }
   @media (max-width: 700px) {
-    .visit { padding: 44px 16px 30px; }
-    .visit-photo { border-radius: 14px; aspect-ratio: 4 / 3; }
+    .visit { padding: var(--sec-y) 16px; }
+    .visit-photo { aspect-ratio: 4 / 3; }
     .visit-card { padding: 22px 18px; }
     .visit-map { padding: 0; }
     .visit-map iframe { height: 260px; }

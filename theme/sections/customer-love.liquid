@@ -173,7 +173,7 @@
 {%- endif -%}
 
 {% stylesheet %}
-  .love { padding: 70px 0 40px; }
+  .love { padding: var(--sec-y) 0; }
   .love-head { padding: 0 24px; margin-bottom: 22px; text-align: center; }
   .love-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
   .love-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
@@ -181,7 +181,7 @@
 
   .love-google { display: flex; align-items: center; justify-content: center; gap: 16px; padding: 0 24px var(--h-sec-gap); }
   .love-g { width: 58px; height: 58px; border-radius: 50%; background: #fff; display: grid; place-items: center; box-shadow: 0 2px 10px rgba(20, 17, 15, 0.1); }
-  .love-score { margin: 0; font-size: 28px; font-weight: 600; line-height: 1.1; color: var(--ink); }
+  .love-score { margin: 0; font-family: var(--serif); font-size: 34px; font-weight: 500; line-height: 1; color: var(--ink); }
   .love-score small { font-size: 12px; font-weight: 400; color: var(--ink-70); }
   .love-meta { margin: 4px 0 0; display: flex; align-items: center; gap: 6px; font-size: 15px; color: var(--ink-70); }
   .love-meta a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
@@ -206,15 +206,15 @@
   .love-review:last-child { margin-right: auto; }
   .love-review {
     flex: 0 0 calc((100vw - 2 * var(--rpad) - 4 * var(--rgap)) / 4.4); scroll-snap-align: start;
-    background: #fff; border: 1px solid rgba(150, 112, 46, 0.2); border-radius: 16px; padding: 24px 26px 24px;
-    box-shadow: 0 10px 24px -18px rgba(20, 17, 15, 0.25);
+    background: #fff; border: 1px solid var(--line-card); border-radius: var(--r-card); padding: 24px 26px 24px;
+    box-shadow: var(--shadow-card);
   }
   .love-review header { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
   .love-avatar {
     flex: 0 0 auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
-    background: #f3eadb; color: var(--brass, #96702e); font-size: 19px; font-weight: 600;
+    background: var(--tint); color: var(--brass, #96702e); font-size: 18px; font-weight: 600;
   }
-  .love-review h3 { margin: 0 0 4px; font-family: var(--sans, inherit); font-size: 17px; font-weight: 600; color: var(--ink); }
+  .love-review h3 { margin: 0 0 4px; font: var(--card-title); color: var(--ink); }
   /* the first four lines; Read more opens the rest */
   .love-text {
     margin: 0; font-size: 16px; line-height: 1.6; color: var(--ink-70);
@@ -235,8 +235,8 @@
 
   .love-arrow {
     position: absolute; top: 50%; transform: translateY(-60%); z-index: 2;
-    width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center;
-    background: #14110f; color: #e8c98a; box-shadow: 0 4px 16px rgba(20, 17, 15, 0.25);
+    width: var(--arrow-size); height: var(--arrow-size); border-radius: 50%; display: grid; place-items: center;
+    background: #fff; color: var(--ink); box-shadow: var(--arrow-shadow);
   }
   .love-arrow[hidden] { display: none; }
   .love-arrow.prev { left: 34px; }
@@ -252,7 +252,7 @@
     .love-review { flex-basis: calc((100vw - 2 * var(--rpad) - var(--rgap)) / 2.2); }
   }
   @media (max-width: 700px) {
-    .love { padding: 50px 0 30px; }
+    .love { padding: var(--sec-y) 0; }
     .love-head { padding: 0 16px; margin-bottom: 20px; }
     .love-sub { font-size: 15px; }
     .love-google { padding: 0 16px 20px; }

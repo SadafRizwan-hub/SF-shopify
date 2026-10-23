@@ -146,7 +146,7 @@
 {%- endif -%}
 
 {% stylesheet %}
-  .flook { padding: 70px 0 40px; }
+  .flook { padding: var(--sec-y) 0; }
   .flook-head { padding: 0 24px; margin-bottom: var(--h-sec-gap); text-align: center; }
   .flook-eyebrow { margin: 0 0 10px; font-size: var(--eyebrow-size); font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: var(--brass, #96702e); }
   .flook-head h2 { margin: 0; font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
@@ -168,11 +168,11 @@
   .flook-card {
     position: relative; flex: 0 0 calc((100% - 3 * var(--fgap)) / 4);
     scroll-snap-align: start; display: flex; flex-direction: column;
-    background: #fff; border: 1px solid rgba(150, 112, 46, 0.18); border-radius: 18px; overflow: hidden;
-    box-shadow: 0 14px 30px -20px rgba(20, 17, 15, 0.3);
+    background: #fff; border: 1px solid var(--line-card); border-radius: var(--r-card); overflow: hidden;
+    box-shadow: var(--shadow-card);
     transition: box-shadow 0.2s, transform 0.2s;
   }
-  .flook-card:hover { transform: translateY(-3px); box-shadow: 0 20px 36px -20px rgba(20, 17, 15, 0.38); }
+  .flook-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lift); }
   .flook-link { position: absolute; inset: 0; z-index: 3; border-radius: inherit; }
 
   .flook-photo { position: relative; aspect-ratio: 4 / 5; background: var(--sand, #efe8dc); overflow: hidden; }
@@ -180,22 +180,22 @@
   .flook-card:hover .flook-photo > img { transform: scale(1.03); }
   .flook-badge {
     position: absolute; top: 16px; right: 16px; z-index: 1;
-    padding: 7px 13px; border-radius: 8px; background: rgba(20, 17, 15, 0.72); color: #fffdf8;
-    font-size: 12px; font-weight: 600; letter-spacing: 2.2px; text-transform: uppercase;
+    padding: 6px 12px; border-radius: 999px; background: rgba(20, 17, 15, 0.72); color: #fffdf8;
+    font-size: 10.5px; font-weight: 600; letter-spacing: 1.6px; text-transform: uppercase;
   }
   .flook-swatch {
     position: absolute; left: 4%; top: 34%; z-index: 1; width: 28%; aspect-ratio: 3 / 4;
-    border: 4px solid #fff; border-radius: 14px; overflow: hidden; background: var(--sand, #efe8dc);
+    border: 4px solid #fff; border-radius: 12px; overflow: hidden; background: var(--sand, #efe8dc);
     box-shadow: 0 8px 22px rgba(20, 17, 15, 0.3);
   }
   .flook-swatch img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .flook-tag {
-    position: absolute; left: 8px; bottom: 8px; padding: 4px 9px; border-radius: 6px;
-    background: #2f5a3c; color: #fff; font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+    position: absolute; left: 8px; bottom: 8px; padding: 4px 10px; border-radius: 999px;
+    background: rgba(255, 253, 248, 0.94); color: var(--ink); font-size: 10.5px; font-weight: 600; letter-spacing: 0.4px;
   }
 
   .flook-body { padding: 18px 22px 22px; text-align: center; }
-  .flook-body h3 { margin: 0 0 6px; font-family: var(--sans, inherit); font-weight: 500; font-size: clamp(16px, 1.15vw, 19px); color: var(--ink); }
+  .flook-body h3 { margin: 0 0 6px; font: var(--card-title); font-size: 16px; color: var(--ink); }
   .flook-line { margin: 0; font-size: 14px; color: var(--ink-70); }
   .flook-fabric {
     margin: 12px 0 0; padding-top: 12px; border-top: 1px solid rgba(150, 112, 46, 0.15);
@@ -214,8 +214,8 @@
 
   .flook-arrow {
     position: absolute; top: 44%; transform: translateY(-50%);
-    width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center;
-    background: #fff; color: var(--ink); box-shadow: 0 4px 18px rgba(20, 17, 15, 0.14);
+    width: var(--arrow-size); height: var(--arrow-size); border-radius: 50%; display: grid; place-items: center;
+    background: #fff; color: var(--ink); box-shadow: var(--arrow-shadow);
     transition: opacity 0.2s;
   }
   .flook-arrow[hidden] { display: none; }
@@ -236,7 +236,7 @@
     .flook-arrow { display: none; }
   }
   @media (max-width: 700px) {
-    .flook { padding: 50px 0 30px; }
+    .flook { padding: var(--sec-y) 0; }
     .flook-head { padding: 0 16px; margin-bottom: 20px; }
     .flook-wrap { padding: 0 16px; }
     .flook-row { --fgap: 14px; }

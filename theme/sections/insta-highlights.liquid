@@ -11,7 +11,7 @@
   back to that link. A circle with nowhere to go still shows, unclickable,
   so the row can be laid out first.
 
-  Four across on a wide screen, two by two on a phone.
+  Four across, on a wide screen and on a phone.
 {%- endcomment -%}
 {%- liquid
   assign items = section.blocks | where: 'type', 'highlight'
@@ -123,11 +123,11 @@
   .hilite-heading { margin: 0 0 var(--h-sec-gap); font-family: var(--serif); font-weight: 400; font-size: var(--h-sec); line-height: 1.1; color: var(--ink); }
   .hilite-row {
     display: flex; justify-content: center; flex-wrap: wrap;
-    gap: 28px clamp(28px, 5vw, 96px); max-width: 1240px; margin: 0 auto;
+    gap: 24px clamp(28px, 4vw, 72px); max-width: 1240px; margin: 0 auto;
   }
   .hilite-item {
-    --disc: clamp(150px, 12.5vw, 196px);
-    flex: 0 0 auto; width: calc(var(--disc) + 40px);
+    --disc: clamp(104px, 7.5vw, 128px);
+    flex: 0 0 auto; width: calc(var(--disc) + 44px);
     display: flex; flex-direction: column; align-items: center; color: var(--ink);
   }
   .hilite-badge { position: relative; width: var(--disc); height: var(--disc); }
@@ -170,15 +170,15 @@
   a.hilite-item:focus-visible .hilite-disc { outline: 2px solid var(--brass); outline-offset: 4px; }
 
   .hilite-label {
-    margin-top: 22px; font-family: var(--serif); font-weight: 500;
-    font-size: clamp(22px, 1.8vw, 28px); line-height: 1.15; color: var(--ink);
+    margin-top: 14px; font-family: var(--serif); font-weight: 500;
+    font-size: clamp(18px, 1.3vw, 21px); line-height: 1.15; color: var(--ink);
   }
   /* line · flower · line */
   .hilite-orn {
-    display: flex; align-items: center; gap: 8px; margin-top: 10px; color: var(--brass, #96702e);
+    display: flex; align-items: center; gap: 6px; margin-top: 6px; color: var(--brass, #96702e);
   }
-  .hilite-orn::before, .hilite-orn::after { content: ''; width: 46px; height: 1px; background: currentColor; opacity: 0.55; }
-  .hilite-orn svg { width: 16px; height: 16px; }
+  .hilite-orn::before, .hilite-orn::after { content: ''; width: 28px; height: 1px; background: currentColor; opacity: 0.55; }
+  .hilite-orn svg { width: 12px; height: 12px; }
 
   @media (prefers-reduced-motion: reduce) {
     .hilite-disc { transition: none; }
@@ -187,14 +187,17 @@
   @media (max-width: 700px) {
     .hilite { padding: var(--sec-y) 16px; }
     .hilite-heading { margin-bottom: 20px; }
-    /* two by two: each circle about a third of the phone */
-    .hilite-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 30px 12px; }
-    .hilite-item { --disc: min(128px, 34vw); width: auto; }
+    /* all four in one row */
+    .hilite-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px 8px; }
+    .hilite-item { --disc: min(72px, 18vw); width: auto; }
     .hilite-disc { border-width: 2px; }
-    .hilite-label { margin-top: 16px; font-size: 21px; }
-    .hilite-orn { margin-top: 8px; }
-    .hilite-orn::before, .hilite-orn::after { width: 30px; }
-    .hilite-orn svg { width: 13px; height: 13px; }
+    .hilite-disc::before { inset: 8%; border-width: 1px; }
+    .hilite-sprig--left { left: -16%; }
+    .hilite-sprig--right { right: -16%; }
+    .hilite-label { margin-top: 10px; font-size: 15.5px; }
+    .hilite-orn { margin-top: 4px; gap: 4px; }
+    .hilite-orn::before, .hilite-orn::after { width: 14px; }
+    .hilite-orn svg { width: 10px; height: 10px; }
   }
 {% endstylesheet %}
 

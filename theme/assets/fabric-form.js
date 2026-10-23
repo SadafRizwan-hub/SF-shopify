@@ -392,10 +392,18 @@
   /* ---- paint ----------------------------------------------------------- */
 
   /* the heart saves this design, as the catalog card for it does */
+  function handleize(value) {
+    return String(value).toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
+
   function paintSaveKey() {
+    /* the shade on screen goes with the save, so the wishlist offers it */
+    var any = document.querySelector('.visual [data-save]');
+    if (any) any.setAttribute('data-save-shade', state.shade ? handleize(state.shade) : '');
+
     var heart = document.querySelector('[data-save-base]');
     if (!heart || !state.design) return;
-    var slug = String(state.design).toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    var slug = handleize(state.design);
     var key = heart.getAttribute('data-save-base') + '~' + slug;
     if (heart.getAttribute('data-save') === key) return;
     heart.setAttribute('data-save', key);

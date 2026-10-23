@@ -37,6 +37,13 @@
   if request.page_type == 'collection' or request.page_type == 'product' or request.page_type == 'list-collections' or request.page_type == 'search'
     assign in_catalog = true
   endif
+  # the wishlist is served by the catalog's ?view=shortlist template, but it
+  # is not the catalog: there the heart is the current page instead
+  assign on_wishlist = false
+  if template.suffix == 'shortlist' or request.path == shortlist_url
+    assign on_wishlist = true
+    assign in_catalog = false
+  endif
 -%}
 
 {%- comment -%}
@@ -119,14 +126,14 @@
       </a>
 
       {%- if shortlist_url != blank -%}
-        <a class="icon" href="{{ shortlist_url }}" title="Wishlist" aria-label="Wishlist">
-          {% render 'icon', name: 'heart' %}
+        <a class="icon{% if on_wishlist %} on{% endif %}" href="{{ shortlist_url }}" title="Wishlist" aria-label="Wishlist"{% if on_wishlist %} aria-current="page"{% endif %}>
+          {% render 'icon', name: 'heart', size: 22 %}
           <span class="pip" data-shortlist-count hidden>0</span>
         </a>
       {%- endif -%}
 
       <a class="icon cut" href="{{ routes.cart_url }}" title="Bag" aria-label="Bag">
-        {% render 'icon', name: 'bag' %}
+        {% render 'icon', name: 'bag', size: 22 %}
         <span class="pip" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
       </a>
     </div>
@@ -154,7 +161,7 @@
 
   <div class="drawerfoot">
     {%- if shortlist_url != blank -%}
-      <a href="{{ shortlist_url }}">Shortlist</a>
+      <a href="{{ shortlist_url }}">Wishlist</a>
     {%- endif -%}
     <a href="{{ routes.cart_url }}">Cut list ({{ cart.item_count }})</a>
     {%- if shop.customer_accounts_enabled -%}

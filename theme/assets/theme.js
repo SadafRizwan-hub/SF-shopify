@@ -12,6 +12,8 @@
 
   var SF = (window.SF = window.SF || {});
   var SAVED_KEY = 'sf:shortlist';
+  /* the shade showing when each fabric was saved: { key: shade-handle } */
+  var SHADE_KEY = 'sf:shortlist-shade';
 
   /* ---- money ---------------------------------------------------------- */
 
@@ -98,15 +100,41 @@
     }
   }
 
+  function readShades() {
+    try {
+      var map = JSON.parse(localStorage.getItem(SHADE_KEY) || '{}');
+      return map && typeof map === 'object' ? map : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function writeShades(map) {
+    try {
+      localStorage.setItem(SHADE_KEY, JSON.stringify(map));
+    } catch (e) {
+      /* as above: remembered for the tab only */
+    }
+  }
+
   SF.shortlist = {
     all: readSaved,
     has: function (handle) { return readSaved().indexOf(handle) !== -1; },
-    toggle: function (handle) {
+    /* the shade handle saved with a fabric, or '' */
+    shadeOf: function (handle) { return readShades()[handle] || ''; },
+    toggle: function (handle, shade) {
       var list = readSaved();
+      var shades = readShades();
       var i = list.indexOf(handle);
-      if (i === -1) list.unshift(handle);
-      else list.splice(i, 1);
+      if (i === -1) {
+        list.unshift(handle);
+        if (shade) shades[handle] = shade;
+      } else {
+        list.splice(i, 1);
+        delete shades[handle];
+      }
       writeSaved(list);
+      writeShades(shades);
       paintShortlist();
       return i === -1;
     },
@@ -200,8 +228,16 @@
       var save = event.target.closest('[data-save]');
       if (save) {
         event.preventDefault();
-        var added = SF.shortlist.toggle(save.getAttribute('data-save'));
-        SF.flash(added ? 'Added to your shortlist' : 'Removed from your shortlist');
+        /* the shade on screen: the fabric page says it on the heart; a card
+           says it with the dot that is lit */
+        var shade = save.getAttribute('data-save-shade');
+        if (!shade) {
+          var card = save.closest('.card');
+          var dot = card && card.querySelector('[data-card-shade].on');
+          shade = dot ? dot.getAttribute('data-card-shade') : '';
+        }
+        var added = SF.shortlist.toggle(save.getAttribute('data-save'), shade);
+        SF.flash(added ? 'Added to your wishlist' : 'Removed from your wishlist');
         return;
       }
 

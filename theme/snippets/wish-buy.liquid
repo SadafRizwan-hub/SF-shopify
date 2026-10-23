@@ -1,0 +1,96 @@
+{%- comment -%}
+  Buy straight from the wishlist: the colour, how many metres, Add to bag.
+
+  Lists the shades this card sells (only `design`'s, when the card is one
+  design), each with its variant and its minimum cut, as JSON the wishlist
+  page reads. The page selects the shade that was on screen when the heart was
+  tapped; the shopper can change it here. Metres step by the cut unit and
+  never go below the shade's minimum, the same floor the fabric page uses.
+
+  Usage: {% render 'wish-buy', product: product %}
+         {% render 'wish-buy', product: product, design: 'Ekdali' %}
+{%- endcomment -%}
+{%- liquid
+  assign unit = settings.cut_unit_metres | times: 1.0
+  assign shade_axis = 'shade,shades,colour,colours,color,colors' | split: ','
+  assign design_axis = 'design,designs,pattern,patterns' | split: ','
+  assign shade_i = -1
+  assign design_i = -1
+  for option in product.options_with_values
+    assign okey = option.name | strip | downcase
+    if shade_axis contains okey
+      assign shade_i = forloop.index0
+    elsif design_axis contains okey
+      assign design_i = forloop.index0
+    endif
+  endfor
+
+  assign rows = ''
+  assign options = ''
+  assign seen = '|'
+  assign count = 0
+  for variant in product.variants
+    if design != blank and design_i >= 0 and variant.options[design_i] != design
+      continue
+    endif
+    assign name = variant.title
+    if shade_i >= 0
+      assign name = variant.options[shade_i]
+    endif
+    assign key = name | handle
+    assign probe = '|' | append: key | append: '|'
+    if seen contains probe
+      continue
+    endif
+    assign seen = seen | append: key | append: '|'
+
+    capture min_units
+      render 'min-cut', variant: variant
+    endcapture
+    assign min_units = min_units | strip
+    assign jname = name | json
+    assign ok = 'false'
+    if variant.available
+      assign ok = 'true'
+    endif
+
+    if count > 0
+      assign rows = rows | append: ','
+    endif
+    assign rows = rows | append: '"' | append: key | append: '":{"id":' | append: variant.id | append: ',"name":' | append: jname | append: ',"min":' | append: min_units | append: ',"ok":' | append: ok | append: '}'
+
+    capture option_tag
+      echo '<option value="' | append: key | append: '"'
+      unless variant.available
+        echo ' disabled'
+      endunless
+      echo '>' | append: name
+      unless variant.available
+        echo ' (sold out)'
+      endunless
+      echo '</option>'
+    endcapture
+    assign options = options | append: option_tag
+    assign count = count | plus: 1
+  endfor
+-%}
+{%- if count > 0 -%}
+  <div class="wishbuy" data-wishbuy data-unit="{{ unit }}" data-variants='{ {{- rows | escape -}} }'>
+    <div class="wb-row">
+      <label class="wb-field">
+        <span class="wb-label">Colour</span>
+        <select data-wb-shade>{{ options }}</select>
+      </label>
+      <div class="wb-field">
+        <span class="wb-label">Metres</span>
+        <div class="wb-step">
+          <button type="button" data-wb-step="-1" aria-label="Fewer metres">&minus;</button>
+          <input type="number" inputmode="decimal" data-wb-metres min="{{ unit }}" step="{{ unit }}" value="{{ unit }}" aria-label="Metres">
+          <button type="button" data-wb-step="1" aria-label="More metres">+</button>
+        </div>
+      </div>
+    </div>
+    <button type="button" class="btn btn-primary wb-add" data-wb-add>Add to bag</button>
+    <p class="wb-note" data-wb-note hidden></p>
+  </div>
+{%- endif -%}

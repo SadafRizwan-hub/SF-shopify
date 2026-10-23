@@ -1,5 +1,5 @@
 {%- comment -%}
-  The shortlist lives in this browser's localStorage — it is not an account
+  The wishlist (called the shortlist in the code) lives in this browser's localStorage — it is not an account
   feature and never leaves the device. The page renders a card for every
   product on the shelf, hidden, and shows the ones this browser saved. That
   keeps it a static page: no fetch, no API token, and it still works when the
@@ -7,12 +7,16 @@
 
   A fabric printed in several designs is saved one design at a time
   (handle~design), as its catalog cards are, so it has a card per design here.
+
+  Under each card, snippets/wish-buy: the colour (the one on screen when the
+  heart was tapped), metres and Add to bag, posted to the cart with Ajax.
 {%- endcomment -%}
-<div class="shell page">
-  <header class="top">
-    <div>
-      <h1>{{ section.settings.heading | default: 'Shortlist' }}</h1>
-      <p class="meta"><span data-shortlist-total>0</span> saved on this device</p>
+<div class="shell page wishpage">
+  <header class="top cat-top">
+    <div class="cat-head">
+      {%- if section.settings.eyebrow != blank -%}<p class="sec-eyebrow">{{ section.settings.eyebrow }}</p>{%- endif -%}
+      <h1>{{ section.settings.heading | default: 'Wishlist' }}</h1>
+      <p class="meta wish-count"><span data-shortlist-total>0</span> saved on this device</p>
     </div>
   </header>
 
@@ -32,27 +36,33 @@
       {%- if design_values.size > 1 -%}
         {%- for value in design_values -%}
           {%- assign vslug = value | handle -%}
-          <div data-shortlist-item="{{ product.handle }}~{{ vslug }}" hidden>
+          <div class="wishitem" data-shortlist-item="{{ product.handle }}~{{ vslug }}" hidden>
             {% render 'fabric-card', product: product, design: value %}
+            {% render 'wish-buy', product: product, design: value %}
           </div>
         {%- endfor -%}
       {%- else -%}
-        <div data-shortlist-item="{{ product.handle }}" hidden>
+        <div class="wishitem" data-shortlist-item="{{ product.handle }}" hidden>
           {% render 'fabric-card', product: product %}
+          {% render 'wish-buy', product: product %}
         </div>
       {%- endif -%}
     {%- endfor -%}
   </div>
 
   <div class="empty" data-shortlist-empty>
-    <h3>Nothing shortlisted yet</h3>
-    <p class="meta">Tap the heart on a fabric and it collects here. The shortlist stays on this device.</p>
+    <h3>Your wishlist is empty</h3>
+    <p class="meta">Tap the heart on a fabric and it collects here. The wishlist stays on this device.</p>
     <a class="btn btn-primary" href="{{ section.settings.catalog_url | default: routes.all_products_collection_url }}">Open the catalog</a>
   </div>
 </div>
 
 <script>
   (function () {
+    function handleize(value) {
+      return String(value || '').toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    }
+
     function paint() {
       var SF = window.SF;
       if (!SF || !SF.shortlist) return;
@@ -62,7 +72,9 @@
       var shown = 0;
 
       document.querySelectorAll('[data-shortlist-item]').forEach(function (item) {
-        var on = saved.indexOf(item.getAttribute('data-shortlist-item')) !== -1;
+        var key = item.getAttribute('data-shortlist-item');
+        var on = saved.indexOf(key) !== -1;
+        if (on && item.hidden) prepare(item, SF.shortlist.shadeOf(key));
         item.hidden = !on;
         if (on) shown += 1;
       });
@@ -72,18 +84,159 @@
       document.querySelector('[data-shortlist-total]').textContent = shown;
     }
 
-    document.addEventListener('DOMContentLoaded', paint);
+    /* the buy row of a card coming into view: the saved shade, its photo, its minimum */
+    function prepare(item, shade) {
+      var buy = item.querySelector('[data-wishbuy]');
+      if (!buy) return;
+      var select = buy.querySelector('[data-wb-shade]');
+      var map = variants(buy);
+      if (shade && map[shade] && map[shade].ok) select.value = shade;
+      else if (select.selectedOptions[0] && select.selectedOptions[0].disabled) {
+        var open = [].filter.call(select.options, function (o) { return !o.disabled; })[0];
+        if (open) select.value = open.value;
+      }
+      shadeChanged(item, buy, true);
+    }
+
+    function variants(buy) {
+      try { return JSON.parse(buy.getAttribute('data-variants')) || {}; } catch (e) { return {}; }
+    }
+
+    function unit(buy) { return parseFloat(buy.getAttribute('data-unit')) || 1; }
+
+    function floorMetres(buy) {
+      var v = variants(buy)[buy.querySelector('[data-wb-shade]').value];
+      return (v ? v.min : 1) * unit(buy);
+    }
+
+    function round(n) { return Math.round(n * 100) / 100; }
+
+    function shadeChanged(item, buy, reset) {
+      var input = buy.querySelector('[data-wb-metres]');
+      var floor = floorMetres(buy);
+      input.min = floor;
+      if (reset || !(parseFloat(input.value) >= floor)) input.value = round(floor);
+      var v = variants(buy)[buy.querySelector('[data-wb-shade]').value];
+      buy.querySelector('[data-wb-add]').disabled = !(v && v.ok);
+      /* the card shows the chosen shade's photo, when it has one */
+      var dot = item.querySelector('[data-card-shade="' + buy.querySelector('[data-wb-shade]').value + '"]');
+      if (dot && !dot.classList.contains('on')) dot.click();
+      note(buy, '');
+    }
+
+    function note(buy, text, bad) {
+      var p = buy.querySelector('[data-wb-note]');
+      p.textContent = text;
+      p.hidden = !text;
+      p.classList.toggle('bad', !!bad);
+    }
+
+    /* one tick after load, so theme.js has wired the card shade dots that
+       prepare() presses to show the saved colour's photo */
+    document.addEventListener('DOMContentLoaded', function () { setTimeout(paint, 0); });
+
     document.addEventListener('click', function (event) {
       if (event.target.closest('[data-save]')) setTimeout(paint, 0);
+
+      var step = event.target.closest('[data-wb-step]');
+      if (step) {
+        var buy = step.closest('[data-wishbuy]');
+        var input = buy.querySelector('[data-wb-metres]');
+        var next = (parseFloat(input.value) || 0) + Number(step.getAttribute('data-wb-step')) * unit(buy);
+        input.value = round(Math.max(floorMetres(buy), next));
+        return;
+      }
+
+      var add = event.target.closest('[data-wb-add]');
+      if (!add) return;
+      var buy = add.closest('[data-wishbuy]');
+      var v = variants(buy)[buy.querySelector('[data-wb-shade]').value];
+      if (!v) return;
+      var metres = Math.max(floorMetres(buy), parseFloat(buy.querySelector('[data-wb-metres]').value) || 0);
+      var quantity = Math.max(v.min, Math.round(metres / unit(buy)));
+      var routes = (window.SF && window.SF.routes) || {};
+      add.disabled = true;
+      fetch((routes.cartAdd || '/cart/add') + '.js', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ items: [{ id: v.id, quantity: quantity }] })
+      })
+        .then(function (r) { return r.json().then(function (body) { if (!r.ok) throw body; return body; }); })
+        .then(function () { return fetch((routes.cart || '/cart') + '.js', { headers: { Accept: 'application/json' } }); })
+        .then(function (r) { return r.json(); })
+        .then(function (cart) {
+          document.querySelectorAll('[data-cart-count]').forEach(function (pip) {
+            pip.textContent = cart.item_count;
+            pip.hidden = cart.item_count === 0;
+          });
+          var text = round(quantity * unit(buy)) + ' m of ' + v.name + ' added to your bag';
+          note(buy, text);
+          if (window.SF && window.SF.flash) window.SF.flash(text);
+        })
+        .catch(function (err) {
+          note(buy, (err && (err.description || err.message)) || 'Could not add this to your bag. Please try again.', true);
+        })
+        .then(function () { add.disabled = false; });
+    });
+
+    document.addEventListener('change', function (event) {
+      var select = event.target.closest('[data-wb-shade]');
+      if (select) { var buy = select.closest('[data-wishbuy]'); shadeChanged(buy.closest('[data-shortlist-item]'), buy, true); return; }
+      var input = event.target.closest('[data-wb-metres]');
+      if (input) {
+        var b = input.closest('[data-wishbuy]');
+        var u = unit(b);
+        var m = Math.max(floorMetres(b), Math.round((parseFloat(input.value) || 0) / u) * u);
+        input.value = round(m);
+      }
     });
   })();
 </script>
+
+{% stylesheet %}
+  .wishpage .wish-count { margin-top: 8px; }
+  .wishitem { display: flex; flex-direction: column; gap: 12px; }
+  .wishitem[hidden] { display: none; }
+  .wishitem .card { flex: 1 1 auto; }
+  .wishbuy {
+    display: flex; flex-direction: column; gap: 10px; padding: 14px;
+    background: #fff; border: 1px solid var(--line-card, rgba(150,112,46,.16)); border-radius: var(--r-card, 14px);
+  }
+  .wb-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+  .wb-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+  .wb-label { font-size: 10.5px; font-weight: 600; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink-70); }
+  .wb-field select {
+    width: 100%; height: 38px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px;
+    background: var(--ivory); font: inherit; font-size: 13px; color: var(--ink);
+  }
+  .wb-step { display: flex; align-items: center; height: 38px; border: 1px solid var(--line); border-radius: 999px; background: var(--ivory); }
+  .wb-step button { display: grid; place-items: center; width: 34px; height: 100%; padding: 0; font-size: 16px; line-height: 1; color: var(--ink-70); }
+  .wb-step button:hover { color: var(--ink); }
+  .wb-step input {
+    width: 44px; height: 100%; border: 0; background: transparent; text-align: center;
+    font: inherit; font-size: 13.5px; color: var(--ink); -moz-appearance: textfield;
+  }
+  .wb-step input::-webkit-outer-spin-button, .wb-step input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .wb-add { width: 100%; min-height: 42px; }
+  .wb-add[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .wb-note { margin: 0; font-size: 12px; color: #2f6b45; }
+  .wb-step input { flex: 1 1 auto; }
+  @media (max-width: 700px) {
+    /* two cards across a phone: colour, metres and the button stack */
+    .wishbuy { padding: 10px; gap: 8px; }
+    .wb-row { grid-template-columns: 1fr; gap: 8px; }
+    .wb-step { justify-content: space-between; }
+    .wb-add { min-height: 40px; padding: 0 8px; font-size: 11px; letter-spacing: 1px; white-space: nowrap; }
+  }
+  .wb-note.bad { color: var(--terracotta, #b5542e); }
+{% endstylesheet %}
 
 {% schema %}
 {
   "name": "Shortlist",
   "settings": [
-    { "type": "text", "id": "heading", "label": "Heading", "default": "Shortlist" },
+    { "type": "text", "id": "eyebrow", "label": "Small line above the heading", "default": "Saved for later" },
+    { "type": "text", "id": "heading", "label": "Heading", "default": "Wishlist" },
     { "type": "range", "id": "columns", "label": "Columns", "min": 2, "max": 5, "step": 1, "default": 4 },
     {
       "type": "range",

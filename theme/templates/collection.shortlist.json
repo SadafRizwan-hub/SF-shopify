@@ -1,0 +1,4 @@
+{
+  "sections": { "main": { "type": "shortlist", "settings": { "heading": "Wishlist", "columns": 4 } } },
+  "order": ["main"]
+}

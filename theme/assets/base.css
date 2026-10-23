@@ -998,7 +998,13 @@ body.drawer-open { overflow: hidden; }
 .back:hover { color: var(--ink); }
 
 .fabric .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 52px; }
+/* the photograph column stays in view while the details scroll past it:
+   the main photo is capped so the whole column, thumbnails included,
+   fits the screen under the header */
 .visual { position: sticky; top: 90px; }
+@media (min-width: 901px) {
+  .visual [data-gallery-main] .surface { width: 100%; max-height: calc(100vh - 200px); }
+}
 .visual .scale {
   position: absolute; left: 14px; bottom: 14px;
   padding: 6px 12px;

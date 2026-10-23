@@ -26,6 +26,11 @@
 
   assign about_url = section.settings.about_url | default: pages['the-shop'].url
   assign shortlist_url = section.settings.shortlist_url | default: pages.shortlist.url
+  # no Shortlist page made in the admin: the catalog's own shortlist view
+  # (templates/collection.shortlist.json) serves it, so the heart always works
+  if shortlist_url == blank
+    assign shortlist_url = routes.all_products_collection_url | append: '?view=shortlist'
+  endif
   assign path = request.path
 
   assign in_catalog = false
@@ -114,14 +119,14 @@
       </a>
 
       {%- if shortlist_url != blank -%}
-        <a class="icon" href="{{ shortlist_url }}" title="Shortlist" aria-label="Shortlist">
+        <a class="icon" href="{{ shortlist_url }}" title="Wishlist" aria-label="Wishlist">
           {% render 'icon', name: 'heart' %}
           <span class="pip" data-shortlist-count hidden>0</span>
         </a>
       {%- endif -%}
 
-      <a class="icon cut" href="{{ routes.cart_url }}" title="Cut list" aria-label="Cut list">
-        {% render 'icon', name: 'list' %}
+      <a class="icon cut" href="{{ routes.cart_url }}" title="Bag" aria-label="Bag">
+        {% render 'icon', name: 'bag' %}
         <span class="pip" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</span>
       </a>
     </div>

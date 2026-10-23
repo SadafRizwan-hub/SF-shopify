@@ -259,18 +259,29 @@
                   assign book_handle = prefix | append: value | handle
                   assign book = collections[book_handle]
                   assign shade_total = 0
-                  # the tile's picture: the design's own collection image when it
-                  # has one, else the first shade dyed in this design that has a
-                  # photograph, else the fabric's own — never a blank square
-                  assign tile_image = book.image
+                  # the tile's picture: this design in the shade on screen when
+                  # there is a photograph of it (fabric-form.js keeps it so as the
+                  # shade changes), else the design's own collection image, else
+                  # the first shade dyed in this design that has a photograph,
+                  # else the fabric's own — never a blank square
+                  assign tile_image = nil
+                  assign first_image = nil
                   for variant in product.variants
                     if variant.options[design_i] == value
                       assign shade_total = shade_total | plus: 1
-                      if tile_image == blank and variant.featured_image
-                        assign tile_image = variant.featured_image
+                      if variant.featured_image
+                        if first_image == nil
+                          assign first_image = variant.featured_image
+                        endif
+                        if shade_pos > 0 and tile_image == nil and variant.options[shade_i] == active_shade
+                          assign tile_image = variant.featured_image
+                        endif
                       endif
                     endif
                   endfor
+                  if tile_image == nil
+                    assign tile_image = book.image | default: first_image
+                  endif
                   if tile_image == blank
                     assign tile_image = product.featured_image
                   endif

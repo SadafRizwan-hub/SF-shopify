@@ -202,6 +202,36 @@
     if (el.shadeCount) el.shadeCount.textContent = visible;
     if (el.shadeChosen) el.shadeChosen.textContent = state.shade || '';
     if (el.addShade) el.addShade.textContent = state.shade || '';
+    paintDesignTiles();
+  }
+
+  /* Each design tile shows that design in the shade on screen, when there is
+     a photograph of it; otherwise the picture Liquid gave it. */
+  function paintDesignTiles() {
+    if (designIndex < 0) return;
+    root.querySelectorAll('[data-design-card]').forEach(function (card) {
+      var img = card.querySelector('img');
+      if (!img) return;
+      if (!img.hasAttribute('data-tile-src')) {
+        img.setAttribute('data-tile-src', img.currentSrc || img.src);
+        img.setAttribute('data-tile-srcset', img.getAttribute('srcset') || '');
+      }
+      var design = card.getAttribute('data-design-card');
+      var hit = shadeIndex >= 0 && state.shade != null && find(function (v) {
+        return v.image && v.options[designIndex] === design && v.options[shadeIndex] === state.shade;
+      });
+      if (hit) {
+        if (img.getAttribute('data-tile-on') === hit.image) return;
+        img.removeAttribute('srcset');
+        img.src = hit.image;
+        img.setAttribute('data-tile-on', hit.image);
+      } else if (img.hasAttribute('data-tile-on')) {
+        var set = img.getAttribute('data-tile-srcset');
+        if (set) img.setAttribute('srcset', set);
+        img.src = img.getAttribute('data-tile-src');
+        img.removeAttribute('data-tile-on');
+      }
+    });
   }
 
   function paintDesigns() {
@@ -214,6 +244,8 @@
     root.querySelectorAll('[data-design]').forEach(function (pick) {
       pick.setAttribute('aria-pressed', pick.getAttribute('data-design') === state.design ? 'true' : 'false');
     });
+
+    paintDesignTiles();
 
     if (!active) return;
 

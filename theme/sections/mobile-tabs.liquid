@@ -14,7 +14,7 @@
     {% render 'icon', name: 'lines', size: 18 %}<span>Designs</span>
   </a>
   <a href="{{ routes.cart_url }}"{% if request.page_type == 'cart' %} class="on"{% endif %}>
-    {% render 'icon', name: 'cart', size: 18 %}<span>Cut list</span>
+    {% render 'icon', name: 'bag', size: 18 %}<span>Cut list</span>
     <i class="pip" data-cart-count{% if cart.item_count == 0 %} hidden{% endif %}>{{ cart.item_count }}</i>
   </a>
 </nav>
